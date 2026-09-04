@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Star 1 -->
+    <path
+        android:fillColor="#F4F1DE"
+        android:pathData="M38,36 L39.2,39.5 L42.7,40.7 L39.2,41.9 L38,45.4 L36.8,41.9 L33.3,40.7 L36.8,39.5 Z" />
+    <!-- Star 2 (small) -->
+    <path
+        android:fillColor="#FFE3A8"
+        android:pathData="M71,32 L71.8,34.2 L74,35 L71.8,35.8 L71,38 L70.2,35.8 L68,35 L70.2,34.2 Z" />
+    <!-- Glowing Crescent Moon -->
+    <path
+        android:fillColor="#FFC56D"
+        android:pathData="M56,26 C47.7,26 41,32.7 41,41 C41,49.3 47.7,56 56,56 C59.8,56 63.2,54.6 65.9,52.2 C59.4,51.8 54.2,46.4 54.2,39.8 C54.2,34.1 58.1,29.3 63.4,28 C61.1,26.7 58.6,26 56,26 Z" />
+    <!-- Closed Laptop / Work Desk switch off motif -->
+    <!-- Base / Stand -->
+    <path
+        android:fillColor="#8C93A8"
+        android:pathData="M30,73 C30,71.9 30.9,71 32,71 L76,71 C77.1,71 78,71.9 78,73 L76.5,76 C76.2,76.6 75.6,77 75,77 L33,77 C32.4,77 31.8,76.6 31.5,76 Z" />
+    <!-- Notch handle on laptop base -->
+    <path
+        android:fillColor="#5A6075"
+        android:pathData="M50,71 L58,71 L57,72.5 L51,72.5 Z" />
+    <!-- Laptop Lid (closed flat, peaceful) -->
+    <path
+        android:fillColor="#B0B7C6"
+        android:pathData="M33,67 C33,65.9 33.9,65 35,65 L73,65 C74.1,65 75,65.9 75,67 L75,69 C75,70.1 74.1,71 73,71 L35,71 C33.9,71 33,70.1 33,69 Z" />
+    <!-- Warm horizontal sleep breathing indicator light on lid -->
+    <path
+        android:fillColor="#FFB380"
+        android:pathData="M51,67.5 L57,67.5 A1,1 0 0,1 57,69.5 L51,69.5 A1,1 0 0,1 51,67.5 Z" />
+</vector>

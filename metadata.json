@@ -1,0 +1,6 @@
+{
+  "name": "ClockOut",
+  "description": "Aplikace pro vědomé uzavření pracovního dne a přepnutí do večerního volna na home office (Padla / ClockOut).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

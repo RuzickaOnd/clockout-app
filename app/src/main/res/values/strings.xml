@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">ClockOut</string>
+    <string name="app_subtitle">Work → Leisure transition</string>
+    <string name="start_ritual">Start ritual (2–3 min)</string>
+    <string name="repeat_ritual">Repeat ritual</string>
+    <string name="history_title">Ritual History</string>
+    <string name="settings_title">Settings</string>
+    <string name="language_title">App Language</string>
+</resources>

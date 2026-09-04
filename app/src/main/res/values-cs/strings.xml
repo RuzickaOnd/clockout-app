@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Padla</string>
+    <string name="app_subtitle">Přechod práce → volno</string>
+    <string name="start_ritual">Zahájit rituál (2–3 min)</string>
+    <string name="repeat_ritual">Zopakovat rituál</string>
+    <string name="history_title">Historie rituálů</string>
+    <string name="settings_title">Nastavení</string>
+    <string name="language_title">Jazyk aplikace</string>
+</resources>
