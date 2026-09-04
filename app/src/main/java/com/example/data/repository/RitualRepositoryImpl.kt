@@ -4,6 +4,7 @@ import com.example.data.local.QuestionsData
 import com.example.data.local.RitualPreferences
 import com.example.domain.model.AppLanguage
 import com.example.domain.model.LanguageOption
+import com.example.domain.model.MeditationSoundStyle
 import com.example.domain.model.DayStatus
 import com.example.domain.model.MoodTag
 import com.example.domain.model.RitualLogEntry
@@ -135,6 +136,10 @@ class RitualRepositoryImpl(
     override fun getSoundEnabled(): Flow<Boolean> = preferences.soundEnabledFlow
 
     override suspend fun setSoundEnabled(enabled: Boolean) = preferences.setSoundEnabled(enabled)
+
+    override fun getSoundStyle(): Flow<MeditationSoundStyle> = preferences.soundStyleFlow
+
+    override suspend fun setSoundStyle(style: MeditationSoundStyle) = preferences.setSoundStyle(style)
 
     override fun getLanguage(): Flow<AppLanguage> = preferences.languageFlow
 

@@ -9,6 +9,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,8 +38,15 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Vibration
+import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.Waves
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -70,6 +78,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.domain.model.AppLanguage
 import com.example.domain.model.LanguageOption
+import com.example.domain.model.MeditationSoundStyle
 import com.example.notification.NotificationScheduler
 import com.example.presentation.components.FrostedBackgroundContainer
 import com.example.presentation.components.frostedGlass
@@ -91,6 +100,8 @@ fun SettingsScreen(
     onTimeSelected: (hour: Int, minute: Int) -> Unit,
     onTestModeToggled: (Boolean) -> Unit,
     onSoundToggled: (Boolean) -> Unit,
+    onSoundStyleSelected: (MeditationSoundStyle) -> Unit = {},
+    onTogglePreviewSound: (MeditationSoundStyle) -> Unit = {},
     onClearData: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -367,46 +378,234 @@ fun SettingsScreen(
                     }
                 }
 
-                // Sound Toggle
+                // Sound & Style Card
+                var soundDropdownExpanded by remember { mutableStateOf(false) }
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .frostedGlass(cornerRadius = 22.dp)
                         .padding(20.dp)
+                        .testTag("sound_settings_card")
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = strings.ambientSoundTitle,
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 16.sp
+                                    ),
+                                    color = TextLight
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = strings.ambientSoundDesc,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextSlate
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Switch(
+                                checked = state.isSoundEnabled,
+                                onCheckedChange = onSoundToggled,
+                                modifier = Modifier.testTag("sound_enabled_switch"),
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = IndigoPrimary,
+                                    uncheckedThumbColor = TextMuted,
+                                    uncheckedTrackColor = Color.White.copy(alpha = 0.1f)
+                                )
+                            )
+                        }
+
+                        if (state.isSoundEnabled) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .background(Color.White.copy(alpha = 0.08f))
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+
                             Text(
-                                text = strings.ambientSoundTitle,
-                                style = MaterialTheme.typography.titleMedium.copy(
+                                text = strings.soundStyleTitle,
+                                style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.SemiBold,
-                                    fontSize = 16.sp
+                                    fontSize = 14.sp
                                 ),
                                 color = TextLight
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Sound Style Dropdown
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(Color.White.copy(alpha = 0.05f))
+                                        .border(
+                                            width = 1.dp,
+                                            color = if (soundDropdownExpanded) IndigoAccent else Color.White.copy(alpha = 0.12f),
+                                            shape = RoundedCornerShape(14.dp)
+                                        )
+                                        .clickable { soundDropdownExpanded = !soundDropdownExpanded }
+                                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                                        .testTag("sound_style_dropdown_trigger"),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            val currentIcon = when (state.soundStyle) {
+                                                MeditationSoundStyle.TIBETAN_BOWL -> Icons.Default.GraphicEq
+                                                MeditationSoundStyle.RAIN_PINK_NOISE -> Icons.Default.WaterDrop
+                                                MeditationSoundStyle.BREATHING_WAVES -> Icons.Default.Waves
+                                                MeditationSoundStyle.SILENT_HAPTIC -> Icons.Default.Vibration
+                                            }
+                                            Icon(
+                                                imageVector = currentIcon,
+                                                contentDescription = null,
+                                                tint = IndigoAccent,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(12.dp))
+                                            Text(
+                                                text = state.soundStyle.label(state.language),
+                                                style = MaterialTheme.typography.bodyMedium.copy(
+                                                    fontWeight = FontWeight.Medium,
+                                                    fontSize = 15.sp
+                                                ),
+                                                color = TextLight,
+                                                maxLines = 1
+                                            )
+                                        }
+
+                                        Icon(
+                                            imageVector = if (soundDropdownExpanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
+                                            contentDescription = if (soundDropdownExpanded) "Collapse" else "Expand",
+                                            tint = TextSlate,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                }
+
+                                DropdownMenu(
+                                    expanded = soundDropdownExpanded,
+                                    onDismissRequest = { soundDropdownExpanded = false },
+                                    modifier = Modifier
+                                        .background(Color(0xFF181A2F))
+                                        .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
+                                ) {
+                                    MeditationSoundStyle.entries.forEach { style ->
+                                        val isSelected = style == state.soundStyle
+                                        val itemIcon = when (style) {
+                                            MeditationSoundStyle.TIBETAN_BOWL -> Icons.Default.GraphicEq
+                                            MeditationSoundStyle.RAIN_PINK_NOISE -> Icons.Default.WaterDrop
+                                            MeditationSoundStyle.BREATHING_WAVES -> Icons.Default.Waves
+                                            MeditationSoundStyle.SILENT_HAPTIC -> Icons.Default.Vibration
+                                        }
+                                        DropdownMenuItem(
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = itemIcon,
+                                                    contentDescription = null,
+                                                    tint = if (isSelected) IndigoAccent else TextMuted,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            },
+                                            text = {
+                                                Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                                                    Text(
+                                                        text = style.label(state.language),
+                                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                                        ),
+                                                        color = if (isSelected) IndigoAccent else TextLight
+                                                    )
+                                                    Spacer(modifier = Modifier.height(2.dp))
+                                                    Text(
+                                                        text = style.description(state.language),
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        color = TextSlate,
+                                                        fontSize = 12.sp,
+                                                        lineHeight = 16.sp
+                                                    )
+                                                }
+                                            },
+                                            trailingIcon = if (isSelected) {
+                                                {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Check,
+                                                        contentDescription = null,
+                                                        tint = IndigoAccent,
+                                                        modifier = Modifier.size(18.dp)
+                                                    )
+                                                }
+                                            } else null,
+                                            onClick = {
+                                                onSoundStyleSelected(style)
+                                                soundDropdownExpanded = false
+                                            },
+                                            modifier = Modifier.testTag("sound_style_${style.id}")
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = strings.ambientSoundDesc,
+                                text = state.soundStyle.description(state.language),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = TextSlate
+                                color = TextSlate,
+                                fontSize = 12.5.sp,
+                                lineHeight = 17.sp
                             )
+
+                            if (state.soundStyle != MeditationSoundStyle.SILENT_HAPTIC) {
+                                Spacer(modifier = Modifier.height(14.dp))
+                                OutlinedButton(
+                                    onClick = { onTogglePreviewSound(state.soundStyle) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .testTag("sound_preview_button"),
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = BorderStroke(
+                                        1.dp,
+                                        if (state.isPreviewPlaying) IndigoAccent else Color.White.copy(alpha = 0.15f)
+                                    ),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        containerColor = if (state.isPreviewPlaying) IndigoPrimary.copy(alpha = 0.25f) else Color.Transparent
+                                    )
+                                ) {
+                                    Icon(
+                                        imageVector = if (state.isPreviewPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
+                                        contentDescription = null,
+                                        tint = if (state.isPreviewPlaying) IndigoAccent else TextLight,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = if (state.isPreviewPlaying) strings.soundPreviewPlaying else "${strings.soundPreviewButton} (${state.soundStyle.label(state.language)})",
+                                        color = if (state.isPreviewPlaying) IndigoAccent else TextLight,
+                                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
+                                    )
+                                }
+                            }
                         }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Switch(
-                            checked = state.isSoundEnabled,
-                            onCheckedChange = onSoundToggled,
-                            modifier = Modifier.testTag("sound_enabled_switch"),
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = IndigoPrimary,
-                                uncheckedThumbColor = TextMuted,
-                                uncheckedTrackColor = Color.White.copy(alpha = 0.1f)
-                            )
-                        )
                     }
                 }
 

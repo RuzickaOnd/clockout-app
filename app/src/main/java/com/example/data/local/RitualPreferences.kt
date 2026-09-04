@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.domain.model.AppLanguage
 import com.example.domain.model.LanguageOption
+import com.example.domain.model.MeditationSoundStyle
 import com.example.domain.model.MoodTag
 import com.example.domain.model.RitualLogEntry
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +28,7 @@ class RitualPreferences(private val context: Context) {
     private val KEY_NOTIF_ENABLED = booleanPreferencesKey("notification_enabled")
     private val KEY_TEST_MODE = booleanPreferencesKey("test_mode_override")
     private val KEY_SOUND_ENABLED = booleanPreferencesKey("sound_ambient_enabled")
+    private val KEY_SOUND_STYLE = stringPreferencesKey("sound_ambient_style")
     private val KEY_LANGUAGE = stringPreferencesKey("app_language")
 
     val notificationEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -61,6 +63,10 @@ class RitualPreferences(private val context: Context) {
 
     val soundEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[KEY_SOUND_ENABLED] ?: true
+    }
+
+    val soundStyleFlow: Flow<MeditationSoundStyle> = context.dataStore.data.map { preferences ->
+        MeditationSoundStyle.fromId(preferences[KEY_SOUND_STYLE])
     }
 
     suspend fun saveLogEntry(entry: RitualLogEntry) {
@@ -100,6 +106,12 @@ class RitualPreferences(private val context: Context) {
     suspend fun setSoundEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[KEY_SOUND_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setSoundStyle(style: MeditationSoundStyle) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_SOUND_STYLE] = style.id
         }
     }
 

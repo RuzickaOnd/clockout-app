@@ -3,6 +3,7 @@ package com.example.presentation.ritual
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.repository.RitualRepository
+import com.example.domain.model.MeditationSoundStyle
 import com.example.domain.model.MoodTag
 import com.example.domain.model.RitualStep
 import com.example.domain.usecase.GetTodayRitualUseCase
@@ -40,14 +41,16 @@ class RitualViewModel(
         viewModelScope.launch {
             combine(
                 ritualRepository.getLanguage(),
-                ritualRepository.getSoundEnabled()
-            ) { lang, soundEnabled ->
-                Pair(lang, soundEnabled)
-            }.collect { (lang, soundEnabled) ->
+                ritualRepository.getSoundEnabled(),
+                ritualRepository.getSoundStyle()
+            ) { lang, soundEnabled, soundStyle ->
+                Triple(lang, soundEnabled, soundStyle)
+            }.collect { (lang, soundEnabled, soundStyle) ->
                 _state.update {
                     it.copy(
                         language = lang,
-                        isSoundMuted = !soundEnabled
+                        isSoundMuted = !soundEnabled,
+                        soundStyle = soundStyle
                     )
                 }
             }
@@ -82,7 +85,7 @@ class RitualViewModel(
                 }
                 startBreathingTimer()
                 if (!_state.value.isSoundMuted) {
-                    audioPlayer.startAmbient(true)
+                    audioPlayer.startAmbient(_state.value.soundStyle, true)
                 }
             }
             is RitualIntent.ToggleSound -> {
@@ -92,7 +95,7 @@ class RitualViewModel(
                     audioPlayer.stopAmbient()
                 } else {
                     if (_state.value.currentStep is RitualStep.Breathing) {
-                        audioPlayer.startAmbient(true)
+                        audioPlayer.startAmbient(_state.value.soundStyle, true)
                     }
                 }
             }
@@ -129,8 +132,16 @@ class RitualViewModel(
         timerJob = viewModelScope.launch {
             while (isActive && _state.value.breathingSecondsRemaining > 0) {
                 delay(1000)
+                val newRemaining = _state.value.breathingSecondsRemaining - 1
                 _state.update {
-                    it.copy(breathingSecondsRemaining = it.breathingSecondsRemaining - 1)
+                    it.copy(breathingSecondsRemaining = newRemaining)
+                }
+                val elapsed = 60 - newRemaining
+                if (elapsed > 0 && elapsed % 4 == 0) {
+                    val isInhaleStart = (elapsed % 8) == 0
+                    if (!_state.value.isSoundMuted && _state.value.soundStyle == MeditationSoundStyle.TIBETAN_BOWL) {
+                        audioPlayer.triggerBowlStrike(highPitch = isInhaleStart)
+                    }
                 }
             }
             if (_state.value.breathingSecondsRemaining <= 0) {

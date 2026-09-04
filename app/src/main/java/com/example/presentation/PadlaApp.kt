@@ -111,6 +111,8 @@ fun PadlaApp(modifier: Modifier = Modifier) {
                     onTimeSelected = { h, m -> settingsViewModel.setNotificationTime(h, m, context) },
                     onTestModeToggled = { settingsViewModel.setTestMode(it) },
                     onSoundToggled = { settingsViewModel.setSoundEnabled(it) },
+                    onSoundStyleSelected = { settingsViewModel.setSoundStyle(it) },
+                    onTogglePreviewSound = { settingsViewModel.togglePreviewSound(it) },
                     onClearData = { settingsViewModel.clearAllData() }
                 )
             }

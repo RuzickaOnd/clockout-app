@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.repository.RitualRepository
 import com.example.domain.model.AppLanguage
 import com.example.domain.model.LanguageOption
+import com.example.domain.model.MeditationSoundStyle
 import com.example.notification.NotificationScheduler
+import com.example.sound.AmbientAudioPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
-    private val repository: RitualRepository
+    private val repository: RitualRepository,
+    private val audioPlayer: AmbientAudioPlayer = AmbientAudioPlayer()
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsState())
@@ -27,27 +30,32 @@ class SettingsViewModel(
 
     private fun observeSettings() {
         viewModelScope.launch {
-            val notificationSettingsFlow = combine(
+            val notifAndTestFlow = combine(
                 repository.getNotificationTime(),
-                repository.getNotificationEnabled()
-            ) { time, enabled ->
-                Pair(time, enabled)
+                repository.getNotificationEnabled(),
+                repository.getTestMode()
+            ) { time, enabled, testMode ->
+                Triple(time, enabled, testMode)
             }
 
-            combine(
-                notificationSettingsFlow,
-                repository.getTestMode(),
+            val audioAndLangFlow = combine(
                 repository.getSoundEnabled(),
+                repository.getSoundStyle(),
                 repository.getLanguage(),
                 repository.getLanguageOption()
-            ) { notifSetting, testMode, soundEnabled, language, languageOption ->
+            ) { soundEnabled, soundStyle, language, languageOption ->
+                AudioAndLang(soundEnabled, soundStyle, language, languageOption)
+            }
+
+            combine(notifAndTestFlow, audioAndLangFlow) { notif, audioLang ->
                 SettingsDataHolder(
-                    notifTime = notifSetting.first,
-                    notifEnabled = notifSetting.second,
-                    testMode = testMode,
-                    soundEnabled = soundEnabled,
-                    language = language,
-                    languageOption = languageOption
+                    notifTime = notif.first,
+                    notifEnabled = notif.second,
+                    testMode = notif.third,
+                    soundEnabled = audioLang.soundEnabled,
+                    soundStyle = audioLang.soundStyle,
+                    language = audioLang.language,
+                    languageOption = audioLang.languageOption
                 )
             }.collect { data ->
                 _state.update {
@@ -57,6 +65,7 @@ class SettingsViewModel(
                         isNotificationEnabled = data.notifEnabled,
                         isTestModeEnabled = data.testMode,
                         isSoundEnabled = data.soundEnabled,
+                        soundStyle = data.soundStyle,
                         language = data.language,
                         selectedLanguageOption = data.languageOption
                     )
@@ -113,6 +122,30 @@ class SettingsViewModel(
     fun setSoundEnabled(enabled: Boolean) {
         viewModelScope.launch {
             repository.setSoundEnabled(enabled)
+            if (!enabled) {
+                audioPlayer.stopAmbient()
+                _state.update { it.copy(isPreviewPlaying = false) }
+            }
+        }
+    }
+
+    fun setSoundStyle(style: MeditationSoundStyle) {
+        viewModelScope.launch {
+            repository.setSoundStyle(style)
+            audioPlayer.stopAmbient()
+            _state.update { it.copy(isPreviewPlaying = false) }
+        }
+    }
+
+    fun togglePreviewSound(style: MeditationSoundStyle) {
+        if (_state.value.isPreviewPlaying) {
+            audioPlayer.stopAmbient()
+            _state.update { it.copy(isPreviewPlaying = false) }
+        } else {
+            _state.update { it.copy(isPreviewPlaying = true) }
+            audioPlayer.playPreview(style) {
+                _state.update { it.copy(isPreviewPlaying = false) }
+            }
         }
     }
 
@@ -122,11 +155,24 @@ class SettingsViewModel(
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        audioPlayer.stopAmbient()
+    }
+
+    private data class AudioAndLang(
+        val soundEnabled: Boolean,
+        val soundStyle: MeditationSoundStyle,
+        val language: AppLanguage,
+        val languageOption: LanguageOption
+    )
+
     private data class SettingsDataHolder(
         val notifTime: Pair<Int, Int>,
         val notifEnabled: Boolean,
         val testMode: Boolean,
         val soundEnabled: Boolean,
+        val soundStyle: MeditationSoundStyle,
         val language: AppLanguage,
         val languageOption: LanguageOption
     )

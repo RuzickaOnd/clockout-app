@@ -53,6 +53,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -61,7 +62,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -477,6 +480,13 @@ private fun StepBreathingContent(
     val isInhale = scale >= 0.85f
     val breathText = if (isInhale) strings.breathingInhale else strings.breathingExhale
     val breathGuidance = if (isInhale) strings.breathingInhaleDesc else strings.breathingExhaleDesc
+
+    val haptic = LocalHapticFeedback.current
+    LaunchedEffect(isInhale) {
+        try {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        } catch (_: Exception) {}
+    }
 
     Column(
         modifier = Modifier

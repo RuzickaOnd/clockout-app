@@ -304,12 +304,28 @@ class AppStrings(val language: AppLanguage) {
         AppLanguage.ENGLISH -> "Allows starting the ritual outside the main 16:00–21:00 window for flexible schedules and testing."
     }
     val ambientSoundTitle: String = when (language) {
-        AppLanguage.CZECH -> "Ambientní zvuk při dýchání"
-        AppLanguage.ENGLISH -> "Ambient breathing sound"
+        AppLanguage.CZECH -> "Zvuk a doprovod při dýchání"
+        AppLanguage.ENGLISH -> "Sound & guidance during breathing"
     }
     val ambientSoundDesc: String = when (language) {
-        AppLanguage.CZECH -> "Jemný uklidňující harmonický tón s plynulým nádechem a výdechem pro hlubší uvolnění."
-        AppLanguage.ENGLISH -> "A gentle soothing harmonic tone for smooth inhaling and exhaling to deepen relaxation."
+        AppLanguage.CZECH -> "Uvolňující zvukový doprovod sladěný s dechovým cvičením pro snazší zklidnění."
+        AppLanguage.ENGLISH -> "Relaxing audio accompaniment synchronized with breathing for effortless grounding."
+    }
+    val soundStyleTitle: String = when (language) {
+        AppLanguage.CZECH -> "Styl meditačního zvuku"
+        AppLanguage.ENGLISH -> "Meditation sound style"
+    }
+    val soundStyleDesc: String = when (language) {
+        AppLanguage.CZECH -> "Vyber si styl podkresu, který ti nejlépe vyhovuje pro večerní zklidnění."
+        AppLanguage.ENGLISH -> "Choose the audio style that best supports your evening wind-down."
+    }
+    val soundPreviewButton: String = when (language) {
+        AppLanguage.CZECH -> "Vyzkoušet"
+        AppLanguage.ENGLISH -> "Preview"
+    }
+    val soundPreviewPlaying: String = when (language) {
+        AppLanguage.CZECH -> "Hraje ukázka..."
+        AppLanguage.ENGLISH -> "Playing sample..."
     }
     val aboutTitle: String = when (language) {
         AppLanguage.CZECH -> "O aplikaci Padla"
