@@ -98,12 +98,14 @@ fun RitualScreen(
     }
 
     FrostedBackgroundContainer(
-        modifier = modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
+        modifier = modifier.fillMaxSize()
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+        ) {
             // Header & Segmented Progress Bar (Frosted Glass style)
             Column(
                 modifier = Modifier
