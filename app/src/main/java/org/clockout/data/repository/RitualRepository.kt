@@ -1,0 +1,38 @@
+package org.clockout.data.repository
+
+import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.CustomSound
+import org.clockout.domain.model.LanguageOption
+import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.SoundChoice
+import org.clockout.domain.model.RitualLogEntry
+import org.clockout.domain.model.RitualQuestion
+import org.clockout.domain.model.RitualStreakInfo
+import kotlinx.coroutines.flow.Flow
+
+interface RitualRepository {
+    fun getTodayQuestion(): RitualQuestion
+    fun getLogs(): Flow<List<RitualLogEntry>>
+    fun getStreakInfo(): Flow<RitualStreakInfo>
+    suspend fun logRitual(selectedAnswer: String?, mood: MoodTag, questionText: String)
+    fun isWithinWorkdayCloseWindow(): Boolean
+    fun getTestMode(): Flow<Boolean>
+    suspend fun setTestMode(enabled: Boolean)
+    fun getNotificationTime(): Flow<Pair<Int, Int>>
+    suspend fun setNotificationTime(hour: Int, minute: Int)
+    fun getNotificationEnabled(): Flow<Boolean>
+    suspend fun setNotificationEnabled(enabled: Boolean)
+    fun getSoundEnabled(): Flow<Boolean>
+    suspend fun setSoundEnabled(enabled: Boolean)
+    fun getSoundChoice(): Flow<SoundChoice>
+    suspend fun setSoundChoice(choice: SoundChoice)
+    fun getCustomSounds(): Flow<List<CustomSound>>
+    suspend fun addCustomSound(sound: CustomSound)
+    suspend fun removeCustomSound(id: String)
+    fun getLanguage(): Flow<AppLanguage>
+    fun getLanguageOption(): Flow<LanguageOption>
+    suspend fun setLanguage(language: AppLanguage)
+    suspend fun setLanguageOption(option: LanguageOption)
+    suspend fun clearLogs()
+    fun getTodayDateString(): String
+}
