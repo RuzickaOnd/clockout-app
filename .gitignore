@@ -1,18 +1,32 @@
-*.iml
+# Gradle / build
 .gradle
 .kotlin
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
+build/
 /captures
 .externalNativeBuild
 .cxx
+*.hprof
+
+# Android Studio / IntelliJ
+*.iml
+/.idea/
+
+# Lokální konfigurace
 local.properties
 .env
+
+# Podpisové klíče a tajemství
+*.jks
+*.keystore
 debug.keystore
+keystore.properties
+google-services.json
+
+# Build artefakty
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# macOS
+.DS_Store
