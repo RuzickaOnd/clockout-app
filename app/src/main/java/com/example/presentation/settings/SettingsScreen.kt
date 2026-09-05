@@ -1,6 +1,7 @@
 package com.example.presentation.settings
 
 import android.Manifest
+import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,8 +39,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Vibration
@@ -50,7 +54,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -71,14 +77,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.local.SoundImportError
 import com.example.domain.model.AppLanguage
+import com.example.domain.model.CustomSound
 import com.example.domain.model.LanguageOption
 import com.example.domain.model.MeditationSoundStyle
+import com.example.domain.model.SoundChoice
 import com.example.notification.NotificationScheduler
 import com.example.presentation.components.FrostedBackgroundContainer
 import com.example.presentation.components.frostedGlass
@@ -100,8 +110,11 @@ fun SettingsScreen(
     onTimeSelected: (hour: Int, minute: Int) -> Unit,
     onTestModeToggled: (Boolean) -> Unit,
     onSoundToggled: (Boolean) -> Unit,
-    onSoundStyleSelected: (MeditationSoundStyle) -> Unit = {},
-    onTogglePreviewSound: (MeditationSoundStyle) -> Unit = {},
+    onSoundChoiceSelected: (SoundChoice) -> Unit = {},
+    onTogglePreviewSound: (SoundChoice) -> Unit = {},
+    onUploadCustomSound: (Uri) -> Unit = {},
+    onDeleteCustomSound: (CustomSound) -> Unit = {},
+    onDismissSoundImportError: () -> Unit = {},
     onClearData: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -110,6 +123,15 @@ fun SettingsScreen(
     val scrollState = rememberScrollState()
     var showResetDialog by remember { mutableStateOf(false) }
     var showPermissionDialog by remember { mutableStateOf(false) }
+    var soundPendingDeletion by remember { mutableStateOf<CustomSound?>(null) }
+
+    val customSoundPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            onUploadCustomSound(uri)
+        }
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -151,6 +173,34 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showResetDialog = false }) {
+                    Text(strings.cancel, color = TextSlate)
+                }
+            }
+        )
+    }
+
+    val pendingDeletion = soundPendingDeletion
+    if (pendingDeletion != null) {
+        AlertDialog(
+            onDismissRequest = { soundPendingDeletion = null },
+            containerColor = Color(0xFF141526),
+            titleContentColor = TextLight,
+            textContentColor = TextSlate,
+            title = { Text(strings.deleteCustomSoundTitle) },
+            text = { Text(strings.deleteCustomSoundText(pendingDeletion.displayName)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteCustomSound(pendingDeletion)
+                        soundPendingDeletion = null
+                    },
+                    modifier = Modifier.testTag("confirm_delete_custom_sound")
+                ) {
+                    Text(strings.delete, color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { soundPendingDeletion = null }) {
                     Text(strings.cancel, color = TextSlate)
                 }
             }
@@ -470,21 +520,15 @@ fun SettingsScreen(
                                             modifier = Modifier.weight(1f),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            val currentIcon = when (state.soundStyle) {
-                                                MeditationSoundStyle.TIBETAN_BOWL -> Icons.Default.GraphicEq
-                                                MeditationSoundStyle.RAIN_PINK_NOISE -> Icons.Default.WaterDrop
-                                                MeditationSoundStyle.BREATHING_WAVES -> Icons.Default.Waves
-                                                MeditationSoundStyle.SILENT_HAPTIC -> Icons.Default.Vibration
-                                            }
                                             Icon(
-                                                imageVector = currentIcon,
+                                                imageVector = soundChoiceIcon(state.soundChoice),
                                                 contentDescription = null,
                                                 tint = IndigoAccent,
                                                 modifier = Modifier.size(20.dp)
                                             )
                                             Spacer(modifier = Modifier.width(12.dp))
                                             Text(
-                                                text = state.soundStyle.label(state.language),
+                                                text = state.soundChoice.label(state.language),
                                                 style = MaterialTheme.typography.bodyMedium.copy(
                                                     fontWeight = FontWeight.Medium,
                                                     fontSize = 15.sp
@@ -510,41 +554,26 @@ fun SettingsScreen(
                                         .background(Color(0xFF181A2F))
                                         .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
                                 ) {
+                                    MenuSectionLabel(strings.builtInSoundGroupLabel)
+
                                     MeditationSoundStyle.entries.forEach { style ->
-                                        val isSelected = style == state.soundStyle
-                                        val itemIcon = when (style) {
-                                            MeditationSoundStyle.TIBETAN_BOWL -> Icons.Default.GraphicEq
-                                            MeditationSoundStyle.RAIN_PINK_NOISE -> Icons.Default.WaterDrop
-                                            MeditationSoundStyle.BREATHING_WAVES -> Icons.Default.Waves
-                                            MeditationSoundStyle.SILENT_HAPTIC -> Icons.Default.Vibration
-                                        }
+                                        val choice = SoundChoice.BuiltIn(style)
+                                        val isSelected = choice.id == state.soundChoice.id
                                         DropdownMenuItem(
                                             leadingIcon = {
                                                 Icon(
-                                                    imageVector = itemIcon,
+                                                    imageVector = soundChoiceIcon(choice),
                                                     contentDescription = null,
                                                     tint = if (isSelected) IndigoAccent else TextMuted,
                                                     modifier = Modifier.size(20.dp)
                                                 )
                                             },
                                             text = {
-                                                Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                                                    Text(
-                                                        text = style.label(state.language),
-                                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-                                                        ),
-                                                        color = if (isSelected) IndigoAccent else TextLight
-                                                    )
-                                                    Spacer(modifier = Modifier.height(2.dp))
-                                                    Text(
-                                                        text = style.description(state.language),
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                        color = TextSlate,
-                                                        fontSize = 12.sp,
-                                                        lineHeight = 16.sp
-                                                    )
-                                                }
+                                                SoundChoiceMenuText(
+                                                    title = choice.label(state.language),
+                                                    description = choice.description(state.language),
+                                                    isSelected = isSelected
+                                                )
                                             },
                                             trailingIcon = if (isSelected) {
                                                 {
@@ -557,28 +586,115 @@ fun SettingsScreen(
                                                 }
                                             } else null,
                                             onClick = {
-                                                onSoundStyleSelected(style)
+                                                onSoundChoiceSelected(choice)
                                                 soundDropdownExpanded = false
                                             },
                                             modifier = Modifier.testTag("sound_style_${style.id}")
                                         )
                                     }
+
+                                    if (state.customSounds.isNotEmpty()) {
+                                        MenuSectionLabel(strings.customSoundGroupLabel)
+                                    }
+
+                                    state.customSounds.forEach { customSound ->
+                                        val choice = SoundChoice.Custom(customSound)
+                                        val isSelected = choice.id == state.soundChoice.id
+                                        DropdownMenuItem(
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Default.MusicNote,
+                                                    contentDescription = null,
+                                                    tint = if (isSelected) IndigoAccent else TextMuted,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            },
+                                            text = {
+                                                SoundChoiceMenuText(
+                                                    title = choice.label(state.language),
+                                                    description = choice.description(state.language),
+                                                    isSelected = isSelected
+                                                )
+                                            },
+                                            trailingIcon = {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    if (isSelected) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Check,
+                                                            contentDescription = null,
+                                                            tint = IndigoAccent,
+                                                            modifier = Modifier.size(18.dp)
+                                                        )
+                                                    }
+                                                    IconButton(
+                                                        onClick = {
+                                                            soundDropdownExpanded = false
+                                                            soundPendingDeletion = customSound
+                                                        },
+                                                        modifier = Modifier
+                                                            .size(32.dp)
+                                                            .testTag("delete_custom_sound_${customSound.id}")
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.DeleteOutline,
+                                                            contentDescription = strings.delete,
+                                                            tint = TextMuted,
+                                                            modifier = Modifier.size(18.dp)
+                                                        )
+                                                    }
+                                                }
+                                            },
+                                            onClick = {
+                                                onSoundChoiceSelected(choice)
+                                                soundDropdownExpanded = false
+                                            },
+                                            modifier = Modifier.testTag("sound_style_${customSound.id}")
+                                        )
+                                    }
+
+                                    DropdownMenuItem(
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Default.LibraryMusic,
+                                                contentDescription = null,
+                                                tint = IndigoAccent,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        },
+                                        text = {
+                                            Text(
+                                                text = strings.uploadCustomSoundButton,
+                                                style = MaterialTheme.typography.bodyMedium.copy(
+                                                    fontWeight = FontWeight.Medium
+                                                ),
+                                                color = IndigoAccent
+                                            )
+                                        },
+                                        onClick = {
+                                            soundDropdownExpanded = false
+                                            customSoundPickerLauncher.launch(AUDIO_MIME_FILTER)
+                                        },
+                                        modifier = Modifier.testTag("upload_custom_sound_menu_item")
+                                    )
                                 }
                             }
 
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = state.soundStyle.description(state.language),
+                                text = state.soundChoice.description(state.language),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSlate,
                                 fontSize = 12.5.sp,
                                 lineHeight = 17.sp
                             )
 
-                            if (state.soundStyle != MeditationSoundStyle.SILENT_HAPTIC) {
+                            val isSilentChoice = state.soundChoice.let {
+                                it is SoundChoice.BuiltIn && it.style == MeditationSoundStyle.SILENT_HAPTIC
+                            }
+                            if (!isSilentChoice) {
                                 Spacer(modifier = Modifier.height(14.dp))
                                 OutlinedButton(
-                                    onClick = { onTogglePreviewSound(state.soundStyle) },
+                                    onClick = { onTogglePreviewSound(state.soundChoice) },
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .testTag("sound_preview_button"),
@@ -599,9 +715,106 @@ fun SettingsScreen(
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = if (state.isPreviewPlaying) strings.soundPreviewPlaying else "${strings.soundPreviewButton} (${state.soundStyle.label(state.language)})",
+                                        text = if (state.isPreviewPlaying) {
+                                            strings.soundPreviewPlaying
+                                        } else {
+                                            "${strings.soundPreviewButton} (${state.soundChoice.label(state.language)})"
+                                        },
                                         color = if (state.isPreviewPlaying) IndigoAccent else TextLight,
                                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .background(Color.White.copy(alpha = 0.08f))
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = strings.customSoundSectionTitle,
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 14.sp
+                                ),
+                                color = TextLight
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = strings.customSoundHint,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextSlate,
+                                fontSize = 12.5.sp,
+                                lineHeight = 17.sp
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            OutlinedButton(
+                                onClick = { customSoundPickerLauncher.launch(AUDIO_MIME_FILTER) },
+                                enabled = !state.isImportingSound,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("upload_custom_sound_button"),
+                                shape = RoundedCornerShape(12.dp),
+                                border = BorderStroke(1.dp, IndigoAccent.copy(alpha = 0.5f)),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = IndigoPrimary.copy(alpha = 0.15f)
+                                )
+                            ) {
+                                if (state.isImportingSound) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        color = IndigoAccent,
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.LibraryMusic,
+                                        contentDescription = null,
+                                        tint = IndigoAccent,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (state.isImportingSound) {
+                                        strings.uploadingCustomSound
+                                    } else {
+                                        strings.uploadCustomSoundButton
+                                    },
+                                    color = IndigoAccent,
+                                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
+                                )
+                            }
+
+                            val importError = state.soundImportError
+                            if (importError != null) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color(0xFFEF4444).copy(alpha = 0.12f))
+                                        .clickable { onDismissSoundImportError() }
+                                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                                        .testTag("custom_sound_error"),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = when (importError) {
+                                            SoundImportError.UNSUPPORTED_FILE -> strings.customSoundErrorUnsupported
+                                            SoundImportError.FILE_TOO_LARGE -> strings.customSoundErrorTooLarge
+                                            SoundImportError.LIMIT_REACHED -> strings.customSoundErrorLimit
+                                            SoundImportError.READ_FAILED -> strings.customSoundErrorRead
+                                        },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color(0xFFFCA5A5),
+                                        fontSize = 12.5.sp,
+                                        lineHeight = 17.sp
                                     )
                                 }
                             }
@@ -780,5 +993,49 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
+    }
+}
+
+private const val AUDIO_MIME_FILTER = "audio/*"
+
+private fun soundChoiceIcon(choice: SoundChoice): ImageVector = when (choice) {
+    is SoundChoice.Custom -> Icons.Default.MusicNote
+    is SoundChoice.BuiltIn -> when (choice.style) {
+        MeditationSoundStyle.TIBETAN_BOWL -> Icons.Default.GraphicEq
+        MeditationSoundStyle.RAIN_PINK_NOISE -> Icons.Default.WaterDrop
+        MeditationSoundStyle.BREATHING_WAVES -> Icons.Default.Waves
+        MeditationSoundStyle.SILENT_HAPTIC -> Icons.Default.Vibration
+    }
+}
+
+@Composable
+private fun MenuSectionLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+        color = TextMuted,
+        fontSize = 11.sp,
+        modifier = Modifier.padding(start = 16.dp, top = 10.dp, bottom = 4.dp)
+    )
+}
+
+@Composable
+private fun SoundChoiceMenuText(title: String, description: String, isSelected: Boolean) {
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+            ),
+            color = if (isSelected) IndigoAccent else TextLight
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = description,
+            style = MaterialTheme.typography.labelSmall,
+            color = TextSlate,
+            fontSize = 12.sp,
+            lineHeight = 16.sp
+        )
     }
 }

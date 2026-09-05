@@ -75,7 +75,12 @@ fun PadlaApp(modifier: Modifier = Modifier) {
             is Screen.Ritual -> {
                 // Instantiate fresh RitualViewModel each time ritual is started
                 val ritualViewModel = remember {
-                    RitualViewModel(getTodayRitualUseCase, logMoodUseCase, repository)
+                    RitualViewModel(
+                        context.applicationContext,
+                        getTodayRitualUseCase,
+                        logMoodUseCase,
+                        repository
+                    )
                 }
                 val ritualState by ritualViewModel.state.collectAsState()
 
@@ -111,8 +116,11 @@ fun PadlaApp(modifier: Modifier = Modifier) {
                     onTimeSelected = { h, m -> settingsViewModel.setNotificationTime(h, m, context) },
                     onTestModeToggled = { settingsViewModel.setTestMode(it) },
                     onSoundToggled = { settingsViewModel.setSoundEnabled(it) },
-                    onSoundStyleSelected = { settingsViewModel.setSoundStyle(it) },
-                    onTogglePreviewSound = { settingsViewModel.togglePreviewSound(it) },
+                    onSoundChoiceSelected = { settingsViewModel.setSoundChoice(it) },
+                    onTogglePreviewSound = { settingsViewModel.togglePreviewSound(it, context) },
+                    onUploadCustomSound = { uri -> settingsViewModel.importCustomSound(context, uri) },
+                    onDeleteCustomSound = { item -> settingsViewModel.deleteCustomSound(context, item) },
+                    onDismissSoundImportError = { settingsViewModel.dismissSoundImportError() },
                     onClearData = { settingsViewModel.clearAllData() }
                 )
             }

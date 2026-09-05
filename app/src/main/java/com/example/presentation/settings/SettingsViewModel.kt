@@ -3,10 +3,14 @@ package com.example.presentation.settings
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.net.Uri
+import com.example.data.local.CustomSoundStorage
+import com.example.data.local.SoundImportResult
 import com.example.data.repository.RitualRepository
 import com.example.domain.model.AppLanguage
+import com.example.domain.model.CustomSound
 import com.example.domain.model.LanguageOption
-import com.example.domain.model.MeditationSoundStyle
+import com.example.domain.model.SoundChoice
 import com.example.notification.NotificationScheduler
 import com.example.sound.AmbientAudioPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,20 +44,25 @@ class SettingsViewModel(
 
             val audioAndLangFlow = combine(
                 repository.getSoundEnabled(),
-                repository.getSoundStyle(),
+                repository.getSoundChoice(),
                 repository.getLanguage(),
                 repository.getLanguageOption()
-            ) { soundEnabled, soundStyle, language, languageOption ->
-                AudioAndLang(soundEnabled, soundStyle, language, languageOption)
+            ) { soundEnabled, soundChoice, language, languageOption ->
+                AudioAndLang(soundEnabled, soundChoice, language, languageOption)
             }
 
-            combine(notifAndTestFlow, audioAndLangFlow) { notif, audioLang ->
+            combine(
+                notifAndTestFlow,
+                audioAndLangFlow,
+                repository.getCustomSounds()
+            ) { notif, audioLang, customSounds ->
                 SettingsDataHolder(
                     notifTime = notif.first,
                     notifEnabled = notif.second,
                     testMode = notif.third,
                     soundEnabled = audioLang.soundEnabled,
-                    soundStyle = audioLang.soundStyle,
+                    soundChoice = audioLang.soundChoice,
+                    customSounds = customSounds,
                     language = audioLang.language,
                     languageOption = audioLang.languageOption
                 )
@@ -65,7 +74,8 @@ class SettingsViewModel(
                         isNotificationEnabled = data.notifEnabled,
                         isTestModeEnabled = data.testMode,
                         isSoundEnabled = data.soundEnabled,
-                        soundStyle = data.soundStyle,
+                        soundChoice = data.soundChoice,
+                        customSounds = data.customSounds,
                         language = data.language,
                         selectedLanguageOption = data.languageOption
                     )
@@ -129,24 +139,68 @@ class SettingsViewModel(
         }
     }
 
-    fun setSoundStyle(style: MeditationSoundStyle) {
+    fun setSoundChoice(choice: SoundChoice) {
         viewModelScope.launch {
-            repository.setSoundStyle(style)
+            repository.setSoundChoice(choice)
             audioPlayer.stopAmbient()
             _state.update { it.copy(isPreviewPlaying = false) }
         }
     }
 
-    fun togglePreviewSound(style: MeditationSoundStyle) {
+    fun togglePreviewSound(choice: SoundChoice, context: Context) {
         if (_state.value.isPreviewPlaying) {
             audioPlayer.stopAmbient()
             _state.update { it.copy(isPreviewPlaying = false) }
         } else {
             _state.update { it.copy(isPreviewPlaying = true) }
-            audioPlayer.playPreview(style) {
+            audioPlayer.playPreview(context.applicationContext, choice) {
                 _state.update { it.copy(isPreviewPlaying = false) }
             }
         }
+    }
+
+    /**
+     * Copies the picked audio file into app storage, registers it and selects it
+     * right away so the user hears their own sound on the next ritual.
+     */
+    fun importCustomSound(context: Context, uri: Uri?) {
+        if (uri == null) return
+        val appContext = context.applicationContext
+        viewModelScope.launch {
+            audioPlayer.stopAmbient()
+            _state.update { it.copy(isImportingSound = true, isPreviewPlaying = false, soundImportError = null) }
+
+            val result = CustomSoundStorage(appContext).import(uri, _state.value.customSounds.size)
+            when (result) {
+                is SoundImportResult.Success -> {
+                    repository.addCustomSound(result.sound)
+                    repository.setSoundChoice(SoundChoice.Custom(result.sound))
+                    _state.update { it.copy(isImportingSound = false, soundImportError = null) }
+                }
+
+                is SoundImportResult.Failure -> {
+                    _state.update { it.copy(isImportingSound = false, soundImportError = result.error) }
+                }
+            }
+        }
+    }
+
+    fun deleteCustomSound(context: Context, sound: CustomSound) {
+        val appContext = context.applicationContext
+        viewModelScope.launch {
+            audioPlayer.stopAmbient()
+            _state.update { it.copy(isPreviewPlaying = false) }
+
+            CustomSoundStorage(appContext).delete(sound)
+            repository.removeCustomSound(sound.id)
+            if (_state.value.soundChoice.id == sound.id) {
+                repository.setSoundChoice(SoundChoice.Default)
+            }
+        }
+    }
+
+    fun dismissSoundImportError() {
+        _state.update { it.copy(soundImportError = null) }
     }
 
     fun clearAllData() {
@@ -162,7 +216,7 @@ class SettingsViewModel(
 
     private data class AudioAndLang(
         val soundEnabled: Boolean,
-        val soundStyle: MeditationSoundStyle,
+        val soundChoice: SoundChoice,
         val language: AppLanguage,
         val languageOption: LanguageOption
     )
@@ -172,7 +226,8 @@ class SettingsViewModel(
         val notifEnabled: Boolean,
         val testMode: Boolean,
         val soundEnabled: Boolean,
-        val soundStyle: MeditationSoundStyle,
+        val soundChoice: SoundChoice,
+        val customSounds: List<CustomSound>,
         val language: AppLanguage,
         val languageOption: LanguageOption
     )

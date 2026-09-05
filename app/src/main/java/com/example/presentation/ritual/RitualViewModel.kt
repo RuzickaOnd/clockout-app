@@ -1,10 +1,12 @@
 package com.example.presentation.ritual
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.repository.RitualRepository
 import com.example.domain.model.MeditationSoundStyle
 import com.example.domain.model.MoodTag
+import com.example.domain.model.SoundChoice
 import com.example.domain.model.RitualStep
 import com.example.domain.usecase.GetTodayRitualUseCase
 import com.example.domain.usecase.LogMoodUseCase
@@ -20,6 +22,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class RitualViewModel(
+    private val appContext: Context,
     private val getTodayRitualUseCase: GetTodayRitualUseCase,
     private val logMoodUseCase: LogMoodUseCase,
     private val ritualRepository: RitualRepository,
@@ -42,15 +45,15 @@ class RitualViewModel(
             combine(
                 ritualRepository.getLanguage(),
                 ritualRepository.getSoundEnabled(),
-                ritualRepository.getSoundStyle()
-            ) { lang, soundEnabled, soundStyle ->
-                Triple(lang, soundEnabled, soundStyle)
-            }.collect { (lang, soundEnabled, soundStyle) ->
+                ritualRepository.getSoundChoice()
+            ) { lang, soundEnabled, soundChoice ->
+                Triple(lang, soundEnabled, soundChoice)
+            }.collect { (lang, soundEnabled, soundChoice) ->
                 _state.update {
                     it.copy(
                         language = lang,
                         isSoundMuted = !soundEnabled,
-                        soundStyle = soundStyle
+                        soundChoice = soundChoice
                     )
                 }
             }
@@ -85,7 +88,7 @@ class RitualViewModel(
                 }
                 startBreathingTimer()
                 if (!_state.value.isSoundMuted) {
-                    audioPlayer.startAmbient(_state.value.soundStyle, true)
+                    audioPlayer.startAmbient(appContext, _state.value.soundChoice, true)
                 }
             }
             is RitualIntent.ToggleSound -> {
@@ -95,7 +98,7 @@ class RitualViewModel(
                     audioPlayer.stopAmbient()
                 } else {
                     if (_state.value.currentStep is RitualStep.Breathing) {
-                        audioPlayer.startAmbient(_state.value.soundStyle, true)
+                        audioPlayer.startAmbient(appContext, _state.value.soundChoice, true)
                     }
                 }
             }
@@ -139,7 +142,9 @@ class RitualViewModel(
                 val elapsed = 60 - newRemaining
                 if (elapsed > 0 && elapsed % 4 == 0) {
                     val isInhaleStart = (elapsed % 8) == 0
-                    if (!_state.value.isSoundMuted && _state.value.soundStyle == MeditationSoundStyle.TIBETAN_BOWL) {
+                    val choice = _state.value.soundChoice
+                    val isBowl = choice is SoundChoice.BuiltIn && choice.style == MeditationSoundStyle.TIBETAN_BOWL
+                    if (!_state.value.isSoundMuted && isBowl) {
                         audioPlayer.triggerBowlStrike(highPitch = isInhaleStart)
                     }
                 }

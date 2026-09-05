@@ -1,9 +1,14 @@
 package com.example.sound
 
+import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.media.MediaPlayer
+import com.example.data.local.CustomSoundStorage
+import com.example.domain.model.CustomSound
 import com.example.domain.model.MeditationSoundStyle
+import com.example.domain.model.SoundChoice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -11,6 +16,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Random
+import kotlin.coroutines.coroutineContext
 import kotlin.math.PI
 import kotlin.math.exp
 import kotlin.math.sin
@@ -18,6 +24,7 @@ import kotlin.math.sin
 class AmbientAudioPlayer {
 
     private var audioTrack: AudioTrack? = null
+    private var mediaPlayer: MediaPlayer? = null
     private var playbackJob: Job? = null
     private var previewJob: Job? = null
     @Volatile
@@ -36,19 +43,41 @@ class AmbientAudioPlayer {
     private val scope = CoroutineScope(Dispatchers.Default)
     private val random = Random()
 
-    fun startAmbient(style: MeditationSoundStyle, enabled: Boolean = true) {
-        if (!enabled || style == MeditationSoundStyle.SILENT_HAPTIC) {
+    fun startAmbient(context: Context, choice: SoundChoice, enabled: Boolean = true) {
+        if (!enabled) {
             stopAmbient()
             return
         }
-        stopAmbient()
+        when (choice) {
+            is SoundChoice.Custom -> {
+                stopAmbient()
+                playbackJob = scope.launch {
+                    playCustomSound(
+                        context = context,
+                        sound = choice.sound,
+                        loop = true,
+                        previewDurationSeconds = null,
+                        onFinished = null
+                    )
+                }
+            }
 
-        currentStyle = style
-        isPlaying = true
-        currentVolume = 0f
+            is SoundChoice.BuiltIn -> {
+                val style = choice.style
+                if (style == MeditationSoundStyle.SILENT_HAPTIC) {
+                    stopAmbient()
+                    return
+                }
+                stopAmbient()
 
-        playbackJob = scope.launch {
-            runAudioLoop(style, previewDurationSeconds = null)
+                currentStyle = style
+                isPlaying = true
+                currentVolume = 0f
+
+                playbackJob = scope.launch {
+                    runAudioLoop(style, previewDurationSeconds = null)
+                }
+            }
         }
     }
 
@@ -60,20 +89,37 @@ class AmbientAudioPlayer {
         }
     }
 
-    fun playPreview(style: MeditationSoundStyle, onFinished: (() -> Unit)? = null) {
+    fun playPreview(context: Context, choice: SoundChoice, onFinished: (() -> Unit)? = null) {
         stopAmbient()
-        if (style == MeditationSoundStyle.SILENT_HAPTIC) {
-            onFinished?.invoke()
-            return
-        }
+        when (choice) {
+            is SoundChoice.Custom -> {
+                previewJob = scope.launch {
+                    playCustomSound(
+                        context = context,
+                        sound = choice.sound,
+                        loop = false,
+                        previewDurationSeconds = CUSTOM_PREVIEW_SECONDS,
+                        onFinished = onFinished
+                    )
+                }
+            }
 
-        currentStyle = style
-        isPlaying = true
-        currentVolume = 0f
+            is SoundChoice.BuiltIn -> {
+                val style = choice.style
+                if (style == MeditationSoundStyle.SILENT_HAPTIC) {
+                    onFinished?.invoke()
+                    return
+                }
 
-        previewJob = scope.launch {
-            runAudioLoop(style, previewDurationSeconds = 4)
-            onFinished?.invoke()
+                currentStyle = style
+                isPlaying = true
+                currentVolume = 0f
+
+                previewJob = scope.launch {
+                    runAudioLoop(style, previewDurationSeconds = 4)
+                    onFinished?.invoke()
+                }
+            }
         }
     }
 
@@ -83,6 +129,7 @@ class AmbientAudioPlayer {
         previewJob = null
         playbackJob?.cancel()
         playbackJob = null
+        releaseMediaPlayer()
 
         scope.launch {
             try {
@@ -97,6 +144,123 @@ class AmbientAudioPlayer {
 
     @Volatile
     private var currentSampleIndex = 0L
+
+    /**
+     * Plays a user imported file through [MediaPlayer]. Volume is faded in (and,
+     * for previews, back out) so the file matches the calm feel of the synthesized styles.
+     */
+    private suspend fun playCustomSound(
+        context: Context,
+        sound: CustomSound,
+        loop: Boolean,
+        previewDurationSeconds: Int?,
+        onFinished: (() -> Unit)?
+    ) {
+        val file = CustomSoundStorage.resolveFile(context, sound.fileName)
+        if (!file.exists()) {
+            onFinished?.invoke()
+            return
+        }
+
+        val player = try {
+            MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build()
+                )
+                setDataSource(file.absolutePath)
+                isLooping = loop
+                setVolume(0f, 0f)
+                prepare()
+            }
+        } catch (_: Exception) {
+            onFinished?.invoke()
+            return
+        }
+
+        if (!coroutineContext.isActive) {
+            try {
+                player.release()
+            } catch (_: Exception) {
+            }
+            return
+        }
+
+        mediaPlayer = player
+        isPlaying = true
+
+        try {
+            player.start()
+        } catch (_: Exception) {
+            releaseMediaPlayer()
+            onFinished?.invoke()
+            return
+        }
+
+        try {
+            fadeVolume(player, from = 0f, to = 1f, durationMs = FADE_MS)
+
+            if (previewDurationSeconds == null && loop) {
+                // Looping ambient playback: keep running until cancelled.
+                while (coroutineContext.isActive) {
+                    delay(500)
+                }
+            } else {
+                val playbackMs = if (previewDurationSeconds != null) {
+                    minOf(previewDurationSeconds * 1000L, sound.durationMs.coerceAtLeast(FADE_MS * 2))
+                } else {
+                    sound.durationMs
+                }
+                val beforeFadeOutMs = playbackMs - FADE_MS
+                if (beforeFadeOutMs > 0) {
+                    delay(beforeFadeOutMs)
+                }
+                fadeVolume(player, from = 1f, to = 0f, durationMs = FADE_MS)
+            }
+        } finally {
+            if (mediaPlayer === player) {
+                releaseMediaPlayer()
+            } else {
+                try {
+                    player.release()
+                } catch (_: Exception) {
+                }
+            }
+        }
+        onFinished?.invoke()
+    }
+
+    private suspend fun fadeVolume(player: MediaPlayer, from: Float, to: Float, durationMs: Long) {
+        val steps = 24
+        val stepDelay = durationMs / steps
+        for (step in 1..steps) {
+            if (!coroutineContext.isActive) return
+            val volume = from + (to - from) * (step.toFloat() / steps)
+            try {
+                player.setVolume(volume, volume)
+            } catch (_: Exception) {
+                return
+            }
+            delay(stepDelay)
+        }
+    }
+
+    private fun releaseMediaPlayer() {
+        val player = mediaPlayer ?: return
+        mediaPlayer = null
+        try {
+            if (player.isPlaying) {
+                player.stop()
+            }
+        } catch (_: Exception) {
+        }
+        try {
+            player.release()
+        } catch (_: Exception) {
+        }
+    }
 
     private suspend fun runAudioLoop(
         style: MeditationSoundStyle,
@@ -301,5 +465,10 @@ class AmbientAudioPlayer {
         if (audioTrack === track) {
             audioTrack = null
         }
+    }
+
+    companion object {
+        private const val FADE_MS = 800L
+        private const val CUSTOM_PREVIEW_SECONDS = 8
     }
 }

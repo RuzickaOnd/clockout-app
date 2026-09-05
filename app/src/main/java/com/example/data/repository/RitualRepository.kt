@@ -1,9 +1,10 @@
 package com.example.data.repository
 
 import com.example.domain.model.AppLanguage
+import com.example.domain.model.CustomSound
 import com.example.domain.model.LanguageOption
-import com.example.domain.model.MeditationSoundStyle
 import com.example.domain.model.MoodTag
+import com.example.domain.model.SoundChoice
 import com.example.domain.model.RitualLogEntry
 import com.example.domain.model.RitualQuestion
 import com.example.domain.model.RitualStreakInfo
@@ -23,8 +24,11 @@ interface RitualRepository {
     suspend fun setNotificationEnabled(enabled: Boolean)
     fun getSoundEnabled(): Flow<Boolean>
     suspend fun setSoundEnabled(enabled: Boolean)
-    fun getSoundStyle(): Flow<MeditationSoundStyle>
-    suspend fun setSoundStyle(style: MeditationSoundStyle)
+    fun getSoundChoice(): Flow<SoundChoice>
+    suspend fun setSoundChoice(choice: SoundChoice)
+    fun getCustomSounds(): Flow<List<CustomSound>>
+    suspend fun addCustomSound(sound: CustomSound)
+    suspend fun removeCustomSound(id: String)
     fun getLanguage(): Flow<AppLanguage>
     fun getLanguageOption(): Flow<LanguageOption>
     suspend fun setLanguage(language: AppLanguage)

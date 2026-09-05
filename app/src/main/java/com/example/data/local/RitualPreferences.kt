@@ -9,8 +9,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.domain.model.AppLanguage
+import com.example.domain.model.CustomSound
 import com.example.domain.model.LanguageOption
-import com.example.domain.model.MeditationSoundStyle
 import com.example.domain.model.MoodTag
 import com.example.domain.model.RitualLogEntry
 import kotlinx.coroutines.flow.Flow
@@ -29,6 +29,7 @@ class RitualPreferences(private val context: Context) {
     private val KEY_TEST_MODE = booleanPreferencesKey("test_mode_override")
     private val KEY_SOUND_ENABLED = booleanPreferencesKey("sound_ambient_enabled")
     private val KEY_SOUND_STYLE = stringPreferencesKey("sound_ambient_style")
+    private val KEY_CUSTOM_SOUNDS = stringPreferencesKey("custom_sounds_json")
     private val KEY_LANGUAGE = stringPreferencesKey("app_language")
 
     val notificationEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -65,8 +66,13 @@ class RitualPreferences(private val context: Context) {
         preferences[KEY_SOUND_ENABLED] ?: true
     }
 
-    val soundStyleFlow: Flow<MeditationSoundStyle> = context.dataStore.data.map { preferences ->
-        MeditationSoundStyle.fromId(preferences[KEY_SOUND_STYLE])
+    /** Id of the selected sound: a built-in style id, or a [CustomSound] id. */
+    val selectedSoundIdFlow: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[KEY_SOUND_STYLE]
+    }
+
+    val customSoundsFlow: Flow<List<CustomSound>> = context.dataStore.data.map { preferences ->
+        deserializeCustomSounds(preferences[KEY_CUSTOM_SOUNDS] ?: "[]")
     }
 
     suspend fun saveLogEntry(entry: RitualLogEntry) {
@@ -109,9 +115,25 @@ class RitualPreferences(private val context: Context) {
         }
     }
 
-    suspend fun setSoundStyle(style: MeditationSoundStyle) {
+    suspend fun setSelectedSoundId(id: String) {
         context.dataStore.edit { preferences ->
-            preferences[KEY_SOUND_STYLE] = style.id
+            preferences[KEY_SOUND_STYLE] = id
+        }
+    }
+
+    suspend fun addCustomSound(sound: CustomSound) {
+        context.dataStore.edit { preferences ->
+            val current = deserializeCustomSounds(preferences[KEY_CUSTOM_SOUNDS] ?: "[]").toMutableList()
+            current.removeAll { it.id == sound.id }
+            current.add(0, sound)
+            preferences[KEY_CUSTOM_SOUNDS] = serializeCustomSounds(current)
+        }
+    }
+
+    suspend fun removeCustomSound(id: String) {
+        context.dataStore.edit { preferences ->
+            val current = deserializeCustomSounds(preferences[KEY_CUSTOM_SOUNDS] ?: "[]")
+            preferences[KEY_CUSTOM_SOUNDS] = serializeCustomSounds(current.filterNot { it.id == id })
         }
     }
 
@@ -134,6 +156,45 @@ class RitualPreferences(private val context: Context) {
         context.dataStore.edit { preferences ->
             preferences[KEY_LOGS] = "[]"
         }
+    }
+
+    private fun serializeCustomSounds(list: List<CustomSound>): String {
+        val array = JSONArray()
+        for (sound in list) {
+            val obj = JSONObject()
+            obj.put("id", sound.id)
+            obj.put("displayName", sound.displayName)
+            obj.put("fileName", sound.fileName)
+            obj.put("durationMs", sound.durationMs)
+            obj.put("addedAt", sound.addedAt)
+            array.put(obj)
+        }
+        return array.toString()
+    }
+
+    private fun deserializeCustomSounds(jsonString: String): List<CustomSound> {
+        val list = mutableListOf<CustomSound>()
+        try {
+            val array = JSONArray(jsonString)
+            for (i in 0 until array.length()) {
+                val obj = array.getJSONObject(i)
+                val id = obj.optString("id")
+                val fileName = obj.optString("fileName")
+                if (id.isEmpty() || fileName.isEmpty()) continue
+                list.add(
+                    CustomSound(
+                        id = id,
+                        displayName = obj.optString("displayName", fileName),
+                        fileName = fileName,
+                        durationMs = obj.optLong("durationMs", 0L),
+                        addedAt = obj.optLong("addedAt", 0L)
+                    )
+                )
+            }
+        } catch (_: Exception) {
+            // Return whatever parsed or empty
+        }
+        return list
     }
 
     private fun serializeLogs(list: List<RitualLogEntry>): String {

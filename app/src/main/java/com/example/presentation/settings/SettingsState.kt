@@ -1,8 +1,10 @@
 package com.example.presentation.settings
 
+import com.example.data.local.SoundImportError
 import com.example.domain.model.AppLanguage
+import com.example.domain.model.CustomSound
 import com.example.domain.model.LanguageOption
-import com.example.domain.model.MeditationSoundStyle
+import com.example.domain.model.SoundChoice
 
 data class SettingsState(
     val language: AppLanguage = AppLanguage.ENGLISH,
@@ -12,7 +14,10 @@ data class SettingsState(
     val isNotificationEnabled: Boolean = false,
     val isTestModeEnabled: Boolean = true,
     val isSoundEnabled: Boolean = true,
-    val soundStyle: MeditationSoundStyle = MeditationSoundStyle.TIBETAN_BOWL,
+    val soundChoice: SoundChoice = SoundChoice.Default,
+    val customSounds: List<CustomSound> = emptyList(),
+    val isImportingSound: Boolean = false,
+    val soundImportError: SoundImportError? = null,
     val isPreviewPlaying: Boolean = false
 ) {
     val formattedTime: String

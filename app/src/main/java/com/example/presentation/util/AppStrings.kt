@@ -327,6 +327,54 @@ class AppStrings(val language: AppLanguage) {
         AppLanguage.CZECH -> "Hraje ukázka..."
         AppLanguage.ENGLISH -> "Playing sample..."
     }
+    val customSoundSectionTitle: String = when (language) {
+        AppLanguage.CZECH -> "Vlastní zvuky"
+        AppLanguage.ENGLISH -> "Your own sounds"
+    }
+    val customSoundGroupLabel: String = when (language) {
+        AppLanguage.CZECH -> "VLASTNÍ ZVUKY"
+        AppLanguage.ENGLISH -> "YOUR OWN SOUNDS"
+    }
+    val builtInSoundGroupLabel: String = when (language) {
+        AppLanguage.CZECH -> "PŘEDPŘIPRAVENÉ"
+        AppLanguage.ENGLISH -> "BUILT-IN"
+    }
+    val uploadCustomSoundButton: String = when (language) {
+        AppLanguage.CZECH -> "Nahrát vlastní zvuk"
+        AppLanguage.ENGLISH -> "Upload your own sound"
+    }
+    val uploadingCustomSound: String = when (language) {
+        AppLanguage.CZECH -> "Nahrávám soubor…"
+        AppLanguage.ENGLISH -> "Importing file…"
+    }
+    val customSoundHint: String = when (language) {
+        AppLanguage.CZECH -> "Podporované formáty: MP3, WAV, OGG, M4A, FLAC (max. 25 MB, až 10 souborů). Soubor se uloží do aplikace a při dýchání se přehrává ve smyčce."
+        AppLanguage.ENGLISH -> "Supported formats: MP3, WAV, OGG, M4A, FLAC (max 25 MB, up to 10 files). The file is stored inside the app and loops during the breathing exercise."
+    }
+    val deleteCustomSoundTitle: String = when (language) {
+        AppLanguage.CZECH -> "Smazat vlastní zvuk?"
+        AppLanguage.ENGLISH -> "Delete your own sound?"
+    }
+    fun deleteCustomSoundText(name: String): String = when (language) {
+        AppLanguage.CZECH -> "Soubor „$name“ bude z aplikace odstraněn."
+        AppLanguage.ENGLISH -> "The file \"$name\" will be removed from the app."
+    }
+    val customSoundErrorUnsupported: String = when (language) {
+        AppLanguage.CZECH -> "Tento soubor se nepodařilo přehrát. Vyber prosím platný zvukový soubor."
+        AppLanguage.ENGLISH -> "This file could not be played. Please choose a valid audio file."
+    }
+    val customSoundErrorTooLarge: String = when (language) {
+        AppLanguage.CZECH -> "Soubor je příliš velký. Maximální velikost je 25 MB."
+        AppLanguage.ENGLISH -> "The file is too large. The maximum size is 25 MB."
+    }
+    val customSoundErrorLimit: String = when (language) {
+        AppLanguage.CZECH -> "Můžeš mít uložených nejvýše 10 vlastních zvuků. Nejprve nějaký smaž."
+        AppLanguage.ENGLISH -> "You can keep at most 10 custom sounds. Delete one first."
+    }
+    val customSoundErrorRead: String = when (language) {
+        AppLanguage.CZECH -> "Soubor se nepodařilo načíst. Zkus to prosím znovu."
+        AppLanguage.ENGLISH -> "The file could not be read. Please try again."
+    }
     val aboutTitle: String = when (language) {
         AppLanguage.CZECH -> "O aplikaci Padla"
         AppLanguage.ENGLISH -> "About ClockOut"
