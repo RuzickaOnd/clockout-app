@@ -6,4 +6,6 @@
     <string name="history_title">Historie rituálů</string>
     <string name="settings_title">Nastavení</string>
     <string name="language_title">Jazyk aplikace</string>
+    <string name="update_ready">Aktualizace je připravená</string>
+    <string name="update_restart">Restartovat</string>
 </resources>
