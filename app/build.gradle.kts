@@ -17,8 +17,8 @@ android {
     applicationId = "org.clockout"
     minSdk = 24
     targetSdk = 37
-    versionCode = 1
-    versionName = "1.0"
+    versionCode = 1000001
+    versionName = "1.0.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
