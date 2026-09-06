@@ -1,7 +1,11 @@
 package org.clockout.data.repository
 
 import org.clockout.data.local.QuestionsData
+import org.clockout.data.local.RitualLogMigrator
 import org.clockout.data.local.RitualPreferences
+import org.clockout.data.local.db.RitualLogDao
+import org.clockout.data.local.db.toDomain
+import org.clockout.data.local.db.toEntity
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.CustomSound
@@ -13,16 +17,30 @@ import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
 class RitualRepositoryImpl(
-    private val preferences: RitualPreferences
+    private val preferences: RitualPreferences,
+    private val ritualLogDao: RitualLogDao,
+    private val logMigrator: RitualLogMigrator = RitualLogMigrator(preferences, ritualLogDao)
 ) : RitualRepository {
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+    /**
+     * Ritual logs from the Room table. The legacy DataStore import is awaited before the table is
+     * observed, so a collector never sees an empty list that is about to be filled by the import.
+     */
+    private val logsFlow: Flow<List<RitualLogEntry>> = flow {
+        logMigrator.ensureMigrated()
+        emitAll(ritualLogDao.observeAll().map { entities -> entities.map { it.toDomain() } })
+    }
 
     override fun getTodayQuestion(): RitualQuestion {
         val calendar = Calendar.getInstance()
@@ -30,17 +48,15 @@ class RitualRepositoryImpl(
         return QuestionsData.getTodayQuestion(dayOfYear)
     }
 
-    override fun getLogs(): Flow<List<RitualLogEntry>> {
-        return preferences.logsFlow
-    }
+    override fun getLogs(): Flow<List<RitualLogEntry>> = logsFlow
 
     override fun getTodayDateString(): String {
         return dateFormat.format(Date())
     }
 
     override fun getStreakInfo(): Flow<RitualStreakInfo> {
-        return preferences.logsFlow.combine(preferences.testModeFlow) { logs, _ ->
-            calculateStreakInfo(logs)
+        return logsFlow.combine(preferences.testModeFlow) { entries, _ ->
+            calculateStreakInfo(entries)
         }
     }
 
@@ -104,7 +120,8 @@ class RitualRepositoryImpl(
             moodTag = mood,
             timestamp = System.currentTimeMillis()
         )
-        preferences.saveLogEntry(entry)
+        logMigrator.ensureMigrated()
+        ritualLogDao.upsert(entry.toEntity())
     }
 
     override fun isWithinWorkdayCloseWindow(): Boolean {
@@ -161,5 +178,9 @@ class RitualRepositoryImpl(
 
     override suspend fun setLanguageOption(option: LanguageOption) = preferences.setLanguageOption(option)
 
-    override suspend fun clearLogs() = preferences.clearLogs()
+    override suspend fun clearLogs() {
+        // Migrate first so the legacy blob is dropped too, otherwise it would reappear later.
+        logMigrator.ensureMigrated()
+        ritualLogDao.deleteAll()
+    }
 }

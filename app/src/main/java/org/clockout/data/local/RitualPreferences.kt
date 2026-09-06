@@ -14,15 +14,19 @@ import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualLogEntry
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.json.JSONArray
 import org.json.JSONObject
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "padla_preferences")
 
-class RitualPreferences(private val context: Context) {
+class RitualPreferences(private val context: Context) : LegacyRitualLogSource {
 
+    // Legacy: ritual logs used to live here as a JSON blob. They now live in the Room
+    // "ritual_logs" table; these keys only exist so RitualLogMigrator can import them once.
     private val KEY_LOGS = stringPreferencesKey("ritual_logs_json")
+    private val KEY_LOGS_MIGRATED = booleanPreferencesKey("ritual_logs_migrated_to_room")
     private val KEY_NOTIF_HOUR = intPreferencesKey("notification_hour")
     private val KEY_NOTIF_MINUTE = intPreferencesKey("notification_minute")
     private val KEY_NOTIF_ENABLED = booleanPreferencesKey("notification_enabled")
@@ -45,9 +49,20 @@ class RitualPreferences(private val context: Context) {
         option.resolveEffectiveLanguage()
     }
 
-    val logsFlow: Flow<List<RitualLogEntry>> = context.dataStore.data.map { preferences ->
-        val jsonString = preferences[KEY_LOGS] ?: "[]"
-        deserializeLogs(jsonString)
+    private val legacyLogsFlow: Flow<List<RitualLogEntry>> = context.dataStore.data.map { preferences ->
+        deserializeLogs(preferences[KEY_LOGS] ?: "[]")
+    }
+
+    override suspend fun readLegacyLogs(): List<RitualLogEntry> = legacyLogsFlow.first()
+
+    override suspend fun isLogsMigratedToRoom(): Boolean =
+        context.dataStore.data.map { it[KEY_LOGS_MIGRATED] ?: false }.first()
+
+    override suspend fun markLogsMigratedToRoom() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(KEY_LOGS)
+            preferences[KEY_LOGS_MIGRATED] = true
+        }
     }
 
     val notificationHourFlow: Flow<Int> = context.dataStore.data.map { preferences ->
@@ -73,21 +88,6 @@ class RitualPreferences(private val context: Context) {
 
     val customSoundsFlow: Flow<List<CustomSound>> = context.dataStore.data.map { preferences ->
         deserializeCustomSounds(preferences[KEY_CUSTOM_SOUNDS] ?: "[]")
-    }
-
-    suspend fun saveLogEntry(entry: RitualLogEntry) {
-        context.dataStore.edit { preferences ->
-            val currentJson = preferences[KEY_LOGS] ?: "[]"
-            val currentList = deserializeLogs(currentJson).toMutableList()
-            // If already logged for same date, replace with latest
-            val existingIndex = currentList.indexOfFirst { it.date == entry.date }
-            if (existingIndex >= 0) {
-                currentList[existingIndex] = entry
-            } else {
-                currentList.add(0, entry)
-            }
-            preferences[KEY_LOGS] = serializeLogs(currentList)
-        }
     }
 
     suspend fun setNotificationTime(hour: Int, minute: Int) {
@@ -152,12 +152,6 @@ class RitualPreferences(private val context: Context) {
         )
     }
 
-    suspend fun clearLogs() {
-        context.dataStore.edit { preferences ->
-            preferences[KEY_LOGS] = "[]"
-        }
-    }
-
     private fun serializeCustomSounds(list: List<CustomSound>): String {
         val array = JSONArray()
         for (sound in list) {
@@ -195,20 +189,6 @@ class RitualPreferences(private val context: Context) {
             // Return whatever parsed or empty
         }
         return list
-    }
-
-    private fun serializeLogs(list: List<RitualLogEntry>): String {
-        val array = JSONArray()
-        for (entry in list) {
-            val obj = JSONObject()
-            obj.put("date", entry.date)
-            obj.put("questionText", entry.questionText)
-            obj.put("selectedAnswer", entry.selectedAnswer ?: "")
-            obj.put("moodTag", entry.moodTag.id)
-            obj.put("timestamp", entry.timestamp)
-            array.put(obj)
-        }
-        return array.toString()
     }
 
     private fun deserializeLogs(jsonString: String): List<RitualLogEntry> {

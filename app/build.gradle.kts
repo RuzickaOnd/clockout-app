@@ -64,11 +64,15 @@ android {
     buildConfig = true
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
+  sourceSets["androidTest"].assets.srcDir("$projectDir/schemas")
   dependenciesInfo {
     includeInApk = false
     includeInBundle = true
   }
 }
+
+// Export the Room schema so future schema changes can be diffed and migrated.
+ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 
 // Configure the Secrets Gradle Plugin to use .env and .env.example files
 // to match the convention used in Web projects.

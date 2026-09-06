@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.clockout.data.local.RitualPreferences
+import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.domain.usecase.GetStreakUseCase
 import org.clockout.domain.usecase.GetTodayRitualUseCase
@@ -40,7 +41,12 @@ sealed interface Screen {
 fun PadlaApp(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val preferences = remember { RitualPreferences(context) }
-    val repository = remember { RitualRepositoryImpl(preferences) }
+    val repository = remember {
+        RitualRepositoryImpl(
+            preferences = preferences,
+            ritualLogDao = ClockoutDatabase.getInstance(context).ritualLogDao()
+        )
+    }
     val getTodayRitualUseCase = remember { GetTodayRitualUseCase(repository) }
     val logMoodUseCase = remember { LogMoodUseCase(repository) }
     val getStreakUseCase = remember { GetStreakUseCase(repository) }
