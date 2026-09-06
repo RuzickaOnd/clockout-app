@@ -25,3 +25,11 @@ val TextMuted = Color(0xFF64748B)
 
 val GlowIndigo = Color(0x336366F1)
 val GlowPurple = Color(0x1F9333EA)
+
+// Desk lamp colors for the visual closure step. Warm amber reads as "the lamp is
+// still on" against the cold indigo canvas, so switching it off actually removes
+// light from the screen instead of adding another accent.
+val BulbAmber = Color(0xFFFBBF24)
+val BulbAmberDeep = Color(0xFFF59E0B)
+val BulbGlow = Color(0x66FBBF24)
+val BulbOff = Color(0xFF475569)

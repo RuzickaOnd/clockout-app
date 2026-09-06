@@ -1,6 +1,8 @@
 package org.clockout.presentation.ritual
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -9,6 +11,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -39,8 +42,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.Nightlight
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material.icons.filled.VolumeUp
@@ -74,9 +75,15 @@ import androidx.compose.ui.unit.sp
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualStep
+import org.clockout.presentation.components.CLOSURE_BULB_ANIM_MILLIS
+import org.clockout.presentation.components.CLOSURE_BUTTON_IN_DELAY_MILLIS
+import org.clockout.presentation.components.CLOSURE_TEXT_IN_DELAY_MILLIS
+import org.clockout.presentation.components.ClosureBulb
 import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.util.AppStrings
+import org.clockout.ui.theme.FrostedGlassBackground
+import org.clockout.ui.theme.FrostedGlassBorder
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.IndigoPrimary
 import org.clockout.ui.theme.IndigoPrimaryLight
@@ -627,6 +634,21 @@ private fun StepClosingContent(
     strings: AppStrings,
     onIntent: (RitualIntent) -> Unit
 ) {
+    val haptics = LocalHapticFeedback.current
+
+    // The card is warmest while the lamp still burns and settles into plain quiet
+    // glass once it is out, so turning the lamp off takes light off the screen.
+    val cardBackground by animateColorAsState(
+        targetValue = if (isClosureTriggered) FrostedGlassBackground else Color(0x14FBBF24),
+        animationSpec = tween(CLOSURE_BULB_ANIM_MILLIS),
+        label = "closure_card_background"
+    )
+    val cardBorder by animateColorAsState(
+        targetValue = if (isClosureTriggered) FrostedGlassBorder else Color(0x4DFBBF24),
+        animationSpec = tween(CLOSURE_BULB_ANIM_MILLIS),
+        label = "closure_card_border"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -644,93 +666,70 @@ private fun StepClosingContent(
                 color = TextMuted
             )
             Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = if (isClosureTriggered) strings.closureDoneTitle else strings.closureTapPrompt,
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontWeight = FontWeight.Light,
-                    fontSize = 24.sp
-                ),
-                color = TextLight
-            )
+            ClosureCrossfade(isClosureTriggered) { triggered ->
+                Text(
+                    text = if (triggered) strings.closureDoneTitle else strings.closureTapPrompt,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Light,
+                        fontSize = 24.sp
+                    ),
+                    color = TextLight,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
 
         // Frosted Glass Closure Card
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .frostedGlass(isActive = isClosureTriggered, cornerRadius = 28.dp)
-                .clickable {
-                    if (!isClosureTriggered) onIntent(RitualIntent.TriggerClosure)
+                .clip(RoundedCornerShape(28.dp))
+                .background(cardBackground)
+                .border(1.dp, cardBorder, RoundedCornerShape(28.dp))
+                .clickable(enabled = !isClosureTriggered) {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onIntent(RitualIntent.TriggerClosure)
                 }
                 .testTag("closure_card")
                 .padding(vertical = 36.dp, horizontal = 24.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                // Glow icon
-                Box(
-                    modifier = Modifier
-                        .size(96.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (isClosureTriggered) {
-                                Color(0x3B6366F1)
-                            } else {
-                                Color.White.copy(alpha = 0.06f)
-                            }
-                        )
-                        .border(
-                            width = 1.dp,
-                            color = if (isClosureTriggered) Color(0x806366F1) else Color.White.copy(alpha = 0.12f),
-                            shape = CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = if (isClosureTriggered) Icons.Default.Nightlight else Icons.Default.Lightbulb,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = if (isClosureTriggered) IndigoAccent else TextSlate
-                    )
-                }
+                ClosureBulb(isOff = isClosureTriggered)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                if (isClosureTriggered) {
-                    Text(
-                        text = strings.closureFinishedPrompt,
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontWeight = FontWeight.Light,
-                            fontSize = 26.sp
-                        ),
-                        color = TextLight,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 34.sp
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = strings.closureDoneMessage,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSlate,
-                        textAlign = TextAlign.Center
-                    )
-                } else {
-                    Text(
-                        text = strings.closureTapPrompt,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 20.sp
-                        ),
-                        color = TextLight,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = strings.closureLampTurnOffPrompt,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSlate,
-                        textAlign = TextAlign.Center
-                    )
+                ClosureCrossfade(isClosureTriggered) { triggered ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        if (triggered) {
+                            Text(
+                                text = strings.closureFinishedPrompt,
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontWeight = FontWeight.Light,
+                                    fontSize = 26.sp
+                                ),
+                                color = TextLight,
+                                textAlign = TextAlign.Center,
+                                lineHeight = 34.sp
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = strings.closureDoneMessage,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextSlate,
+                                textAlign = TextAlign.Center
+                            )
+                        } else {
+                            // No title here: the heading right above the card already
+                            // carries the same prompt, and so does the button below.
+                            Text(
+                                text = strings.closureLampTurnOffPrompt,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = TextSlate,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -739,54 +738,87 @@ private fun StepClosingContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (isClosureTriggered) {
-                Button(
-                    onClick = { onIntent(RitualIntent.ProceedToMoodLog) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp)
-                        .testTag("proceed_to_mood_button"),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = IndigoPrimary,
-                        contentColor = Color.White
-                    )
-                ) {
-                    Text(
-                        text = strings.buttonRecordMood,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp
+            ClosureCrossfade(
+                isClosureTriggered,
+                enterDelayMillis = CLOSURE_BUTTON_IN_DELAY_MILLIS
+            ) { triggered ->
+                if (triggered) {
+                    Button(
+                        onClick = { onIntent(RitualIntent.ProceedToMoodLog) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .testTag("proceed_to_mood_button"),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = IndigoPrimary,
+                            contentColor = Color.White
                         )
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            } else {
-                Button(
-                    onClick = { onIntent(RitualIntent.TriggerClosure) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp)
-                        .testTag("trigger_closure_button"),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White.copy(alpha = 0.12f),
-                        contentColor = TextLight
-                    )
-                ) {
-                    Text(
-                        text = strings.closureTapPrompt,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-                    )
+                    ) {
+                        Text(
+                            text = strings.buttonRecordMood,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 16.sp
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                } else {
+                    Button(
+                        onClick = {
+                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onIntent(RitualIntent.TriggerClosure)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .testTag("trigger_closure_button"),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White.copy(alpha = 0.12f),
+                            contentColor = TextLight
+                        )
+                    ) {
+                        Text(
+                            text = strings.closureTapPrompt,
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
         }
+    }
+}
+
+/**
+ * Swaps closure copy so it trails the bulb instead of racing it: the old line fades
+ * out while the halo is still contracting, and the new one arrives from below only
+ * once the lamp has gone dark.
+ */
+@Composable
+private fun ClosureCrossfade(
+    isClosureTriggered: Boolean,
+    enterDelayMillis: Int = CLOSURE_TEXT_IN_DELAY_MILLIS,
+    content: @Composable (Boolean) -> Unit
+) {
+    AnimatedContent(
+        targetState = isClosureTriggered,
+        transitionSpec = {
+            val enter = fadeIn(tween(400, delayMillis = enterDelayMillis)) +
+                slideInVertically(tween(400, delayMillis = enterDelayMillis)) { it / 4 }
+            enter togetherWith fadeOut(tween(250)) using
+                SizeTransform(clip = false) { _, _ -> tween(CLOSURE_BULB_ANIM_MILLIS) }
+        },
+        label = "closure_copy"
+    ) { triggered ->
+        content(triggered)
     }
 }
 
