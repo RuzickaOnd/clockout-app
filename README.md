@@ -9,12 +9,14 @@
 
 **Padla** je minimalistická Android aplikace navržená pro lidi pracující na home office nebo hybridně, kteří mají problém „vypnout hlavu“ po skončení pracovní doby. 
 
-Místo desítek meditačních nahrávek a rozhodovací paralýzy nabízí **jeden konkrétní 3minutový rituál**, který pomáhá udělat jasnou dělicí čáru mezi prací a osobním životem:
+Nabízí **jeden konkrétní 3minutový rituál**, který pomáhá udělat jasnou dělicí čáru mezi prací a osobním životem:
 
 1. **Sumarizace dne (Parkoviště myšlenek)** – zapsání toho, co se dnes povedlo, a odložení nedořešených úkolů na zítra.
 2. **Fyzické uzavření** – rituální zaklapnutí notebooku, uklizení pracovního stolu nebo vypnutí notifikací.
 3. **Dechové zklidnění (4-7-8)** – vedené dechové cvičení s vizuálním pulzem a volitelnými jemnými zvukovými signály pro zklidnění nervové soustavy.
 4. **Závěrečné odbití („Padla! / Clock out!“)** – oficiální přepnutí do volného času a zaznamenání denního úspěchu.
+
+Práce se ti tak nepřelévá do večera, snáz vypneš hlavu a druhý den začínáš odpočatý.
 
 ### Klíčové vlastnosti
 * **Denní připomenutí (Notifikace):** Možnost nastavit čas konce pracovní doby s rychlými předvolbami a spolehlivým budením přes `AlarmManager`.
@@ -29,11 +31,13 @@ Místo desítek meditačních nahrávek a rozhodovací paralýzy nabízí **jede
 
 **ClockOut** is a lightweight Android application designed to help remote and hybrid professionals mindfully end their workday and transition into their personal time.
 
-Instead of overwhelming audio catalogs, ClockOut offers a single guided **3-minute shutdown ritual**:
+It guides you through a single **3-minute shutdown ritual** that draws a clear line between work and personal life:
 1. **Mental Dump** – Note down daily wins and park unfinished tasks for tomorrow.
 2. **Physical Workspace Reset** – Close your laptop, clear your desk, and step away.
 3. **Breathing Exercise (4-7-8)** – Calming animated breath pacer to reset your nervous system.
 4. **Official Clock Out** – Mark the moment work ends and your evening begins.
+
+Work stops spilling into your evening, you unwind more easily, and you start the next day rested. Everything stays on your device — no accounts, no cloud.
 
 ---
 

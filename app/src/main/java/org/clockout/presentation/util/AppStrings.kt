@@ -380,8 +380,8 @@ class AppStrings(val language: AppLanguage) {
         AppLanguage.ENGLISH -> "About ClockOut"
     }
     val aboutDesc: String = when (language) {
-        AppLanguage.CZECH -> "Appka, co ti pomůže vědomě uzavřít pracovní den a přepnout do večera na home office.\n\nNa rozdíl od běžných meditačních appek nenabízí stovky nahrávek k vybírání, ale jeden konkrétní 3minutový denní rituál bez rozhodovací paralýzy."
-        AppLanguage.ENGLISH -> "An app designed to help you mindfully close your workday and transition into your evening when working from home.\n\nUnlike traditional meditation apps with endless catalogs to choose from, ClockOut provides one singular 3-minute daily ritual with zero decision fatigue."
+        AppLanguage.CZECH -> "Padla ti pomáhá vědomě uzavřít pracovní den a přepnout se z práce do osobního času. Nejvíc se hodí na home office, kde mezi kanceláří a domovem chybí přirozená hranice.\n\nStačí tři minuty denního rituálu: zapíšeš, co se dnes povedlo, odložíš nedodělané úkoly na zítra, uklidíš si pracovní místo, zklidníš dech a symbolicky zhasneš pracovní den.\n\nPráce se ti tak nepřelévá do večera, snáz vypneš hlavu a druhý den začínáš odpočatý. Všechno zůstává jen v telefonu — žádné účty, žádný cloud."
+        AppLanguage.ENGLISH -> "ClockOut helps you consciously close your workday and switch from work into your own time. It matters most when you work from home, where the boundary between the office and the living room is missing.\n\nAll it takes is a three-minute daily ritual: note what went well today, park unfinished tasks for tomorrow, reset your workspace, calm your breath, and symbolically switch the workday off.\n\nWork stops spilling into your evening, you unwind more easily, and you start the next day rested. Everything stays on your phone — no accounts, no cloud."
     }
     val clearDataButton: String = when (language) {
         AppLanguage.CZECH -> "Vymazat data a historii"
