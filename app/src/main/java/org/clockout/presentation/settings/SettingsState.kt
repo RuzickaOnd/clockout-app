@@ -12,6 +12,7 @@ data class SettingsState(
     val notificationHour: Int = 17,
     val notificationMinute: Int = 30,
     val isNotificationEnabled: Boolean = false,
+    val includeWeekends: Boolean = false,
     val isTestModeEnabled: Boolean = true,
     val isSoundEnabled: Boolean = true,
     val soundChoice: SoundChoice = SoundChoice.Default,

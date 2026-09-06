@@ -16,6 +16,8 @@ interface RitualRepository {
     fun getStreakInfo(): Flow<RitualStreakInfo>
     suspend fun logRitual(selectedAnswer: String?, mood: MoodTag, questionText: String)
     fun isWithinWorkdayCloseWindow(): Boolean
+    fun getIncludeWeekends(): Flow<Boolean>
+    suspend fun setIncludeWeekends(enabled: Boolean)
     fun getTestMode(): Flow<Boolean>
     suspend fun setTestMode(enabled: Boolean)
     fun getNotificationTime(): Flow<Pair<Int, Int>>

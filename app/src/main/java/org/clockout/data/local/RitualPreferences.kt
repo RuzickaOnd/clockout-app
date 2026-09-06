@@ -35,6 +35,7 @@ class RitualPreferences(private val context: Context) : LegacyRitualLogSource {
     private val KEY_SOUND_STYLE = stringPreferencesKey("sound_ambient_style")
     private val KEY_CUSTOM_SOUNDS = stringPreferencesKey("custom_sounds_json")
     private val KEY_LANGUAGE = stringPreferencesKey("app_language")
+    private val KEY_INCLUDE_WEEKENDS = booleanPreferencesKey("include_weekends")
 
     val notificationEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[KEY_NOTIF_ENABLED] ?: false
@@ -73,6 +74,11 @@ class RitualPreferences(private val context: Context) : LegacyRitualLogSource {
         preferences[KEY_NOTIF_MINUTE] ?: 30
     }
 
+    /** Whether Saturday and Sunday offer the ritual too; off means Monday to Friday only. */
+    val includeWeekendsFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_INCLUDE_WEEKENDS] ?: false
+    }
+
     val testModeFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[KEY_TEST_MODE] ?: true // default to true so users can experience it immediately at any time
     }
@@ -100,6 +106,12 @@ class RitualPreferences(private val context: Context) : LegacyRitualLogSource {
     suspend fun setNotificationEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[KEY_NOTIF_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setIncludeWeekends(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_INCLUDE_WEEKENDS] = enabled
         }
     }
 

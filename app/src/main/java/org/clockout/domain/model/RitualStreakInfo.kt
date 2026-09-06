@@ -19,4 +19,8 @@ data class RitualStreakInfo(
     val isTodayCompleted: Boolean,
     val todayLog: RitualLogEntry?,
     val weekDays: List<DayStatus>
-)
+) {
+    /** Share of the week's offered days that are already closed. */
+    val completionPercent: Int
+        get() = if (targetWorkDays == 0) 0 else completedThisWeekCount * 100 / targetWorkDays
+}

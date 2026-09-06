@@ -10,8 +10,11 @@ data class HomeState(
     val todayQuestion: RitualQuestion,
     val isWithinWindow: Boolean = false,
     val isTestModeEnabled: Boolean = false,
+    val isRitualDay: Boolean = true,
     val isLoading: Boolean = false
 ) {
+    /** A weekend excluded by the settings closes the ritual off even in test mode. */
     val canStartRitual: Boolean
-        get() = isTestModeEnabled || isWithinWindow || (streakInfo?.isTodayCompleted != true)
+        get() = isRitualDay &&
+            (isTestModeEnabled || isWithinWindow || (streakInfo?.isTodayCompleted != true))
 }

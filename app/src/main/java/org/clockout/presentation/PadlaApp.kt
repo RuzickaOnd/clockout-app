@@ -121,6 +121,7 @@ fun PadlaApp(modifier: Modifier = Modifier) {
                     onNotificationToggled = { enabled -> settingsViewModel.setNotificationEnabled(enabled, context) },
                     onTimeSelected = { h, m -> settingsViewModel.setNotificationTime(h, m, context) },
                     onTestModeToggled = { settingsViewModel.setTestMode(it) },
+                    onIncludeWeekendsToggled = { settingsViewModel.setIncludeWeekends(it) },
                     onSoundToggled = { settingsViewModel.setSoundEnabled(it) },
                     onSoundChoiceSelected = { settingsViewModel.setSoundChoice(it) },
                     onTogglePreviewSound = { settingsViewModel.togglePreviewSound(it, context) },

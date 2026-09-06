@@ -10,7 +10,10 @@ import org.clockout.MainActivity
 import org.clockout.R
 import org.clockout.data.local.RitualPreferences
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.RitualDayPolicy
 import org.clockout.notification.NotificationScheduler
+import org.clockout.notification.ReminderOutcome
+import org.clockout.notification.ReminderPolicy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -34,15 +37,23 @@ class NotificationReceiver : BroadcastReceiver() {
                 val hour = preferences.notificationHourFlow.first()
                 val minute = preferences.notificationMinuteFlow.first()
                 val language = preferences.languageFlow.first()
+                val includeWeekends = preferences.includeWeekendsFlow.first()
 
-                if (!isEnabled) {
+                val outcome = ReminderPolicy.outcomeFor(
+                    isEnabled = isEnabled,
+                    isRitualDay = RitualDayPolicy.isTodayRitualDay(includeWeekends)
+                )
+
+                if (outcome == ReminderOutcome.CANCEL) {
                     NotificationScheduler.cancelNotification(context)
                     return@launch
                 }
 
                 if (action == ACTION_WORKDAY_END) {
-                    showNotification(context, language)
-                    // Reschedule for next day
+                    if (outcome == ReminderOutcome.NOTIFY) {
+                        showNotification(context, language)
+                    }
+                    // Reschedule for next day even on a skipped day, so the alarm survives the weekend
                     NotificationScheduler.scheduleDailyNotification(context, hour, minute)
                 } else if (action == Intent.ACTION_BOOT_COMPLETED) {
                     NotificationScheduler.scheduleDailyNotification(context, hour, minute)

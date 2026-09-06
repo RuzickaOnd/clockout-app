@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import org.clockout.data.repository.RitualRepository
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.RitualDayPolicy
+import org.clockout.domain.model.RitualStreakInfo
 import org.clockout.domain.usecase.GetStreakUseCase
 import org.clockout.domain.usecase.GetTodayRitualUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,10 +21,14 @@ class HomeViewModel(
     private val getStreakUseCase: GetStreakUseCase
 ) : ViewModel() {
 
+    /** Last value seen from settings, so a plain refresh can re-evaluate today's rest day. */
+    private var includeWeekends = false
+
     private val _state = MutableStateFlow(
         HomeState(
             todayQuestion = getTodayRitualUseCase(),
-            isWithinWindow = ritualRepository.isWithinWorkdayCloseWindow()
+            isWithinWindow = ritualRepository.isWithinWorkdayCloseWindow(),
+            isRitualDay = RitualDayPolicy.isTodayRitualDay(includeWeekends)
         )
     )
     val state: StateFlow<HomeState> = _state.asStateFlow()
@@ -36,16 +42,19 @@ class HomeViewModel(
             combine(
                 getStreakUseCase(),
                 ritualRepository.getTestMode(),
-                ritualRepository.getLanguage()
-            ) { streakInfo, testMode, language ->
-                Triple(streakInfo, testMode, language)
-            }.collect { (streakInfo, testMode, language) ->
+                ritualRepository.getLanguage(),
+                ritualRepository.getIncludeWeekends()
+            ) { streakInfo, testMode, language, includeWeekends ->
+                HomeData(streakInfo, testMode, language, includeWeekends)
+            }.collect { data ->
+                includeWeekends = data.includeWeekends
                 _state.update {
                     it.copy(
-                        streakInfo = streakInfo,
-                        isTestModeEnabled = testMode,
-                        language = language,
-                        isWithinWindow = ritualRepository.isWithinWorkdayCloseWindow()
+                        streakInfo = data.streakInfo,
+                        isTestModeEnabled = data.testMode,
+                        language = data.language,
+                        isWithinWindow = ritualRepository.isWithinWorkdayCloseWindow(),
+                        isRitualDay = RitualDayPolicy.isTodayRitualDay(data.includeWeekends)
                     )
                 }
             }
@@ -57,7 +66,8 @@ class HomeViewModel(
             is HomeIntent.Refresh -> {
                 _state.update {
                     it.copy(
-                        isWithinWindow = ritualRepository.isWithinWorkdayCloseWindow()
+                        isWithinWindow = ritualRepository.isWithinWorkdayCloseWindow(),
+                        isRitualDay = RitualDayPolicy.isTodayRitualDay(includeWeekends)
                     )
                 }
             }
@@ -68,4 +78,11 @@ class HomeViewModel(
             }
         }
     }
+
+    private data class HomeData(
+        val streakInfo: RitualStreakInfo,
+        val testMode: Boolean,
+        val language: AppLanguage,
+        val includeWeekends: Boolean
+    )
 }

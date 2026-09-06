@@ -37,9 +37,10 @@ class SettingsViewModel(
             val notifAndTestFlow = combine(
                 repository.getNotificationTime(),
                 repository.getNotificationEnabled(),
-                repository.getTestMode()
-            ) { time, enabled, testMode ->
-                Triple(time, enabled, testMode)
+                repository.getTestMode(),
+                repository.getIncludeWeekends()
+            ) { time, enabled, testMode, includeWeekends ->
+                NotificationSettings(time, enabled, testMode, includeWeekends)
             }
 
             val audioAndLangFlow = combine(
@@ -57,9 +58,10 @@ class SettingsViewModel(
                 repository.getCustomSounds()
             ) { notif, audioLang, customSounds ->
                 SettingsDataHolder(
-                    notifTime = notif.first,
-                    notifEnabled = notif.second,
-                    testMode = notif.third,
+                    notifTime = notif.time,
+                    notifEnabled = notif.enabled,
+                    testMode = notif.testMode,
+                    includeWeekends = notif.includeWeekends,
                     soundEnabled = audioLang.soundEnabled,
                     soundChoice = audioLang.soundChoice,
                     customSounds = customSounds,
@@ -72,6 +74,7 @@ class SettingsViewModel(
                         notificationHour = data.notifTime.first,
                         notificationMinute = data.notifTime.second,
                         isNotificationEnabled = data.notifEnabled,
+                        includeWeekends = data.includeWeekends,
                         isTestModeEnabled = data.testMode,
                         isSoundEnabled = data.soundEnabled,
                         soundChoice = data.soundChoice,
@@ -120,6 +123,12 @@ class SettingsViewModel(
             if (context != null && _state.value.isNotificationEnabled) {
                 NotificationScheduler.scheduleDailyNotification(context, hour, minute)
             }
+        }
+    }
+
+    fun setIncludeWeekends(enabled: Boolean) {
+        viewModelScope.launch {
+            repository.setIncludeWeekends(enabled)
         }
     }
 
@@ -214,6 +223,13 @@ class SettingsViewModel(
         audioPlayer.stopAmbient()
     }
 
+    private data class NotificationSettings(
+        val time: Pair<Int, Int>,
+        val enabled: Boolean,
+        val testMode: Boolean,
+        val includeWeekends: Boolean
+    )
+
     private data class AudioAndLang(
         val soundEnabled: Boolean,
         val soundChoice: SoundChoice,
@@ -225,6 +241,7 @@ class SettingsViewModel(
         val notifTime: Pair<Int, Int>,
         val notifEnabled: Boolean,
         val testMode: Boolean,
+        val includeWeekends: Boolean,
         val soundEnabled: Boolean,
         val soundChoice: SoundChoice,
         val customSounds: List<CustomSound>,

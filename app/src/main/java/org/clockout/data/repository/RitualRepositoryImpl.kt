@@ -55,12 +55,15 @@ class RitualRepositoryImpl(
     }
 
     override fun getStreakInfo(): Flow<RitualStreakInfo> {
-        return logsFlow.combine(preferences.testModeFlow) { entries, _ ->
-            calculateStreakInfo(entries)
+        return logsFlow.combine(preferences.includeWeekendsFlow) { entries, includeWeekends ->
+            calculateStreakInfo(entries, includeWeekends)
         }
     }
 
-    private fun calculateStreakInfo(logs: List<RitualLogEntry>): RitualStreakInfo {
+    private fun calculateStreakInfo(
+        logs: List<RitualLogEntry>,
+        includeWeekends: Boolean
+    ): RitualStreakInfo {
         val todayStr = getTodayDateString()
         val logsMap = logs.associateBy { it.date }
         val todayLog = logsMap[todayStr]
@@ -76,16 +79,19 @@ class RitualRepositoryImpl(
 
         val dayNamesCs = listOf("Po", "Út", "St", "Čt", "Pá", "So", "Ne")
         val dayNamesEn = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        // Only the days the ritual is offered on make it into the strip, so the summary
+        // underneath counts against the same set of days.
+        val offeredDayCount = if (includeWeekends) 7 else 5
         val weekDays = mutableListOf<DayStatus>()
         var completedCountThisWeek = 0
 
-        for (i in 0..6) {
+        for (i in 0 until offeredDayCount) {
             val dateStr = dateFormat.format(calendar.time)
             val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
             val isToday = dateStr == todayStr
             val logForDay = logsMap[dateStr]
             val isCompleted = logForDay != null
-            if (isCompleted && i < 5) { // count workdays
+            if (isCompleted) {
                 completedCountThisWeek++
             }
 
@@ -105,7 +111,7 @@ class RitualRepositoryImpl(
 
         return RitualStreakInfo(
             completedThisWeekCount = completedCountThisWeek,
-            targetWorkDays = 5,
+            targetWorkDays = offeredDayCount,
             isTodayCompleted = todayLog != null,
             todayLog = todayLog,
             weekDays = weekDays
@@ -130,6 +136,10 @@ class RitualRepositoryImpl(
         // Typically 16:00 to 21:59
         return hour in 16..21
     }
+
+    override fun getIncludeWeekends(): Flow<Boolean> = preferences.includeWeekendsFlow
+
+    override suspend fun setIncludeWeekends(enabled: Boolean) = preferences.setIncludeWeekends(enabled)
 
     override fun getTestMode(): Flow<Boolean> = preferences.testModeFlow
 

@@ -109,6 +109,7 @@ fun SettingsScreen(
     onNotificationToggled: (Boolean) -> Unit = {},
     onTimeSelected: (hour: Int, minute: Int) -> Unit,
     onTestModeToggled: (Boolean) -> Unit,
+    onIncludeWeekendsToggled: (Boolean) -> Unit = {},
     onSoundToggled: (Boolean) -> Unit,
     onSoundChoiceSelected: (SoundChoice) -> Unit = {},
     onTogglePreviewSound: (SoundChoice) -> Unit = {},
@@ -382,6 +383,50 @@ fun SettingsScreen(
                                 }
                             }
                         }
+                    }
+                }
+
+                // Which days take part: weekdays only, or the weekend too
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .frostedGlass(cornerRadius = 22.dp)
+                        .padding(20.dp)
+                        .testTag("include_weekends_card")
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = strings.includeWeekendsTitle,
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp
+                                ),
+                                color = TextLight
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = strings.includeWeekendsDesc,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextSlate
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Switch(
+                            checked = state.includeWeekends,
+                            onCheckedChange = onIncludeWeekendsToggled,
+                            modifier = Modifier.testTag("include_weekends_switch"),
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = IndigoPrimary,
+                                uncheckedThumbColor = TextMuted,
+                                uncheckedTrackColor = Color.White.copy(alpha = 0.1f)
+                            )
+                        )
                     }
                 }
 

@@ -199,7 +199,11 @@ fun HomeScreen(
                                 )
                             ) {
                                 Text(
-                                    text = if (isCompleted) strings.todayClosedBadge else strings.slotWorkdayEnd,
+                                    text = when {
+                                        isCompleted -> strings.todayClosedBadge
+                                        !state.isRitualDay -> strings.weekendSlotBadge
+                                        else -> strings.slotWorkdayEnd
+                                    },
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = FontWeight.SemiBold,
                                         letterSpacing = 1.sp,
@@ -252,22 +256,40 @@ fun HomeScreen(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(20.dp))
+                            if (state.isRitualDay) {
+                                Spacer(modifier = Modifier.height(20.dp))
 
-                            OutlinedButton(
-                                onClick = onStartRitual,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(52.dp)
-                                    .testTag("repeat_ritual_button"),
-                                shape = RoundedCornerShape(20.dp),
-                                colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
-                                    contentColor = IndigoAccent
-                                ),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x666366F1))
-                            ) {
-                                Text(strings.repeatRitual)
+                                OutlinedButton(
+                                    onClick = onStartRitual,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(52.dp)
+                                        .testTag("repeat_ritual_button"),
+                                    shape = RoundedCornerShape(20.dp),
+                                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                                        contentColor = IndigoAccent
+                                    ),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x666366F1))
+                                ) {
+                                    Text(strings.repeatRitual)
+                                }
                             }
+                        } else if (!state.isRitualDay) {
+                            Text(
+                                text = strings.weekendRestTitle,
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontWeight = FontWeight.Light,
+                                    fontSize = 26.sp
+                                ),
+                                color = TextLight
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = strings.weekendRestDesc,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextSlate,
+                                lineHeight = 22.sp
+                            )
                         } else {
                             Text(
                                 text = strings.closeDayTitle,
@@ -368,7 +390,10 @@ fun HomeScreen(
                                     color = TextLight
                                 )
                                 Text(
-                                    text = strings.daysClosedSummary(state.streakInfo?.completedThisWeekCount ?: 0),
+                                    text = strings.daysClosedSummary(
+                                        state.streakInfo?.completedThisWeekCount ?: 0,
+                                        state.streakInfo?.targetWorkDays ?: 0
+                                    ),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSlate
                                 )
@@ -380,7 +405,7 @@ fun HomeScreen(
                                 border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x606366F1))
                             ) {
                                 Text(
-                                    text = "${(state.streakInfo?.completedThisWeekCount ?: 0) * 20}%",
+                                    text = "${state.streakInfo?.completionPercent ?: 0}%",
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                                     color = IndigoAccent,
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)

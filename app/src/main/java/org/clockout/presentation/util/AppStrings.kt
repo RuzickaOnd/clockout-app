@@ -39,6 +39,18 @@ class AppStrings(val language: AppLanguage) {
         AppLanguage.CZECH -> "SLOT: KONEC PRÁCE (16–21h)"
         AppLanguage.ENGLISH -> "SLOT: WORKDAY END (16–21h)"
     }
+    val weekendSlotBadge: String = when (language) {
+        AppLanguage.CZECH -> "VÍKEND"
+        AppLanguage.ENGLISH -> "WEEKEND"
+    }
+    val weekendRestTitle: String = when (language) {
+        AppLanguage.CZECH -> "Dnes máš volno"
+        AppLanguage.ENGLISH -> "Today is yours"
+    }
+    val weekendRestDesc: String = when (language) {
+        AppLanguage.CZECH -> "Pracovní týden je za tebou. Rituál se vrátí v pondělí."
+        AppLanguage.ENGLISH -> "The work week is behind you. The ritual returns on Monday."
+    }
     val todayClosedBadge: String = when (language) {
         AppLanguage.CZECH -> "DNES UZAVŘENO ✓"
         AppLanguage.ENGLISH -> "TODAY CLOSED ✓"
@@ -75,9 +87,9 @@ class AppStrings(val language: AppLanguage) {
         AppLanguage.CZECH -> "Tento týden"
         AppLanguage.ENGLISH -> "This week"
     }
-    fun daysClosedSummary(count: Int): String = when (language) {
-        AppLanguage.CZECH -> "$count z 5 pracovních dní uzavřeno"
-        AppLanguage.ENGLISH -> "$count of 5 workdays closed"
+    fun daysClosedSummary(count: Int, target: Int): String = when (language) {
+        AppLanguage.CZECH -> "$count z $target dní uzavřeno"
+        AppLanguage.ENGLISH -> "$count of $target days closed"
     }
     val whyRitualTitle: String = when (language) {
         AppLanguage.CZECH -> "Proč tento rituál?"
@@ -294,6 +306,14 @@ class AppStrings(val language: AppLanguage) {
     val quickPresetsLabel: String = when (language) {
         AppLanguage.CZECH -> "Rychlá volba obvyklého času padla:"
         AppLanguage.ENGLISH -> "Quick presets for usual end of work:"
+    }
+    val includeWeekendsTitle: String = when (language) {
+        AppLanguage.CZECH -> "Zahrnout víkendy"
+        AppLanguage.ENGLISH -> "Include weekends"
+    }
+    val includeWeekendsDesc: String = when (language) {
+        AppLanguage.CZECH -> "Zapnuto: rituál i připomínka běží 7 dní v týdnu. Vypnuto: jen pondělí až pátek."
+        AppLanguage.ENGLISH -> "On: the ritual and its reminder run all 7 days. Off: Monday to Friday only."
     }
     val testModeTitle: String = when (language) {
         AppLanguage.CZECH -> "Rituál dostupný kdykoliv"
