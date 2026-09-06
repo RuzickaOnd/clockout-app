@@ -54,6 +54,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -66,6 +67,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -91,6 +93,20 @@ import org.clockout.ui.theme.TextLight
 import org.clockout.ui.theme.TextMuted
 import org.clockout.ui.theme.TextSlate
 
+/**
+ * Keeps the display awake while the ritual is on screen. The breathing and closing
+ * steps run without any touch input, so without this the phone would dim and sleep
+ * mid-ritual. The flag is released as soon as the screen leaves the composition.
+ */
+@Composable
+private fun KeepScreenOn() {
+    val view = LocalView.current
+    DisposableEffect(Unit) {
+        view.keepScreenOn = true
+        onDispose { view.keepScreenOn = false }
+    }
+}
+
 @Composable
 fun RitualScreen(
     state: RitualState,
@@ -98,6 +114,8 @@ fun RitualScreen(
     onFinish: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    KeepScreenOn()
+
     val strings = remember(state.language) { AppStrings(state.language) }
 
     val stepIndex = when (state.currentStep) {
