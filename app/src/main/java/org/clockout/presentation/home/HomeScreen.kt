@@ -52,6 +52,7 @@ import org.clockout.domain.model.DayStatus
 import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.util.AppStrings
+import org.clockout.presentation.util.localizedAnswer
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.IndigoPrimary
 import org.clockout.ui.theme.TextLight
@@ -240,7 +241,8 @@ fun HomeScreen(
                                 color = TextSlate
                             )
 
-                            if (!todayLog?.selectedAnswer.isNullOrBlank()) {
+                            val todayAnswer = todayLog?.localizedAnswer(state.language)
+                            if (!todayAnswer.isNullOrBlank()) {
                                 Spacer(modifier = Modifier.height(14.dp))
                                 Box(
                                     modifier = Modifier
@@ -249,7 +251,7 @@ fun HomeScreen(
                                         .padding(14.dp)
                                 ) {
                                     Text(
-                                        text = "„${todayLog?.selectedAnswer}“",
+                                        text = strings.quoted(todayAnswer),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = IndigoAccent
                                     )

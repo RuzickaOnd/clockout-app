@@ -22,6 +22,12 @@ class AppStrings(val language: AppLanguage) {
         AppLanguage.ENGLISH -> "Delete"
     }
 
+    /** Quotation marks differ per language, so logged answers are wrapped rather than hardcoded. */
+    fun quoted(text: String): String = when (language) {
+        AppLanguage.CZECH -> "\u201E$text\u201C"
+        AppLanguage.ENGLISH -> "\u201C$text\u201D"
+    }
+
     // HomeScreen
     val appSubtitle: String = when (language) {
         AppLanguage.CZECH -> "Přechod práce → volno"

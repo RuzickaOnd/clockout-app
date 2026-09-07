@@ -1,5 +1,6 @@
 package org.clockout.data.local
 
+import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.RitualQuestion
 
 object QuestionsData {
@@ -111,5 +112,60 @@ object QuestionsData {
     fun getTodayQuestion(dayOfYear: Int): RitualQuestion {
         val index = (dayOfYear.coerceAtLeast(0)) % questions.size
         return questions[index]
+    }
+
+    private fun String.lookupKey(): String = trim()
+
+    private val questionsByText: Map<String, RitualQuestion> = buildMap {
+        questions.forEach { question ->
+            AppLanguage.entries.forEach { language ->
+                put(question.text(language).lookupKey(), question)
+            }
+        }
+    }
+
+    private val answersByText: Map<String, Pair<RitualQuestion, Int>> = buildMap {
+        questions.forEach { question ->
+            AppLanguage.entries.forEach { language ->
+                question.suggestedAnswers(language).forEachIndexed { index, answer ->
+                    put(answer.lookupKey(), question to index)
+                }
+            }
+        }
+    }
+
+    /**
+     * A ritual log keeps the question as the plain text shown that evening, so reading it back in
+     * another language means finding it in the catalog again. Wording this catalog no longer
+     * carries - a custom entry, or a phrase an older app version worded differently - is returned
+     * unchanged rather than dropped.
+     */
+    fun localizeQuestionText(storedText: String, language: AppLanguage): String =
+        questionsByText[storedText.lookupKey()]?.text(language) ?: storedText
+
+    /**
+     * The same for the suggestion the user picked. The question it belongs to decides which
+     * suggestion list to index into, so an answer is never re-worded through another question that
+     * happens to offer the same phrase; answers the user typed themselves are left as they are.
+     */
+    fun localizeAnswer(
+        storedAnswer: String,
+        storedQuestionText: String?,
+        language: AppLanguage
+    ): String {
+        val key = storedAnswer.lookupKey()
+        val question = storedQuestionText?.let { questionsByText[it.lookupKey()] }
+        val match = question?.let { it to it.indexOfAnswer(key) }?.takeIf { it.second >= 0 }
+            ?: answersByText[key]
+            ?: return storedAnswer
+        return match.first.suggestedAnswers(language)[match.second]
+    }
+
+    private fun RitualQuestion.indexOfAnswer(key: String): Int {
+        AppLanguage.entries.forEach { language ->
+            val index = suggestedAnswers(language).indexOfFirst { it.lookupKey() == key }
+            if (index >= 0) return index
+        }
+        return -1
     }
 }

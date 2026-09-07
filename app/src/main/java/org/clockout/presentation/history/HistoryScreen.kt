@@ -52,6 +52,8 @@ import org.clockout.domain.model.RitualLogEntry
 import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.util.AppStrings
+import org.clockout.presentation.util.localizedAnswer
+import org.clockout.presentation.util.localizedQuestionText
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.TextLight
 import org.clockout.ui.theme.TextMuted
@@ -315,7 +317,8 @@ private fun HistoryEntryCard(
                 }
             }
 
-            if (!entry.selectedAnswer.isNullOrBlank()) {
+            val answer = entry.localizedAnswer(language)
+            if (!answer.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(14.dp))
                 Box(
                     modifier = Modifier
@@ -326,14 +329,14 @@ private fun HistoryEntryCard(
                     Column {
                         if (entry.questionText.isNotBlank()) {
                             Text(
-                                text = entry.questionText,
+                                text = entry.localizedQuestionText(language),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = TextMuted
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                         }
                         Text(
-                            text = "„${entry.selectedAnswer}“",
+                            text = AppStrings(language).quoted(answer),
                             style = MaterialTheme.typography.bodyMedium,
                             color = IndigoAccent
                         )
