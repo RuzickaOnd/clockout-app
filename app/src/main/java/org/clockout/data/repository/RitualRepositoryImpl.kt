@@ -44,8 +44,10 @@ class RitualRepositoryImpl(
 
     override fun getTodayQuestion(): RitualQuestion {
         val calendar = Calendar.getInstance()
-        val dayOfYear = calendar.get(Calendar.DAY_OF_YEAR)
-        return QuestionsData.getTodayQuestion(dayOfYear)
+        return QuestionsData.getTodayQuestion(
+            dayOfYear = calendar.get(Calendar.DAY_OF_YEAR),
+            year = calendar.get(Calendar.YEAR)
+        )
     }
 
     override fun getLogs(): Flow<List<RitualLogEntry>> = logsFlow
