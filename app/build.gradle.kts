@@ -1,4 +1,5 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+import java.util.Properties
 
 plugins {
   alias(libs.plugins.android.application)
@@ -8,6 +9,19 @@ plugins {
   alias(libs.plugins.secrets)
   alias(libs.plugins.google.services)
 }
+
+// Release signing credentials come from local.properties (git-ignored) so the keystore and its
+// passwords never reach version control; a build machine without that file - CI, or a fresh clone -
+// falls back to the identically named environment variables. When neither source yields an existing
+// keystore the release signing config is not created at all, so debug builds and clean checkouts
+// still configure instead of failing.
+val localProperties = Properties().apply {
+  val file = rootProject.file("local.properties")
+  if (file.exists()) file.inputStream().use { load(it) }
+}
+
+fun signingSecret(name: String): String? =
+  (localProperties.getProperty(name) ?: System.getenv(name))?.takeIf { it.isNotBlank() }
 
 android {
   namespace = "org.clockout"
@@ -24,12 +38,17 @@ android {
   }
 
   signingConfigs {
-    create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
+    val releaseKeystore =
+      signingSecret("RELEASE_STORE_FILE")?.let { rootProject.file(it) }
+    if (releaseKeystore?.exists() == true) {
+      create("release") {
+        storeFile = releaseKeystore
+        storePassword = signingSecret("RELEASE_STORE_PASSWORD")
+        keyAlias = signingSecret("RELEASE_KEY_ALIAS")
+        keyPassword = signingSecret("RELEASE_KEY_PASSWORD")
+        // v3 on top of the AGP default enables signing-key rotation later on.
+        enableV3Signing = true
+      }
     }
     val debugKeystore = file("${rootDir}/debug.keystore")
     if (debugKeystore.exists()) {
@@ -47,7 +66,7 @@ android {
       isCrunchPngs = false
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      signingConfig = signingConfigs.findByName("release")
     }
     debug {
       signingConfigs.findByName("debugConfig")?.let {
@@ -68,6 +87,21 @@ android {
   dependenciesInfo {
     includeInApk = false
     includeInBundle = true
+  }
+}
+
+// Without a signing config AGP would happily package an unsigned release artifact, so refuse to
+// build one rather than let an unshippable APK or AAB look like a successful release.
+if (android.signingConfigs.findByName("release") == null) {
+  tasks.matching { it.name == "packageRelease" || it.name == "packageReleaseBundle" }.configureEach {
+    doFirst {
+      throw GradleException(
+        "Cannot build a release: no signing keystore was found. Set RELEASE_STORE_FILE, " +
+          "RELEASE_STORE_PASSWORD, RELEASE_KEY_ALIAS and RELEASE_KEY_PASSWORD in local.properties " +
+          "(RELEASE_STORE_FILE is resolved relative to the repository root) or supply them as " +
+          "environment variables."
+      )
+    }
   }
 }
 
@@ -103,6 +137,9 @@ dependencies {
   implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.datastore.preferences)
+  // Pins androidx.fragment above the 1.1.0 that play-services-basement pulls in, which the
+  // ActivityResult APIs require (InvalidFragmentVersionForActivityResult).
+  implementation(libs.androidx.fragment)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
