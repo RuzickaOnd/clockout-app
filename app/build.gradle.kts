@@ -15,7 +15,7 @@ android {
 
   defaultConfig {
     applicationId = "org.clockout"
-    minSdk = 24
+    minSdk = 26
     targetSdk = 37
     versionCode = 1000001
     versionName = "1.0.0"

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Malá ikona notifikace: silueta půlměsíce s hvězdičkou.
+    Systém používá pouze alfa kanál a obarvuje si tvar sám, proto je vše
+    bílé na průhledném pozadí - žádné pozadí ani gradient jako u launcher ikony.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Půlměsíc: kruh r=9 se středem 11.5,12.5 minus kruh r=9 se středem 16,9 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M8.51,4.01 A9,9 0 1,0 18.99,17.49 A9,9 0 0,1 8.51,4.01 Z" />
+    <!-- Hvězdička v otevřené části půlměsíce -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M19.9,3 L20.65,5.05 L22.7,5.8 L20.65,6.55 L19.9,8.6 L19.15,6.55 L17.1,5.8 L19.15,5.05 Z" />
+</vector>

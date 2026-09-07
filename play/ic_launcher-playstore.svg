@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="2048" viewBox="18 18 72 72">
+  <defs>
+    <linearGradient id="bg" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="108" y2="108">
+      <stop offset="0" stop-color="#17172B"/>
+      <stop offset="0.55" stop-color="#261E3E"/>
+      <stop offset="1" stop-color="#3D2952"/>
+    </linearGradient>
+    <linearGradient id="glow" gradientUnits="userSpaceOnUse" x1="54" y1="60" x2="54" y2="108">
+      <stop offset="0" stop-color="#E07A5F" stop-opacity="0"/>
+      <stop offset="1" stop-color="#E07A5F" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- background -->
+  <path d="M0,0h108v108h-108z" fill="url(#bg)"/>
+  <path d="M0,68 Q54,58 108,68 L108,108 L0,108 Z" fill="url(#glow)"/>
+
+  <!-- foreground -->
+  <path fill="#F4F1DE" d="M38,36 L39.2,39.5 L42.7,40.7 L39.2,41.9 L38,45.4 L36.8,41.9 L33.3,40.7 L36.8,39.5 Z"/>
+  <path fill="#FFE3A8" d="M71,32 L71.8,34.2 L74,35 L71.8,35.8 L71,38 L70.2,35.8 L68,35 L70.2,34.2 Z"/>
+  <path fill="#FFC56D" d="M56,26 C47.7,26 41,32.7 41,41 C41,49.3 47.7,56 56,56 C59.8,56 63.2,54.6 65.9,52.2 C59.4,51.8 54.2,46.4 54.2,39.8 C54.2,34.1 58.1,29.3 63.4,28 C61.1,26.7 58.6,26 56,26 Z"/>
+  <path fill="#8C93A8" d="M30,73 C30,71.9 30.9,71 32,71 L76,71 C77.1,71 78,71.9 78,73 L76.5,76 C76.2,76.6 75.6,77 75,77 L33,77 C32.4,77 31.8,76.6 31.5,76 Z"/>
+  <path fill="#5A6075" d="M50,71 L58,71 L57,72.5 L51,72.5 Z"/>
+  <path fill="#B0B7C6" d="M33,67 C33,65.9 33.9,65 35,65 L73,65 C74.1,65 75,65.9 75,67 L75,69 C75,70.1 74.1,71 73,71 L35,71 C33.9,71 33,70.1 33,69 Z"/>
+  <path fill="#FFB380" d="M51,67.5 L57,67.5 A1,1 0 0,1 57,69.5 L51,69.5 A1,1 0 0,1 51,67.5 Z"/>
+</svg>
