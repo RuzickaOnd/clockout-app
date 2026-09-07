@@ -27,6 +27,8 @@ google-services.json
 *.aab
 *.ap_
 *.dex
+# Výstup release buildu: podepsaný AAB a k němu mapping.txt pro deobfuskaci
+/app/release/
 
 # macOS
 .DS_Store
