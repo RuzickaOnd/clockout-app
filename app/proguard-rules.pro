@@ -12,10 +12,7 @@
 #   public *;
 #}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep line numbers so Play can turn an obfuscated release stack trace back into a readable one
+# once it has the mapping file, and hide the original file names it would otherwise leak.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

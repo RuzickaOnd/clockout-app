@@ -31,7 +31,7 @@ android {
     applicationId = "org.clockout"
     minSdk = 26
     targetSdk = 37
-    versionCode = 1000001
+    versionCode = 1000002
     versionName = "1.0.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -64,9 +64,16 @@ android {
   buildTypes {
     release {
       isCrunchPngs = false
-      isMinifyEnabled = false
+      // R8 shrinks and obfuscates the release build; AGP then ships the mapping file inside the
+      // AAB, which is what Play uses to deobfuscate crash and ANR stack traces.
+      isMinifyEnabled = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.findByName("release")
+      // Uploads native debug symbols with the bundle. Today it emits nothing: the only .so files
+      // in the app come from AndroidX AARs and arrive already stripped, so AGP has nothing to
+      // extract and Play keeps warning about missing symbols. Kept so the symbols do ship if the
+      // app ever bundles native code of its own.
+      ndk { debugSymbolLevel = "FULL" }
     }
     debug {
       signingConfigs.findByName("debugConfig")?.let {
