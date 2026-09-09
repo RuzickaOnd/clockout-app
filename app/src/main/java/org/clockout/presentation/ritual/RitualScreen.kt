@@ -18,12 +18,15 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -72,6 +75,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.clockout.domain.model.AppLanguage
@@ -273,6 +277,38 @@ fun RitualScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * Every ritual step wants to spread its content over the whole height - a title at the top, the
+ * visual in the middle, the button at the bottom. That only works while the content actually fits.
+ * On a short window (a phone turned sideways, a tablet in split screen, a half-opened foldable)
+ * the same layout used to push its button past the bottom edge, where it could not be reached and
+ * the ritual could not be finished. Keeping the minimum height at the height of the window
+ * preserves the spread-out look wherever there is room, and lets the step scroll where there is not.
+ */
+@Composable
+private fun RitualStepColumn(
+    modifier: Modifier = Modifier,
+    horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+    verticalPadding: Dp = 16.dp,
+    content: @Composable ColumnScope.(availableWidth: Dp, availableHeight: Dp) -> Unit
+) {
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val availableWidth = maxWidth
+        val availableHeight = maxHeight
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .heightIn(min = availableHeight)
+                .padding(horizontal = 24.dp, vertical = verticalPadding),
+            horizontalAlignment = horizontalAlignment,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            content(availableWidth, availableHeight)
         }
     }
 }
@@ -513,13 +549,7 @@ private fun StepBreathingContent(
         } catch (_: Exception) {}
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    RitualStepColumn { _, availableHeight ->
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = strings.breathingCategory,
@@ -667,13 +697,7 @@ private fun StepClosingContent(
         label = "closure_card_border"
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    RitualStepColumn { _, _ ->
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = strings.closureCategory,
@@ -851,13 +875,7 @@ private fun StepLogContent(
 ) {
     val moods = listOf(MoodTag.CALM, MoodTag.TIRED, MoodTag.SATISFIED, MoodTag.TENSE)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    RitualStepColumn { _, _ ->
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = strings.moodCategory,

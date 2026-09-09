@@ -1,0 +1,100 @@
+package org.clockout.screenshot
+
+import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.DayStatus
+import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.RitualLogEntry
+import org.clockout.domain.model.RitualQuestion
+import org.clockout.domain.model.RitualStreakInfo
+import org.clockout.presentation.history.HistoryState
+import org.clockout.presentation.home.HomeState
+import org.clockout.presentation.settings.SettingsState
+
+/**
+ * One fixed set of states for every form-factor screenshot, so a diff between two devices only
+ * ever shows a layout difference and never a difference in the data being rendered.
+ */
+object Fixtures {
+
+    val question = RitualQuestion(
+        id = "q1",
+        textEn = "What went well today?",
+        textCs = "Co se dnes povedlo?",
+        suggestedAnswersEn = listOf(
+            "Finished a big task",
+            "Helped a colleague",
+            "Learned something new"
+        ),
+        suggestedAnswersCs = listOf(
+            "Dokončil jsem velký úkol",
+            "Pomohl jsem kolegovi",
+            "Naučil jsem se něco nového"
+        )
+    )
+
+    private val weekDays = listOf("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
+        .mapIndexed { index, name ->
+            DayStatus(
+                dayNameCs = name,
+                dayNameEn = name,
+                dayOfMonth = index + 1,
+                dateString = "2026-09-0${index + 1}",
+                isToday = index == 2,
+                isCompleted = index < 2,
+                moodTag = if (index < 2) MoodTag.CALM else null
+            )
+        }
+
+    private fun streak(todayCompleted: Boolean, todayLog: RitualLogEntry?) = RitualStreakInfo(
+        completedThisWeekCount = if (todayCompleted) 3 else 2,
+        isTodayCompleted = todayCompleted,
+        todayLog = todayLog,
+        weekDays = weekDays
+    )
+
+    val homeOpen = HomeState(
+        language = AppLanguage.ENGLISH,
+        todayQuestion = question,
+        isTestModeEnabled = true,
+        streakInfo = streak(todayCompleted = false, todayLog = null)
+    )
+
+    val homeClosed = HomeState(
+        language = AppLanguage.ENGLISH,
+        todayQuestion = question,
+        isTestModeEnabled = true,
+        streakInfo = streak(
+            todayCompleted = true,
+            todayLog = RitualLogEntry(
+                date = "2026-09-03",
+                questionText = question.textEn,
+                selectedAnswer = "Finished a big task",
+                moodTag = MoodTag.CALM,
+                timestamp = 3L
+            )
+        )
+    )
+
+    private val logs = (1..6).map { day ->
+        RitualLogEntry(
+            date = "2026-09-0$day",
+            questionText = question.textEn,
+            selectedAnswer = "Finished a big task",
+            moodTag = MoodTag.entries[day % MoodTag.entries.size],
+            timestamp = day.toLong()
+        )
+    }
+
+    val history = HistoryState(
+        language = AppLanguage.ENGLISH,
+        logs = logs,
+        totalCount = logs.size,
+        moodCounts = MoodTag.entries.associateWith { mood -> logs.count { it.moodTag == mood } }
+    )
+
+    val settings = SettingsState(
+        language = AppLanguage.ENGLISH,
+        isNotificationEnabled = true,
+        isTestModeEnabled = true
+    )
+}

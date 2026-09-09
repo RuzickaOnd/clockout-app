@@ -35,3 +35,6 @@ google-services.json
 
 # Python bytecode from the play/ asset scripts
 __pycache__/
+
+# Lokální referenční snímky pro form faktory (nahrávají se přes recordRoborazziDebug)
+app/src/test/screenshots/formfactor/
