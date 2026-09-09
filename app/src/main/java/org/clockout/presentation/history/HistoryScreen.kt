@@ -17,7 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,6 +64,13 @@ import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.TextLight
 import org.clockout.ui.theme.TextMuted
 import org.clockout.ui.theme.TextSlate
+
+/**
+ * Narrowest a history card may become before its date, mood and quoted answer stop fitting side by
+ * side. A phone stays one column at this width; a foldable opens into two and a tablet into three,
+ * so a wide window shows a season of evenings at once instead of six.
+ */
+private val HistoryEntryMinWidth = 300.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -196,63 +206,69 @@ fun HistoryScreen(
                     }
                 }
             } else {
-                LazyColumn(
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(HistoryEntryMinWidth),
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    item {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        // Summary Mood Breakdown Frosted Card
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .frostedGlass(cornerRadius = 22.dp)
-                                .padding(18.dp)
-                        ) {
-                            Column {
-                                Text(
-                                    text = strings.totalClosedDays(state.totalCount),
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 17.sp
-                                    ),
-                                    color = TextLight
-                                )
-                                Spacer(modifier = Modifier.height(14.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceAround
-                                ) {
-                                    MoodTag.entries.forEach { mood ->
-                                        val count = state.moodCounts[mood] ?: 0
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Text(text = mood.emoji, fontSize = 24.sp)
-                                            Spacer(modifier = Modifier.height(4.dp))
-                                            Text(
-                                                text = "$count×",
-                                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                                color = IndigoAccent
-                                            )
-                                            Text(
-                                                text = mood.label(state.language),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = TextMuted
-                                            )
+                    // A grid stacks nothing for us inside one cell, so the summary and the
+                    // breathing room around it are laid out in a column of their own.
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Column {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            // Summary Mood Breakdown Frosted Card
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .frostedGlass(cornerRadius = 22.dp)
+                                    .padding(18.dp)
+                            ) {
+                                Column {
+                                    Text(
+                                        text = strings.totalClosedDays(state.totalCount),
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 17.sp
+                                        ),
+                                        color = TextLight
+                                    )
+                                    Spacer(modifier = Modifier.height(14.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceAround
+                                    ) {
+                                        MoodTag.entries.forEach { mood ->
+                                            val count = state.moodCounts[mood] ?: 0
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Text(text = mood.emoji, fontSize = 24.sp)
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text(
+                                                    text = "$count×",
+                                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                                    color = IndigoAccent
+                                                )
+                                                Text(
+                                                    text = mood.label(state.language),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = TextMuted
+                                                )
+                                            }
                                         }
                                     }
                                 }
                             }
+                            Spacer(modifier = Modifier.height(4.dp))
                         }
-                        Spacer(modifier = Modifier.height(4.dp))
                     }
 
                     items(state.logs, key = { it.date + it.timestamp }) { entry ->
                         HistoryEntryCard(entry = entry, language = state.language, doneBadgeText = strings.padlaBadge)
                     }
 
-                    item {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
                         Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
