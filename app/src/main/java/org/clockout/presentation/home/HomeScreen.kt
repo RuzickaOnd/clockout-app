@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -51,6 +52,8 @@ import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.DayStatus
 import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
+import org.clockout.presentation.components.ContentMaxWidth
+import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.AppStrings
 import org.clockout.presentation.util.localizedAnswer
 import org.clockout.presentation.util.localizedQuestionText
@@ -79,7 +82,9 @@ fun HomeScreen(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxHeight()
+                .maxContentWidth(ContentMaxWidth)
+                .align(Alignment.TopCenter)
                 .statusBarsPadding()
                 .navigationBarsPadding()
         ) {

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -92,6 +93,8 @@ import org.clockout.domain.model.SoundChoice
 import org.clockout.notification.NotificationScheduler
 import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
+import org.clockout.presentation.components.ContentMaxWidth
+import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.AppStrings
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.IndigoPrimary
@@ -229,7 +232,9 @@ fun SettingsScreen(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxHeight()
+                .maxContentWidth(ContentMaxWidth)
+                .align(Alignment.TopCenter)
                 .statusBarsPadding()
                 .navigationBarsPadding()
         ) {
