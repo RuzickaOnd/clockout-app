@@ -94,7 +94,7 @@ object QuestionsData {
         RitualQuestion(
             id = "q_evening",
             textEn = "How will you treat yourself this evening?",
-            textCs = "Čím dnes potěšíš svůj večer?",
+            textCs = "Čím se dnes večer potěšíš?",
             suggestedAnswersEn = listOf(
                 "A nourishing dinner without looking at screens",
                 "A hot shower or relaxing bath",
@@ -196,7 +196,7 @@ object QuestionsData {
         RitualQuestion(
             id = "q_worry",
             textEn = "Which worry stays at your desk?",
-            textCs = "Která starost zůstává u tvého stolu?",
+            textCs = "Která starost ti zůstává na stole?",
             suggestedAnswersEn = listOf(
                 "A deadline that is still far enough away",
                 "What someone might think of my work",
@@ -264,7 +264,7 @@ object QuestionsData {
         RitualQuestion(
             id = "q_pace",
             textEn = "What pace did today have?",
-            textCs = "Jaké mělo dnešek tempo?",
+            textCs = "Jaké měl dnešek tempo?",
             suggestedAnswersEn = listOf(
                 "Rushed from the first minute",
                 "Slow, and that suited me",
@@ -502,7 +502,7 @@ object QuestionsData {
         RitualQuestion(
             id = "q_tomorrow_self",
             textEn = "What would tomorrow-you thank you for right now?",
-            textCs = "Za co by ti zítřejší ty teď poděkoval(a)?",
+            textCs = "Za co by ti zítřejší TY teď poděkoval(a)?",
             suggestedAnswersEn = listOf(
                 "Going to bed at a decent hour",
                 "Leaving the desk tidy behind me",
