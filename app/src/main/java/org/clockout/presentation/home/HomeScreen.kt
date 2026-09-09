@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -70,7 +71,12 @@ fun HomeScreen(
     onStartRitual: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToSettings: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /**
+     * False once a navigation rail is carrying History and Settings, so a wide window does not
+     * offer the same two destinations twice.
+     */
+    showTopBarNavigation: Boolean = true
 ) {
     val strings = remember(state.language) { AppStrings(state.language) }
     val scrollState = rememberScrollState()
@@ -125,46 +131,23 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.05f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        IconButton(
+                    // A navigation rail, where there is one, already carries these two.
+                    if (showTopBarNavigation) {
+                        TopBarIconButton(
+                            icon = Icons.Default.History,
+                            contentDescription = strings.navHistory,
                             onClick = onNavigateToHistory,
-                            modifier = Modifier.testTag("nav_history_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.History,
-                                contentDescription = strings.navHistory,
-                                tint = TextSlate,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.05f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        IconButton(
+                            testTag = "nav_history_button"
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        TopBarIconButton(
+                            icon = Icons.Default.Settings,
+                            contentDescription = strings.navSettings,
                             onClick = onNavigateToSettings,
-                            modifier = Modifier.testTag("nav_settings_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = strings.navSettings,
-                                tint = TextSlate,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                            testTag = "nav_settings_button"
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent
@@ -478,6 +461,31 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
+        }
+    }
+}
+
+@Composable
+private fun TopBarIconButton(
+    icon: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    testTag: String
+) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(Color.White.copy(alpha = 0.05f)),
+        contentAlignment = Alignment.Center
+    ) {
+        IconButton(onClick = onClick, modifier = Modifier.testTag(testTag)) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = TextSlate,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }

@@ -33,6 +33,10 @@ class AppStrings(val language: AppLanguage) {
         AppLanguage.CZECH -> "Přechod práce → volno"
         AppLanguage.ENGLISH -> "Work → Leisure transition"
     }
+    val navHome: String = when (language) {
+        AppLanguage.CZECH -> "Dnešek"
+        AppLanguage.ENGLISH -> "Today"
+    }
     val navHistory: String = when (language) {
         AppLanguage.CZECH -> "Historie"
         AppLanguage.ENGLISH -> "History"

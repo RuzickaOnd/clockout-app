@@ -6,6 +6,17 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Nightlight
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.NavigationRailItemDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -17,9 +28,13 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.window.core.layout.WindowWidthSizeClass
 import org.clockout.data.local.RitualPreferences
+import org.clockout.domain.model.AppLanguage
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.domain.usecase.GetStreakUseCase
@@ -33,6 +48,9 @@ import org.clockout.presentation.ritual.RitualScreen
 import org.clockout.presentation.ritual.RitualViewModel
 import org.clockout.presentation.settings.SettingsScreen
 import org.clockout.presentation.settings.SettingsViewModel
+import org.clockout.presentation.util.AppStrings
+import org.clockout.ui.theme.IndigoAccent
+import org.clockout.ui.theme.TextSlate
 
 sealed interface Screen {
     data object Home : Screen
@@ -93,91 +111,153 @@ fun PadlaApp(modifier: Modifier = Modifier) {
         currentScreen = Screen.Home
     }
 
-    AnimatedContent(
-        targetState = currentScreen,
-        transitionSpec = { fadeIn() togetherWith fadeOut() },
-        label = "screen_transition",
-        modifier = modifier.fillMaxSize()
-    ) { screen ->
-        when (screen) {
-            is Screen.Home -> {
-                val homeViewModel: HomeViewModel = viewModel {
-                    HomeViewModel(repository, getTodayRitualUseCase, getStreakUseCase)
-                }
-                val homeState by homeViewModel.state.collectAsState()
+    val language by repository.getLanguage().collectAsState(initial = AppLanguage.ENGLISH)
+    val strings = remember(language) { AppStrings(language) }
 
-                HomeScreen(
-                    state = homeState,
-                    onStartRitual = {
-                        ritualSession++
-                        currentScreen = Screen.Ritual
+    // A phone keeps the two icons in its top bar, which is where they have always been and where
+    // a thumb can reach them. From a medium window upwards the same two destinations move to a
+    // rail along the leading edge, as the large-screen guidance asks - far easier to hit on a
+    // tablet than the top right corner. The ritual is a flow the user is inside of, so it keeps
+    // the whole window to itself either way.
+    val isCompactWidth = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass ==
+        WindowWidthSizeClass.COMPACT
+    val showRail = !isCompactWidth && currentScreen != Screen.Ritual
+
+    // The rail follows the frosted glass palette rather than the stock Material one, so it reads
+    // as part of the same surface as the cards next to it.
+    val railItemColors = NavigationSuiteDefaults.itemColors(
+        navigationRailItemColors = NavigationRailItemDefaults.colors(
+            selectedIconColor = IndigoAccent,
+            selectedTextColor = IndigoAccent,
+            unselectedIconColor = TextSlate,
+            unselectedTextColor = TextSlate,
+            indicatorColor = Color(0x406366F1)
+        )
+    )
+
+    NavigationSuiteScaffold(
+        layoutType = if (showRail) NavigationSuiteType.NavigationRail else NavigationSuiteType.None,
+        containerColor = Color.Transparent,
+        navigationSuiteColors = NavigationSuiteDefaults.colors(
+            navigationRailContainerColor = Color.Transparent
+        ),
+        navigationSuiteItems = {
+            RailDestination.entries.forEach { destination ->
+                item(
+                    selected = currentScreen == destination.screen,
+                    onClick = { currentScreen = destination.screen },
+                    icon = {
+                        Icon(
+                            imageVector = destination.icon,
+                            contentDescription = null
+                        )
                     },
-                    onNavigateToHistory = { currentScreen = Screen.History },
-                    onNavigateToSettings = { currentScreen = Screen.Settings }
-                )
-            }
-            is Screen.Ritual -> {
-                // Kept by the ViewModelStore rather than by the composition, so a rotation or a
-                // fold in the middle of the ritual does not throw away the answer and the timer.
-                val ritualViewModel: RitualViewModel = viewModel {
-                    RitualViewModel(
-                        context.applicationContext,
-                        getTodayRitualUseCase,
-                        logMoodUseCase,
-                        repository
-                    )
-                }
-                // Resets the ritual only when the user actually started it again.
-                LaunchedEffect(ritualSession) { ritualViewModel.startSession(ritualSession) }
-                val ritualState by ritualViewModel.state.collectAsState()
-
-                val leaveRitual = {
-                    ritualViewModel.stopSession()
-                    currentScreen = Screen.Home
-                }
-                BackHandler { leaveRitual() }
-
-                RitualScreen(
-                    state = ritualState,
-                    onIntent = { ritualViewModel.onIntent(it) },
-                    onFinish = leaveRitual
-                )
-            }
-            is Screen.History -> {
-                val historyViewModel: HistoryViewModel = viewModel {
-                    HistoryViewModel(repository)
-                }
-                val historyState by historyViewModel.state.collectAsState()
-
-                HistoryScreen(
-                    state = historyState,
-                    onBack = { currentScreen = Screen.Home },
-                    onClearHistory = { historyViewModel.clearAllHistory() }
-                )
-            }
-            is Screen.Settings -> {
-                val settingsViewModel: SettingsViewModel = viewModel {
-                    SettingsViewModel(repository)
-                }
-                val settingsState by settingsViewModel.state.collectAsState()
-
-                SettingsScreen(
-                    state = settingsState,
-                    onBack = { currentScreen = Screen.Home },
-                    onLanguageOptionSelected = { settingsViewModel.setLanguageOption(it) },
-                    onNotificationToggled = { enabled -> settingsViewModel.setNotificationEnabled(enabled, context) },
-                    onTimeSelected = { h, m -> settingsViewModel.setNotificationTime(h, m, context) },
-                    onTestModeToggled = { settingsViewModel.setTestMode(it) },
-                    onIncludeWeekendsToggled = { settingsViewModel.setIncludeWeekends(it) },
-                    onSoundToggled = { settingsViewModel.setSoundEnabled(it) },
-                    onSoundChoiceSelected = { settingsViewModel.setSoundChoice(it) },
-                    onTogglePreviewSound = { settingsViewModel.togglePreviewSound(it, context) },
-                    onUploadCustomSound = { uri -> settingsViewModel.importCustomSound(context, uri) },
-                    onDeleteCustomSound = { item -> settingsViewModel.deleteCustomSound(context, item) },
-                    onDismissSoundImportError = { settingsViewModel.dismissSoundImportError() },
-                    onClearData = { settingsViewModel.clearAllData() }
+                    label = { Text(destination.label(strings)) },
+                    colors = railItemColors
                 )
             }
         }
+    ) {
+        AnimatedContent(
+            targetState = currentScreen,
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            label = "screen_transition",
+            modifier = modifier.fillMaxSize()
+        ) { screen ->
+            when (screen) {
+                is Screen.Home -> {
+                    val homeViewModel: HomeViewModel = viewModel {
+                        HomeViewModel(repository, getTodayRitualUseCase, getStreakUseCase)
+                    }
+                    val homeState by homeViewModel.state.collectAsState()
+
+                    HomeScreen(
+                        state = homeState,
+                        onStartRitual = {
+                            ritualSession++
+                            currentScreen = Screen.Ritual
+                        },
+                        onNavigateToHistory = { currentScreen = Screen.History },
+                        onNavigateToSettings = { currentScreen = Screen.Settings },
+                        showTopBarNavigation = !showRail
+                    )
+                }
+                is Screen.Ritual -> {
+                    // Kept by the ViewModelStore rather than by the composition, so a rotation or a
+                    // fold in the middle of the ritual does not throw away the answer and the timer.
+                    val ritualViewModel: RitualViewModel = viewModel {
+                        RitualViewModel(
+                            context.applicationContext,
+                            getTodayRitualUseCase,
+                            logMoodUseCase,
+                            repository
+                        )
+                    }
+                    // Resets the ritual only when the user actually started it again.
+                    LaunchedEffect(ritualSession) { ritualViewModel.startSession(ritualSession) }
+                    val ritualState by ritualViewModel.state.collectAsState()
+
+                    val leaveRitual = {
+                        ritualViewModel.stopSession()
+                        currentScreen = Screen.Home
+                    }
+                    BackHandler { leaveRitual() }
+
+                    RitualScreen(
+                        state = ritualState,
+                        onIntent = { ritualViewModel.onIntent(it) },
+                        onFinish = leaveRitual
+                    )
+                }
+                is Screen.History -> {
+                    val historyViewModel: HistoryViewModel = viewModel {
+                        HistoryViewModel(repository)
+                    }
+                    val historyState by historyViewModel.state.collectAsState()
+
+                    HistoryScreen(
+                        state = historyState,
+                        onBack = { currentScreen = Screen.Home },
+                        onClearHistory = { historyViewModel.clearAllHistory() },
+                        showBackButton = !showRail
+                    )
+                }
+                is Screen.Settings -> {
+                    val settingsViewModel: SettingsViewModel = viewModel {
+                        SettingsViewModel(repository)
+                    }
+                    val settingsState by settingsViewModel.state.collectAsState()
+
+                    SettingsScreen(
+                        state = settingsState,
+                        onBack = { currentScreen = Screen.Home },
+                        onLanguageOptionSelected = { settingsViewModel.setLanguageOption(it) },
+                        onNotificationToggled = { enabled -> settingsViewModel.setNotificationEnabled(enabled, context) },
+                        onTimeSelected = { h, m -> settingsViewModel.setNotificationTime(h, m, context) },
+                        onTestModeToggled = { settingsViewModel.setTestMode(it) },
+                        onIncludeWeekendsToggled = { settingsViewModel.setIncludeWeekends(it) },
+                        onSoundToggled = { settingsViewModel.setSoundEnabled(it) },
+                        onSoundChoiceSelected = { settingsViewModel.setSoundChoice(it) },
+                        onTogglePreviewSound = { settingsViewModel.togglePreviewSound(it, context) },
+                        onUploadCustomSound = { uri -> settingsViewModel.importCustomSound(context, uri) },
+                        onDeleteCustomSound = { item -> settingsViewModel.deleteCustomSound(context, item) },
+                        onDismissSoundImportError = { settingsViewModel.dismissSoundImportError() },
+                        onClearData = { settingsViewModel.clearAllData() },
+                        showBackButton = !showRail
+                    )
+                }
+            }
+        }
     }
+}
+
+/** The destinations a navigation rail offers once the window is wide enough to show one. */
+private enum class RailDestination(
+    val screen: Screen,
+    val icon: ImageVector,
+    val label: (AppStrings) -> String
+) {
+    Home(Screen.Home, Icons.Default.Nightlight, { it.navHome }),
+    History(Screen.History, Icons.Default.History, { it.navHistory }),
+    Settings(Screen.Settings, Icons.Default.Settings, { it.navSettings })
 }

@@ -78,7 +78,12 @@ fun HistoryScreen(
     state: HistoryState,
     onBack: () -> Unit,
     onClearHistory: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /**
+     * False once a navigation rail is showing, because then this screen is a destination the user
+     * picks rather than a detour they came into and have to step back out of.
+     */
+    showBackButton: Boolean = true
 ) {
     val strings = remember(state.language) { AppStrings(state.language) }
     var showClearDialog by remember { mutableStateOf(false) }
@@ -132,21 +137,23 @@ fun HistoryScreen(
                     )
                 },
                 navigationIcon = {
-                    Box(
-                        modifier = Modifier
-                            .padding(start = 12.dp)
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.05f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        IconButton(onClick = onBack, modifier = Modifier.testTag("history_back_button")) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = strings.back,
-                                tint = TextSlate,
-                                modifier = Modifier.size(20.dp)
-                            )
+                    if (showBackButton) {
+                        Box(
+                            modifier = Modifier
+                                .padding(start = 12.dp)
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.05f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            IconButton(onClick = onBack, modifier = Modifier.testTag("history_back_button")) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = strings.back,
+                                    tint = TextSlate,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 },
