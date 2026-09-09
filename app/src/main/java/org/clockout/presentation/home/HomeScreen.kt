@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -51,9 +52,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.DayStatus
+import org.clockout.domain.model.RitualLogEntry
 import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.components.ContentMaxWidth
+import org.clockout.presentation.components.WideContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.AppStrings
 import org.clockout.presentation.util.localizedAnswer
@@ -86,381 +89,450 @@ fun HomeScreen(
     FrostedBackgroundContainer(
         modifier = modifier.fillMaxSize()
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .maxContentWidth(ContentMaxWidth)
-                .align(Alignment.TopCenter)
-                .statusBarsPadding()
-                .navigationBarsPadding()
-        ) {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(38.dp)
-                                .clip(CircleShape)
-                                .background(Color(0x336366F1))
-                                .border(1.dp, Color(0x666366F1), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Nightlight,
-                                contentDescription = null,
-                                tint = IndigoAccent,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = strings.appName,
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 20.sp
-                                ),
-                                color = TextLight
-                            )
-                            Text(
-                                text = strings.appSubtitle,
-                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                                color = TextMuted
-                            )
-                        }
-                    }
-                },
-                actions = {
-                    // A navigation rail, where there is one, already carries these two.
-                    if (showTopBarNavigation) {
-                        TopBarIconButton(
-                            icon = Icons.Default.History,
-                            contentDescription = strings.navHistory,
-                            onClick = onNavigateToHistory,
-                            testTag = "nav_history_button"
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        TopBarIconButton(
-                            icon = Icons.Default.Settings,
-                            contentDescription = strings.navSettings,
-                            onClick = onNavigateToSettings,
-                            testTag = "nav_settings_button"
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                ),
-                windowInsets = WindowInsets(0, 0, 0, 0)
-            )
-
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val isTwoPane = maxWidth >= HomeTwoPaneMinWidth
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(horizontal = 20.dp, vertical = 8.dp)
+                    .fillMaxHeight()
+                    .maxContentWidth(if (isTwoPane) WideContentMaxWidth else ContentMaxWidth)
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
             ) {
-                Spacer(modifier = Modifier.height(6.dp))
-
-                // Hero Card with Frosted Glass styling
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .frostedGlass(isActive = isCompleted, cornerRadius = 26.dp)
-                        .padding(24.dp)
-                        .testTag("home_hero_card")
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = if (isCompleted) Color(0x406366F1) else Color.White.copy(alpha = 0.06f),
-                                border = androidx.compose.foundation.BorderStroke(
-                                    1.dp,
-                                    if (isCompleted) Color(0x806366F1) else Color.White.copy(alpha = 0.12f)
-                                )
-                            ) {
-                                Text(
-                                    text = when {
-                                        isCompleted -> strings.todayClosedBadge
-                                        !state.isRitualDay -> strings.weekendSlotBadge
-                                        else -> strings.slotWorkdayEnd
-                                    },
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        letterSpacing = 1.sp,
-                                        fontSize = 10.sp
-                                    ),
-                                    color = if (isCompleted) IndigoAccent else TextSlate,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                                )
-                            }
-
-                            if (todayLog != null) {
-                                Text(
-                                    text = todayLog.moodTag.emoji,
-                                    fontSize = 28.sp
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(18.dp))
-
-                        if (isCompleted) {
-                            Text(
-                                text = strings.workdayDoneTitle,
-                                style = MaterialTheme.typography.headlineSmall.copy(
-                                    fontWeight = FontWeight.Light,
-                                    fontSize = 26.sp
-                                ),
-                                color = TextLight
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = strings.workdayDoneDesc(todayLog?.moodTag?.label(state.language) ?: ""),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = TextSlate
-                            )
-
-                            val todayAnswer = todayLog?.localizedAnswer(state.language)
-                            val todayQuestion = todayLog
-                                ?.takeIf { it.questionText.isNotBlank() }
-                                ?.localizedQuestionText(state.language)
-                            if (!todayAnswer.isNullOrBlank()) {
-                                Spacer(modifier = Modifier.height(14.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .frostedGlass(cornerRadius = 14.dp)
-                                        .padding(14.dp)
-                                ) {
-                                    Column {
-                                        if (!todayQuestion.isNullOrBlank()) {
-                                            Text(
-                                                text = todayQuestion,
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = TextMuted
-                                            )
-                                            Spacer(modifier = Modifier.height(4.dp))
-                                        }
-                                        Text(
-                                            text = strings.quoted(todayAnswer),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = IndigoAccent
-                                        )
-                                    }
-                                }
-                            }
-
-                            if (state.isRitualDay) {
-                                Spacer(modifier = Modifier.height(20.dp))
-
-                                OutlinedButton(
-                                    onClick = onStartRitual,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(52.dp)
-                                        .testTag("repeat_ritual_button"),
-                                    shape = RoundedCornerShape(20.dp),
-                                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
-                                        contentColor = IndigoAccent
-                                    ),
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x666366F1))
-                                ) {
-                                    Text(strings.repeatRitual)
-                                }
-                            }
-                        } else if (!state.isRitualDay) {
-                            Text(
-                                text = strings.weekendRestTitle,
-                                style = MaterialTheme.typography.headlineSmall.copy(
-                                    fontWeight = FontWeight.Light,
-                                    fontSize = 26.sp
-                                ),
-                                color = TextLight
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = strings.weekendRestDesc,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = TextSlate,
-                                lineHeight = 22.sp
-                            )
-                        } else {
-                            Text(
-                                text = strings.closeDayTitle,
-                                style = MaterialTheme.typography.headlineSmall.copy(
-                                    fontWeight = FontWeight.Light,
-                                    fontSize = 26.sp
-                                ),
-                                color = TextLight
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = strings.closeDayDesc,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = TextSlate,
-                                lineHeight = 22.sp
-                            )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
+                TopAppBar(
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .frostedGlass(cornerRadius = 14.dp)
-                                    .padding(14.dp)
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0x336366F1))
+                                    .border(1.dp, Color(0x666366F1), CircleShape),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Column {
-                                    Text(
-                                        text = strings.todayQuestionLabel,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            letterSpacing = 1.sp,
-                                            fontSize = 10.sp
-                                        ),
-                                        color = TextMuted
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = state.todayQuestion.text(state.language),
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            fontWeight = FontWeight.Medium,
-                                            fontSize = 15.sp
-                                        ),
-                                        color = TextLight
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(22.dp))
-
-                            Button(
-                                onClick = onStartRitual,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(58.dp)
-                                    .testTag("start_ritual_button"),
-                                shape = RoundedCornerShape(24.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = IndigoPrimary,
-                                    contentColor = Color.White
-                                )
-                            ) {
-                                Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(20.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = strings.startRitualButton,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 16.sp
-                                    )
+                                Icon(
+                                    imageVector = Icons.Default.Nightlight,
+                                    contentDescription = null,
+                                    tint = IndigoAccent,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                // Weekly Streak Card with Frosted Glass styling
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .frostedGlass(cornerRadius = 24.dp)
-                        .padding(20.dp)
-                        .testTag("weekly_streak_card")
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                            Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = strings.thisWeekTitle,
-                                    style = MaterialTheme.typography.titleMedium.copy(
+                                    text = strings.appName,
+                                    style = MaterialTheme.typography.titleLarge.copy(
                                         fontWeight = FontWeight.SemiBold,
-                                        fontSize = 17.sp
+                                        fontSize = 20.sp
                                     ),
                                     color = TextLight
                                 )
                                 Text(
-                                    text = strings.daysClosedSummary(
-                                        state.streakInfo?.completedThisWeekCount ?: 0,
-                                        state.streakInfo?.targetWorkDays ?: 0
-                                    ),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = TextSlate
-                                )
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = Color(0x306366F1),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x606366F1))
-                            ) {
-                                Text(
-                                    text = "${state.streakInfo?.completionPercent ?: 0}%",
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = IndigoAccent,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                    text = strings.appSubtitle,
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                    color = TextMuted
                                 )
                             }
                         }
+                    },
+                    actions = {
+                        // A navigation rail, where there is one, already carries these two.
+                        if (showTopBarNavigation) {
+                            TopBarIconButton(
+                                icon = Icons.Default.History,
+                                contentDescription = strings.navHistory,
+                                onClick = onNavigateToHistory,
+                                testTag = "nav_history_button"
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            TopBarIconButton(
+                                icon = Icons.Default.Settings,
+                                contentDescription = strings.navSettings,
+                                onClick = onNavigateToSettings,
+                                testTag = "nav_settings_button"
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    ),
+                    windowInsets = WindowInsets(0, 0, 0, 0)
+                )
 
-                        Spacer(modifier = Modifier.height(18.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState)
+                        .padding(horizontal = 20.dp, vertical = 8.dp)
+                ) {
+                    HomeContent(
+                        state = state,
+                        strings = strings,
+                        isCompleted = isCompleted,
+                        todayLog = todayLog,
+                        onStartRitual = onStartRitual,
+                        isTwoPane = isTwoPane
+                    )
+                }
+            }
+        }
+    }
+}
 
-                        // 7 Days Row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            state.streakInfo?.weekDays?.forEach { day ->
-                                DayIndicatorItem(day = day, language = state.language)
+/**
+ * Past this width the window has room for two columns of cards side by side. Below it - which is
+ * every phone, and a tablet held upright - the cards stay in one column, one under the other.
+ */
+private val HomeTwoPaneMinWidth = 840.dp
+
+/**
+ * The dashboard's three cards. On a narrow window they are a single scrolling column, exactly as
+ * they have always been; on a wide one the card the user acts on keeps the left column to itself
+ * and the two cards they only read move alongside it, so a tablet is not mostly empty space.
+ */
+@Composable
+private fun HomeContent(
+    state: HomeState,
+    strings: AppStrings,
+    isCompleted: Boolean,
+    todayLog: RitualLogEntry?,
+    onStartRitual: () -> Unit,
+    isTwoPane: Boolean
+) {
+    Spacer(modifier = Modifier.height(6.dp))
+    if (isTwoPane) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(18.dp)
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                HeroCard(state, strings, isCompleted, todayLog, onStartRitual)
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
+                WeeklyStreakCard(state, strings)
+                WhyRitualCard(strings)
+            }
+        }
+    } else {
+        HeroCard(state, strings, isCompleted, todayLog, onStartRitual)
+        Spacer(modifier = Modifier.height(18.dp))
+        WeeklyStreakCard(state, strings)
+        Spacer(modifier = Modifier.height(18.dp))
+        WhyRitualCard(strings)
+    }
+    Spacer(modifier = Modifier.height(24.dp))
+}
+
+@Composable
+private fun HeroCard(
+    state: HomeState,
+    strings: AppStrings,
+    isCompleted: Boolean,
+    todayLog: RitualLogEntry?,
+    onStartRitual: () -> Unit
+) {
+    // Hero Card with Frosted Glass styling
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .frostedGlass(isActive = isCompleted, cornerRadius = 26.dp)
+            .padding(24.dp)
+            .testTag("home_hero_card")
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = if (isCompleted) Color(0x406366F1) else Color.White.copy(alpha = 0.06f),
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        if (isCompleted) Color(0x806366F1) else Color.White.copy(alpha = 0.12f)
+                    )
+                ) {
+                    Text(
+                        text = when {
+                            isCompleted -> strings.todayClosedBadge
+                            !state.isRitualDay -> strings.weekendSlotBadge
+                            else -> strings.slotWorkdayEnd
+                        },
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = 1.sp,
+                            fontSize = 10.sp
+                        ),
+                        color = if (isCompleted) IndigoAccent else TextSlate,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                    )
+                }
+
+                if (todayLog != null) {
+                    Text(
+                        text = todayLog.moodTag.emoji,
+                        fontSize = 28.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            if (isCompleted) {
+                Text(
+                    text = strings.workdayDoneTitle,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Light,
+                        fontSize = 26.sp
+                    ),
+                    color = TextLight
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = strings.workdayDoneDesc(todayLog?.moodTag?.label(state.language) ?: ""),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSlate
+                )
+
+                val todayAnswer = todayLog?.localizedAnswer(state.language)
+                val todayQuestion = todayLog
+                    ?.takeIf { it.questionText.isNotBlank() }
+                    ?.localizedQuestionText(state.language)
+                if (!todayAnswer.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .frostedGlass(cornerRadius = 14.dp)
+                            .padding(14.dp)
+                    ) {
+                        Column {
+                            if (!todayQuestion.isNullOrBlank()) {
+                                Text(
+                                    text = todayQuestion,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = TextMuted
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
                             }
+                            Text(
+                                text = strings.quoted(todayAnswer),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = IndigoAccent
+                            )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                if (state.isRitualDay) {
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                // Home Office Ritual Value Card
+                    OutlinedButton(
+                        onClick = onStartRitual,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                            .testTag("repeat_ritual_button"),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                            contentColor = IndigoAccent
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x666366F1))
+                    ) {
+                        Text(strings.repeatRitual)
+                    }
+                }
+            } else if (!state.isRitualDay) {
+                Text(
+                    text = strings.weekendRestTitle,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Light,
+                        fontSize = 26.sp
+                    ),
+                    color = TextLight
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = strings.weekendRestDesc,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSlate,
+                    lineHeight = 22.sp
+                )
+            } else {
+                Text(
+                    text = strings.closeDayTitle,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Light,
+                        fontSize = 26.sp
+                    ),
+                    color = TextLight
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = strings.closeDayDesc,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSlate,
+                    lineHeight = 22.sp
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .frostedGlass(cornerRadius = 22.dp)
-                        .padding(20.dp)
+                        .frostedGlass(cornerRadius = 14.dp)
+                        .padding(14.dp)
                 ) {
                     Column {
                         Text(
-                            text = strings.whyRitualTitle,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 16.sp
+                            text = strings.todayQuestionLabel,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                letterSpacing = 1.sp,
+                                fontSize = 10.sp
+                            ),
+                            color = TextMuted
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = state.todayQuestion.text(state.language),
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 15.sp
                             ),
                             color = TextLight
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = strings.whyRitualDesc,
-                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
-                            color = TextSlate,
-                            lineHeight = 20.sp
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(22.dp))
+
+                Button(
+                    onClick = onStartRitual,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(58.dp)
+                        .testTag("start_ritual_button"),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = IndigoPrimary,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = strings.startRitualButton,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp
+                        )
+                    )
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun WeeklyStreakCard(
+    state: HomeState,
+    strings: AppStrings
+) {
+    // Weekly Streak Card with Frosted Glass styling
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .frostedGlass(cornerRadius = 24.dp)
+            .padding(20.dp)
+            .testTag("weekly_streak_card")
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = strings.thisWeekTitle,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 17.sp
+                        ),
+                        color = TextLight
+                    )
+                    Text(
+                        text = strings.daysClosedSummary(
+                            state.streakInfo?.completedThisWeekCount ?: 0,
+                            state.streakInfo?.targetWorkDays ?: 0
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSlate
+                    )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color(0x306366F1),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x606366F1))
+                ) {
+                    Text(
+                        text = "${state.streakInfo?.completionPercent ?: 0}%",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = IndigoAccent,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            // 7 Days Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                state.streakInfo?.weekDays?.forEach { day ->
+                    DayIndicatorItem(day = day, language = state.language)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WhyRitualCard(strings: AppStrings) {
+    // Home Office Ritual Value Card
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .frostedGlass(cornerRadius = 22.dp)
+            .padding(20.dp)
+    ) {
+        Column {
+            Text(
+                text = strings.whyRitualTitle,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                ),
+                color = TextLight
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = strings.whyRitualDesc,
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                color = TextSlate,
+                lineHeight = 20.sp
+            )
         }
     }
 }
