@@ -53,6 +53,7 @@ import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.util.AppStrings
 import org.clockout.presentation.util.localizedAnswer
+import org.clockout.presentation.util.localizedQuestionText
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.IndigoPrimary
 import org.clockout.ui.theme.TextLight
@@ -242,6 +243,9 @@ fun HomeScreen(
                             )
 
                             val todayAnswer = todayLog?.localizedAnswer(state.language)
+                            val todayQuestion = todayLog
+                                ?.takeIf { it.questionText.isNotBlank() }
+                                ?.localizedQuestionText(state.language)
                             if (!todayAnswer.isNullOrBlank()) {
                                 Spacer(modifier = Modifier.height(14.dp))
                                 Box(
@@ -250,11 +254,21 @@ fun HomeScreen(
                                         .frostedGlass(cornerRadius = 14.dp)
                                         .padding(14.dp)
                                 ) {
-                                    Text(
-                                        text = strings.quoted(todayAnswer),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = IndigoAccent
-                                    )
+                                    Column {
+                                        if (!todayQuestion.isNullOrBlank()) {
+                                            Text(
+                                                text = todayQuestion,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = TextMuted
+                                            )
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                        }
+                                        Text(
+                                            text = strings.quoted(todayAnswer),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = IndigoAccent
+                                        )
+                                    }
                                 }
                             }
 
