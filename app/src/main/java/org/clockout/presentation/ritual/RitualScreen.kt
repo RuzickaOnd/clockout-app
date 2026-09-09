@@ -77,6 +77,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.MoodTag
@@ -520,6 +521,18 @@ private fun StepQuestionContent(
     }
 }
 
+/** Full size of the breathing visual, kept wherever the window is tall enough for it. */
+private val BREATH_VISUAL_SIZE = 300.dp
+
+/** Height the step needs for its heading, its guidance line and its button. */
+private val BREATH_VISUAL_RESERVED_HEIGHT = 200.dp
+
+/**
+ * Below this the core pill gets too narrow for the "Inhale..." / "Nádech..." label it holds, so
+ * the visual stops shrinking here and the step scrolls instead.
+ */
+private val BREATH_VISUAL_MIN_SIZE = 200.dp
+
 @Composable
 private fun StepBreathingContent(
     secondsRemaining: Int,
@@ -571,14 +584,21 @@ private fun StepBreathingContent(
         }
 
         // Animated Breathing Visual (Frosted Glass .breath-circle gradient style)
+        // The circle is the calm centre of this step, so it keeps its full size on every window
+        // that has room for it. Only once the header, the guidance and the button no longer fit
+        // alongside it does it give way, rather than pushing the button below the fold.
+        val visualSize = min(BREATH_VISUAL_SIZE, availableHeight - BREATH_VISUAL_RESERVED_HEIGHT)
+            .coerceAtLeast(BREATH_VISUAL_MIN_SIZE)
+        val visualRatio = visualSize / BREATH_VISUAL_SIZE
+
         Box(
-            modifier = Modifier.size(300.dp),
+            modifier = Modifier.size(visualSize),
             contentAlignment = Alignment.Center
         ) {
             // Outer atmospheric radial aura
             Box(
                 modifier = Modifier
-                    .size(280.dp)
+                    .size(280.dp * visualRatio)
                     .scale(scale * 1.05f)
                     .clip(CircleShape)
                     .background(
@@ -594,7 +614,7 @@ private fun StepBreathingContent(
             // Middle Frosted ring
             Box(
                 modifier = Modifier
-                    .size(220.dp)
+                    .size(220.dp * visualRatio)
                     .scale(scale)
                     .clip(CircleShape)
                     .background(
@@ -615,8 +635,8 @@ private fun StepBreathingContent(
             // Core center frosted glass pill
             Box(
                 modifier = Modifier
-                    .size(136.dp)
-                    .frostedGlass(isActive = true, cornerRadius = 68.dp),
+                    .size(136.dp * visualRatio)
+                    .frostedGlass(isActive = true, cornerRadius = 68.dp * visualRatio),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
