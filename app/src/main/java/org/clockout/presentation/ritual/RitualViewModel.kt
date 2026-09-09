@@ -36,8 +36,40 @@ class RitualViewModel(
 
     private var timerJob: Job? = null
 
+    /**
+     * Which run of the ritual the current state belongs to. The screen hands its session number in
+     * on every composition, so a rotation or a fold - which rebuilds the composition but keeps this
+     * view model - is recognised as the same run and leaves the ritual exactly where it was. Only a
+     * genuinely new number, handed in when the user starts the ritual again, wipes the slate.
+     */
+    private var sessionId: Int? = null
+
     init {
         observePreferences()
+    }
+
+    /** Starts a new run of the ritual, or does nothing if [id] is the run already in progress. */
+    fun startSession(id: Int) {
+        if (sessionId == id) return
+        sessionId = id
+        timerJob?.cancel()
+        timerJob = null
+        audioPlayer.stopAmbient()
+        _state.update { current ->
+            RitualState(
+                question = getTodayRitualUseCase(),
+                language = current.language,
+                isSoundMuted = current.isSoundMuted,
+                soundChoice = current.soundChoice
+            )
+        }
+    }
+
+    /** Leaves the ritual: the countdown stops and the ambient sound does not follow the user out. */
+    fun stopSession() {
+        timerJob?.cancel()
+        timerJob = null
+        audioPlayer.stopAmbient()
     }
 
     private fun observePreferences() {
