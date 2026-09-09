@@ -8,4 +8,216 @@
     <string name="language_title">App Language</string>
     <string name="update_ready">Update ready to install</string>
     <string name="update_restart">Restart</string>
+
+    <!-- Ritual question catalog -->
+    <string name="ritual_question_success">What went well today?</string>
+    <string-array name="ritual_answers_success">
+        <item>Finished an important task</item>
+        <item>Solved a tricky challenge</item>
+        <item>Stayed calm and kept perspective</item>
+        <item>Took time for a healthy break</item>
+    </string-array>
+    <string name="ritual_question_let_go">What are you leaving behind closed doors?</string>
+    <string-array name="ritual_answers_let_go">
+        <item>Unfinished emails &amp; tasks until tomorrow</item>
+        <item>Feeling like I should have done more</item>
+        <item>Work tension and stressful calls</item>
+        <item>All open browser tabs in my head</item>
+    </string-array>
+    <string name="ritual_question_proud">What are you proud of today?</string>
+    <string-array name="ritual_answers_proud">
+        <item>Navigated through a demanding day</item>
+        <item>My patience and steady energy</item>
+        <item>A small but meaningful step forward</item>
+        <item>Saying no and protecting my boundaries</item>
+    </string-array>
+    <string name="ritual_question_tomorrow">What do you want to remember tomorrow?</string>
+    <string-array name="ritual_answers_tomorrow">
+        <item>Start the morning calm and unhurried</item>
+        <item>Focus on one single thing at a time</item>
+        <item>Keep clear boundaries between work and rest</item>
+        <item>Tomorrow is another day; world won\'t end</item>
+    </string-array>
+    <string name="ritual_question_signal">What signal will you give your body and mind now?</string>
+    <string-array name="ritual_answers_signal">
+        <item>Closing the laptop and leaving the desk</item>
+        <item>No more Slack, Teams, or inbox today</item>
+        <item>Changing into comfortable evening clothes</item>
+        <item>Stepping outside for a short fresh air walk</item>
+    </string-array>
+    <string name="ritual_question_evening">How will you treat yourself this evening?</string>
+    <string-array name="ritual_answers_evening">
+        <item>A nourishing dinner without looking at screens</item>
+        <item>A hot shower or relaxing bath</item>
+        <item>A good book, music, or quiet downtime</item>
+        <item>Quality time with family or friends</item>
+    </string-array>
+    <string name="ritual_question_enough">What was enough today?</string>
+    <string-array name="ritual_answers_enough">
+        <item>The hours I actually gave it</item>
+        <item>Doing the important thing, not everything</item>
+        <item>Showing up even when it was hard</item>
+        <item>One honest effort, not a perfect one</item>
+    </string-array>
+    <string name="ritual_question_hardest">What was the hardest part of today?</string>
+    <string-array name="ritual_answers_hardest">
+        <item>A conversation I was dreading</item>
+        <item>Starting when I had no motivation</item>
+        <item>Too many things landing at once</item>
+        <item>Staying focused through the noise</item>
+    </string-array>
+    <string name="ritual_question_boundary">Where did you hold a boundary today?</string>
+    <string-array name="ritual_answers_boundary">
+        <item>I took a real lunch break</item>
+        <item>I left a message for tomorrow</item>
+        <item>I said no to one more meeting</item>
+        <item>I stopped at the time I promised myself</item>
+    </string-array>
+    <string name="ritual_question_body">What is your body telling you right now?</string>
+    <string-array name="ritual_answers_body">
+        <item>My shoulders are up by my ears</item>
+        <item>I have been sitting far too long</item>
+        <item>I am hungry and running on coffee</item>
+        <item>It is calmer than my head is</item>
+    </string-array>
+    <string name="ritual_question_learned">What did today teach you?</string>
+    <string-array name="ritual_answers_learned">
+        <item>Asking sooner would have saved hours</item>
+        <item>A short break makes the work faster</item>
+        <item>Not every fire is mine to put out</item>
+        <item>The first version does not have to be right</item>
+    </string-array>
+    <string name="ritual_question_worry">Which worry stays at your desk?</string>
+    <string-array name="ritual_answers_worry">
+        <item>A deadline that is still far enough away</item>
+        <item>What someone might think of my work</item>
+        <item>A decision I cannot make tonight</item>
+        <item>A problem that will look smaller tomorrow</item>
+    </string-array>
+    <string name="ritual_question_grateful">What are you grateful for today?</string>
+    <string-array name="ritual_answers_grateful">
+        <item>A colleague who covered for me</item>
+        <item>That the hard part is already done</item>
+        <item>A quiet hour exactly when I needed one</item>
+        <item>That I have somewhere to come home to</item>
+    </string-array>
+    <string name="ritual_question_people">Who made your day easier today?</string>
+    <string-array name="ritual_answers_people">
+        <item>Someone who answered the moment I asked</item>
+        <item>A colleague who listened without advice</item>
+        <item>Someone at home who took a task off me</item>
+        <item>A stranger who was simply kind</item>
+    </string-array>
+    <string name="ritual_question_unfinished">What stays unfinished, and that is fine?</string>
+    <string-array name="ritual_answers_unfinished">
+        <item>A task that is not burning today</item>
+        <item>A reply that can wait until morning</item>
+        <item>A document nobody is waiting for</item>
+        <item>The tidy-up I keep postponing</item>
+    </string-array>
+    <string name="ritual_question_pace">What pace did today have?</string>
+    <string-array name="ritual_answers_pace">
+        <item>Rushed from the first minute</item>
+        <item>Slow, and that suited me</item>
+        <item>Uneven — quiet, then all at once</item>
+        <item>Steady, the way I like it</item>
+    </string-array>
+    <string name="ritual_question_attention">Where did most of your attention go today?</string>
+    <string-array name="ritual_answers_attention">
+        <item>Into one thing I actually cared about</item>
+        <item>Into messages and notifications</item>
+        <item>Into other people\'s urgent matters</item>
+        <item>Into worrying about what comes next</item>
+    </string-array>
+    <string name="ritual_question_small_joy">What small thing made you smile today?</string>
+    <string-array name="ritual_answers_small_joy">
+        <item>The first coffee of the morning</item>
+        <item>A message from someone I like</item>
+        <item>Sunlight coming through the window</item>
+        <item>Crossing one thing off the list</item>
+    </string-array>
+    <string name="ritual_question_permission">What are you giving yourself permission to drop?</string>
+    <string-array name="ritual_answers_permission">
+        <item>The need to have everything under control</item>
+        <item>Comparing myself to everyone else</item>
+        <item>Replaying one conversation over and over</item>
+        <item>The feeling that I am behind</item>
+    </string-array>
+    <string name="ritual_question_energy">What gave you energy today?</string>
+    <string-array name="ritual_answers_energy">
+        <item>Work that finally moved forward</item>
+        <item>A walk or some fresh air</item>
+        <item>A conversation that went well</item>
+        <item>Music while I worked</item>
+    </string-array>
+    <string name="ritual_question_kindness">What kindness did you show or receive today?</string>
+    <string-array name="ritual_answers_kindness">
+        <item>Someone thanked me and meant it</item>
+        <item>I helped without being asked</item>
+        <item>I was patient when I did not feel like it</item>
+        <item>I was finally gentle with myself too</item>
+    </string-array>
+    <string name="ritual_question_noise">What turned out to be just noise today?</string>
+    <string-array name="ritual_answers_noise">
+        <item>An urgent email that was not urgent</item>
+        <item>A meeting that could have been a message</item>
+        <item>A worry that never happened</item>
+        <item>Half of my notifications</item>
+    </string-array>
+    <string name="ritual_question_next_hour">How do you want to spend the next hour?</string>
+    <string-array name="ritual_answers_next_hour">
+        <item>Doing nothing at all, on purpose</item>
+        <item>Moving my body a little</item>
+        <item>With someone I barely spoke to today</item>
+        <item>On something with no purpose whatsoever</item>
+    </string-array>
+    <string name="ritual_question_place">Where does your free time begin today?</string>
+    <string-array name="ritual_answers_place">
+        <item>The moment I step away from the desk</item>
+        <item>On the doorstep, outside</item>
+        <item>In the kitchen, making dinner</item>
+        <item>Under the shower</item>
+    </string-array>
+    <string name="ritual_question_role">Who are you now that work is over?</string>
+    <string-array name="ritual_answers_role">
+        <item>Someone who is simply at home</item>
+        <item>A parent, a partner, a friend</item>
+        <item>Just myself, with no role at all</item>
+        <item>Someone with a whole evening ahead</item>
+    </string-array>
+    <string name="ritual_question_slow_down">What helps you slow down tonight?</string>
+    <string-array name="ritual_answers_slow_down">
+        <item>Putting the phone in another room</item>
+        <item>Doing one thing at a time</item>
+        <item>Warmth — a shower, tea, a blanket</item>
+        <item>Quiet, with nothing playing</item>
+    </string-array>
+    <string name="ritual_question_week">How is this week treating you so far?</string>
+    <string-array name="ritual_answers_week">
+        <item>Better than it looked on Monday</item>
+        <item>Long, and it is not over yet</item>
+        <item>Full, but in a good way</item>
+        <item>I have lost track of the days</item>
+    </string-array>
+    <string name="ritual_question_ask">What could you have asked someone for help with?</string>
+    <string-array name="ritual_answers_ask">
+        <item>Something I have been stuck on for days</item>
+        <item>A decision I do not want to make alone</item>
+        <item>Work that is simply too much for one person</item>
+        <item>Nothing — I asked in time today</item>
+    </string-array>
+    <string name="ritual_question_repeat">What from today would you do again tomorrow?</string>
+    <string-array name="ritual_answers_repeat">
+        <item>Starting with the hardest thing</item>
+        <item>Taking a break before I needed one</item>
+        <item>Keeping the morning free of meetings</item>
+        <item>Finishing on time</item>
+    </string-array>
+    <string name="ritual_question_tomorrow_self">What would tomorrow-you thank you for right now?</string>
+    <string-array name="ritual_answers_tomorrow_self">
+        <item>Going to bed at a decent hour</item>
+        <item>Leaving the desk tidy behind me</item>
+        <item>Not opening the laptop again tonight</item>
+        <item>Resting instead of pushing on</item>
+    </string-array>
 </resources>

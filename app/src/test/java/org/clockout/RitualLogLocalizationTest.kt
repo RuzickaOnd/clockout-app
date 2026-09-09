@@ -9,11 +9,16 @@ import org.clockout.presentation.util.localizedQuestionText
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 /**
  * Logs store the question and the picked suggestion as plain text in whatever language was active
  * that evening, so history has to translate them back into the language the app runs in now.
  */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [36])
 class RitualLogLocalizationTest {
 
     private fun entry(question: String, answer: String?) = RitualLogEntry(

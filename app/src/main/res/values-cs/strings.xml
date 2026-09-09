@@ -8,4 +8,216 @@
     <string name="language_title">Jazyk aplikace</string>
     <string name="update_ready">Aktualizace je připravená</string>
     <string name="update_restart">Restartovat</string>
+
+    <!-- Ritual question catalog -->
+    <string name="ritual_question_success">Co se dnes povedlo?</string>
+    <string-array name="ritual_answers_success">
+        <item>Dokončil(a) jsem důležitý úkol</item>
+        <item>Vyřešil(a) jsem zapeklitý problém</item>
+        <item>Udržel(a) jsem klid a nadhled</item>
+        <item>Udělal(a) jsem si čas na zdravou pauzu</item>
+    </string-array>
+    <string name="ritual_question_let_go">Co necháváš za zavřenými dveřmi?</string>
+    <string-array name="ritual_answers_let_go">
+        <item>Nedokončené emaily a úkoly do zítřka</item>
+        <item>Pocit, že jsem měl(a) stihnout víc</item>
+        <item>Pracovní stres a náročné hovory</item>
+        <item>Všechny otevřené pracovní taby v hlavě</item>
+    </string-array>
+    <string name="ritual_question_proud">Na co jsi dnes hrdý/á?</string>
+    <string-array name="ritual_answers_proud">
+        <item>Že jsem náročný den zvládl(a)</item>
+        <item>Na svou trpělivost a energii</item>
+        <item>Na malý, ale důležitý krok vpřed</item>
+        <item>Na to, že jsem řekl(a) ne a držel(a) hranice</item>
+    </string-array>
+    <string name="ritual_question_tomorrow">Co si zítra chceš pamatovat?</string>
+    <string-array name="ritual_answers_tomorrow">
+        <item>Začít ráno v klidu bez spěchu</item>
+        <item>Soustředit se na jednu věc po druhé</item>
+        <item>Pevné hranice mezi prací a volnem</item>
+        <item>Že zítra je taky den a svět se nezboří</item>
+    </string-array>
+    <string name="ritual_question_signal">Jaký signál teď dáš svému tělu a mozku?</string>
+    <string-array name="ritual_answers_signal">
+        <item>Zavírám notebook a odcházím od stolu</item>
+        <item>Dnes už žádný Slack, Teams ani pošta</item>
+        <item>Převlékám se do pohodlného oblečení</item>
+        <item>Jdu se projít ven na čerstvý vzduch</item>
+    </string-array>
+    <string name="ritual_question_evening">Čím se dnes večer potěšíš?</string>
+    <string-array name="ritual_answers_evening">
+        <item>Dobrou večeří bez koukání do mobilu</item>
+        <item>Horkou sprchou nebo vanou</item>
+        <item>Knížkou, hudbou nebo tichým odpočinkem</item>
+        <item>Časem s rodinou nebo přáteli</item>
+    </string-array>
+    <string name="ritual_question_enough">Co dnes stačilo?</string>
+    <string-array name="ritual_answers_enough">
+        <item>Hodiny, které jsem tomu opravdu dal(a)</item>
+        <item>Že jsem udělal(a) to důležité, ne všechno</item>
+        <item>Že jsem tam byl(a), i když to šlo ztuha</item>
+        <item>Poctivá snaha, ne dokonalý výsledek</item>
+    </string-array>
+    <string name="ritual_question_hardest">Co bylo na dnešku nejtěžší?</string>
+    <string-array name="ritual_answers_hardest">
+        <item>Hovor, ze kterého jsem měl(a) obavy</item>
+        <item>Začít, když se mi vůbec nechtělo</item>
+        <item>Příliš mnoho věcí naráz</item>
+        <item>Udržet pozornost v tom shonu</item>
+    </string-array>
+    <string name="ritual_question_boundary">Kde jsi dnes udržel(a) hranici?</string>
+    <string-array name="ritual_answers_boundary">
+        <item>Dal(a) jsem si opravdovou pauzu na oběd</item>
+        <item>Nechal(a) jsem zprávu až na zítra</item>
+        <item>Odmítl(a) jsem další schůzku</item>
+        <item>Skončil(a) jsem v čase, který jsem si slíbil(a)</item>
+    </string-array>
+    <string name="ritual_question_body">Co ti teď říká tvoje tělo?</string>
+    <string-array name="ritual_answers_body">
+        <item>Ramena mám až u uší</item>
+        <item>Sedím o dost déle, než je zdrávo</item>
+        <item>Mám hlad a jedu na kávě</item>
+        <item>Je klidnější než moje hlava</item>
+    </string-array>
+    <string name="ritual_question_learned">Co tě dnešek naučil?</string>
+    <string-array name="ritual_answers_learned">
+        <item>Zeptat se dřív by ušetřilo hodiny</item>
+        <item>Krátká pauza práci zrychlí</item>
+        <item>Ne každý požár musím hasit já</item>
+        <item>První verze nemusí být ta správná</item>
+    </string-array>
+    <string name="ritual_question_worry">Která starost ti zůstává na stole?</string>
+    <string-array name="ritual_answers_worry">
+        <item>Termín, který je pořád dost daleko</item>
+        <item>Co si o mojí práci možná někdo myslí</item>
+        <item>Rozhodnutí, které dnes večer stejně neudělám</item>
+        <item>Problém, který bude ráno menší</item>
+    </string-array>
+    <string name="ritual_question_grateful">Za co jsi dnes vděčný/á?</string>
+    <string-array name="ritual_answers_grateful">
+        <item>Za kolegu, který mě podržel</item>
+        <item>Že to nejtěžší už mám za sebou</item>
+        <item>Za hodinu klidu, když jsem ji potřeboval(a)</item>
+        <item>Že se mám kam vrátit domů</item>
+    </string-array>
+    <string name="ritual_question_people">Kdo ti dnes ulehčil den?</string>
+    <string-array name="ritual_answers_people">
+        <item>Někdo, kdo odpověděl hned, jak jsem se ozval(a)</item>
+        <item>Kolega, který mě jen vyslechl</item>
+        <item>Někdo doma, kdo za mě něco vzal</item>
+        <item>Cizí člověk, který byl prostě milý</item>
+    </string-array>
+    <string name="ritual_question_unfinished">Co zůstává nedokončené a je to v pořádku?</string>
+    <string-array name="ritual_answers_unfinished">
+        <item>Úkol, který dnes na nic nehoří</item>
+        <item>Odpověď, která počká do rána</item>
+        <item>Dokument, na který nikdo nečeká</item>
+        <item>Úklid, který pořád odkládám</item>
+    </string-array>
+    <string name="ritual_question_pace">Jaké měl dnešek tempo?</string>
+    <string-array name="ritual_answers_pace">
+        <item>Uspěchané od první minuty</item>
+        <item>Pomalé, a mně to vyhovovalo</item>
+        <item>Nevyrovnané — chvíli klid, pak všechno naráz</item>
+        <item>Vyrovnané, jak to mám rád(a)</item>
+    </string-array>
+    <string name="ritual_question_attention">Kam šla dnes většina tvé pozornosti?</string>
+    <string-array name="ritual_answers_attention">
+        <item>Do jedné věci, na které mi opravdu záleželo</item>
+        <item>Do zpráv a notifikací</item>
+        <item>Do naléhavých věcí ostatních</item>
+        <item>Do obav z toho, co přijde</item>
+    </string-array>
+    <string name="ritual_question_small_joy">Co malého tě dnes potěšilo?</string>
+    <string-array name="ritual_answers_small_joy">
+        <item>První ranní káva</item>
+        <item>Zpráva od někoho, koho mám rád(a)</item>
+        <item>Slunce, co svítilo do okna</item>
+        <item>Škrtnutí jedné věci ze seznamu</item>
+    </string-array>
+    <string name="ritual_question_permission">Co si dnes dovolíš pustit z hlavy?</string>
+    <string-array name="ritual_answers_permission">
+        <item>Potřebu mít všechno pod kontrolou</item>
+        <item>Srovnávání se s ostatními</item>
+        <item>Přehrávání jednoho rozhovoru dokola</item>
+        <item>Pocit, že mám zpoždění</item>
+    </string-array>
+    <string name="ritual_question_energy">Co ti dnes dodalo energii?</string>
+    <string-array name="ritual_answers_energy">
+        <item>Práce, která se konečně pohnula</item>
+        <item>Procházka nebo čerstvý vzduch</item>
+        <item>Rozhovor, který dobře dopadl</item>
+        <item>Hudba při práci</item>
+    </string-array>
+    <string name="ritual_question_kindness">Jaká laskavost tě dnes potkala?</string>
+    <string-array name="ritual_answers_kindness">
+        <item>Někdo mi upřímně poděkoval</item>
+        <item>Pomohl(a) jsem, aniž o to někdo řekl</item>
+        <item>Byl(a) jsem trpělivý/á, i když se mi nechtělo</item>
+        <item>Byl(a) jsem konečně laskavý/á i k sobě</item>
+    </string-array>
+    <string name="ritual_question_noise">Co byl dnes nakonec jen šum?</string>
+    <string-array name="ritual_answers_noise">
+        <item>Naléhavý email, který naléhavý nebyl</item>
+        <item>Schůzka, která mohla být zprávou</item>
+        <item>Obava, která se vůbec nenaplnila</item>
+        <item>Půlka mých notifikací</item>
+    </string-array>
+    <string name="ritual_question_next_hour">Jak chceš strávit nejbližší hodinu?</string>
+    <string-array name="ritual_answers_next_hour">
+        <item>Záměrně úplně ničím</item>
+        <item>Trochou pohybu</item>
+        <item>S někým, s kým jsem si dnes pořádně nepromluvil(a)</item>
+        <item>Něčím, co nemá vůbec žádný účel</item>
+    </string-array>
+    <string name="ritual_question_place">Kde dnes začíná tvoje volno?</string>
+    <string-array name="ritual_answers_place">
+        <item>Ve chvíli, kdy odejdu od stolu</item>
+        <item>Za dveřmi, venku</item>
+        <item>V kuchyni u večeře</item>
+        <item>Pod sprchou</item>
+    </string-array>
+    <string name="ritual_question_role">Kým jsi teď, když práce skončila?</string>
+    <string-array name="ritual_answers_role">
+        <item>Někdo, kdo je prostě doma</item>
+        <item>Rodič, partner, kamarád</item>
+        <item>Jenom já, bez jakékoli role</item>
+        <item>Někdo, kdo má před sebou celý večer</item>
+    </string-array>
+    <string name="ritual_question_slow_down">Co ti dnes pomůže zpomalit?</string>
+    <string-array name="ritual_answers_slow_down">
+        <item>Odložit telefon do jiné místnosti</item>
+        <item>Dělat jednu věc po druhé</item>
+        <item>Teplo — sprcha, čaj, deka</item>
+        <item>Ticho, bez puštěného pozadí</item>
+    </string-array>
+    <string name="ritual_question_week">Jaký je zatím tvůj týden?</string>
+    <string-array name="ritual_answers_week">
+        <item>Lepší, než jak vypadal v pondělí</item>
+        <item>Dlouhý, a ještě není konec</item>
+        <item>Nabitý, ale v dobrém</item>
+        <item>Ztratil(a) jsem přehled o dnech</item>
+    </string-array>
+    <string name="ritual_question_ask">S čím sis mohl(a) říct o pomoc?</string>
+    <string-array name="ritual_answers_ask">
+        <item>S něčím, na čem trčím už dny</item>
+        <item>S rozhodnutím, které nechci dělat sám/sama</item>
+        <item>S prací, která je prostě na víc lidí</item>
+        <item>S ničím — dnes jsem si řekl(a) včas</item>
+    </string-array>
+    <string name="ritual_question_repeat">Co bys ze dneška zopakoval(a) i zítra?</string>
+    <string-array name="ritual_answers_repeat">
+        <item>Začít tím nejtěžším</item>
+        <item>Dát si pauzu dřív, než jsem ji potřeboval(a)</item>
+        <item>Nechat si ráno bez schůzek</item>
+        <item>Skončit včas</item>
+    </string-array>
+    <string name="ritual_question_tomorrow_self">Za co by ti zítřejší TY teď poděkoval(a)?</string>
+    <string-array name="ritual_answers_tomorrow_self">
+        <item>Že půjdu spát v rozumnou hodinu</item>
+        <item>Že jsem po sobě uklidil(a) stůl</item>
+        <item>Že už dnes notebook neotevřu</item>
+        <item>Že si odpočinu, místo abych tlačil(a) dál</item>
+    </string-array>
 </resources>

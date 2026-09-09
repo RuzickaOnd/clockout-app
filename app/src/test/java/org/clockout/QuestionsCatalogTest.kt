@@ -6,12 +6,17 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 /**
  * The catalog has to stay large enough that the question of the day does not come round often,
  * and unambiguous enough that a logged phrase can be found in it again when the app language
  * changes.
  */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [36])
 class QuestionsCatalogTest {
 
     private val questions = QuestionsData.questions
