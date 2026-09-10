@@ -175,10 +175,11 @@ během migrace zůstává a zmenšuje se; smaže se až posledním commitem.
 
 1. `LocalizedContext.kt`, provider v `PadlaApp`, `overlay` slot pro
    `AppUpdateBanner`, `QuestionsData` na sdílený helper
-2. HomeScreen
-3. HistoryScreen
-4. RitualScreen
-5. SettingsScreen (včetně `RailDestination` v `PadlaApp`)
-6. Doménové modely + `presentation/util/Localization.kt`
+2. Doménové modely + `presentation/util/Localization.kt` — jde před
+   obrazovkami, protože `MoodTag.label()` volají Home, History i Ritual
+3. HomeScreen
+4. HistoryScreen
+5. RitualScreen
+6. SettingsScreen (včetně `RailDestination` v `PadlaApp`)
 7. NotificationReceiver
 8. Smazání `AppStrings.kt`, přepsání testů
