@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew :app:testDebugUnitTest)",
+      "Bash(./gradlew :app:compileDebugKotlin)",
+      "Bash(./gradlew :app:assembleDebug)",
+      "Bash(./gradlew :common:testDebugUnitTest)",
+      "Bash(./gradlew :common:compileDebugKotlin)",
+      "Bash(./gradlew :shared:compileKotlinIosArm64)",
+      "Bash(./gradlew :shared:compileKotlinIosSimulatorArm64)",
+      "Bash(./gradlew :shared:allTests)",
+      "Bash(./gradlew :shared:assembleAndroidMain)",
+      "Bash(./gradlew :all:compileDebugKotlin)",
+      "Bash(./gradlew :pelipecky:compileDebugKotlin)",
+      "Bash(./gradlew :emirates:compileDebugKotlin)",
+      "Bash(adb devices)",
+      "Bash(adb logcat *)",
+      "Bash(apkanalyzer resources *)",
+      "Bash(aapt2 dump *)",
+      "Bash(keytool -list *)",
+      "mcp__firebase__crashlytics_get_report",
+      "mcp__firebase__crashlytics_get_issue",
+      "mcp__firebase__crashlytics_batch_get_events"
+    ]
+  }
+}
