@@ -47,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,6 +60,7 @@ import org.clockout.presentation.components.ContentMaxWidth
 import org.clockout.presentation.components.WideContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.AppStrings
+import org.clockout.presentation.util.labelRes
 import org.clockout.presentation.util.localizedAnswer
 import org.clockout.presentation.util.localizedQuestionText
 import org.clockout.ui.theme.IndigoAccent
@@ -297,7 +299,9 @@ private fun HeroCard(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = strings.workdayDoneDesc(todayLog?.moodTag?.label(state.language) ?: ""),
+                    text = strings.workdayDoneDesc(
+                        todayLog?.moodTag?.let { stringResource(it.labelRes) } ?: ""
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSlate
                 )

@@ -73,6 +73,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -92,6 +93,8 @@ import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.components.ContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.AppStrings
+import org.clockout.presentation.util.descriptionRes
+import org.clockout.presentation.util.labelRes
 import org.clockout.ui.theme.FrostedGlassBackground
 import org.clockout.ui.theme.FrostedGlassBorder
 import org.clockout.ui.theme.IndigoAccent
@@ -963,7 +966,9 @@ private fun StepLogContent(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = strings.workdayDoneDesc(selectedMood?.label(language) ?: ""),
+                        text = strings.workdayDoneDesc(
+                            selectedMood?.let { stringResource(it.labelRes) } ?: ""
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSlate,
                         textAlign = TextAlign.Center
@@ -997,7 +1002,7 @@ private fun StepLogContent(
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = mood.label(language),
+                                    text = stringResource(mood.labelRes),
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 16.sp
@@ -1005,7 +1010,7 @@ private fun StepLogContent(
                                     color = if (isSelected) IndigoAccent else TextLight
                                 )
                                 Text(
-                                    text = mood.description(language),
+                                    text = stringResource(mood.descriptionRes),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (isSelected) IndigoAccent.copy(alpha = 0.8f) else TextSlate
                                 )

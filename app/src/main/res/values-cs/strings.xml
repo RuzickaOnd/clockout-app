@@ -220,4 +220,28 @@
         <item>Že už dnes notebook neotevřu</item>
         <item>Že si odpočinu, místo abych tlačil(a) dál</item>
     </string-array>
+
+    <!-- Mood tags -->
+    <string name="mood_calm_label">Klidný</string>
+    <string name="mood_calm_desc">Pocit lehkosti a vnitřního klidu</string>
+    <string name="mood_tired_label">Unavený</string>
+    <string name="mood_tired_desc">Zasloužený odpočinek po náročném dni</string>
+    <string name="mood_satisfied_label">Spokojený</string>
+    <string name="mood_satisfied_desc">Pocit dobře odvedené práce a posunu</string>
+    <string name="mood_tense_label">Napjatý</string>
+    <string name="mood_tense_desc">Čas nechat napětí za zavřenými dveřmi</string>
+
+    <!-- Sound styles -->
+    <string name="sound_tibetan_bowl_label">Tibetská mísa a gong</string>
+    <string name="sound_tibetan_bowl_desc">Harmonický rezonující úder meditační mísy při začátku a změnách fází dechu</string>
+    <string name="sound_rain_pink_noise_label">Jemný déšť a růžový šum</string>
+    <string name="sound_rain_pink_noise_desc">Klidný měkký šum evokující kapky letního deště bez ostrých tónů</string>
+    <string name="sound_breathing_waves_label">Dechové vlny (příliv a odliv)</string>
+    <string name="sound_breathing_waves_desc">Příliv a odliv šumu plynule synchronizovaný s fázemi nádechu a výdechu</string>
+    <string name="sound_silent_haptic_label">Pouze ticho a haptika</string>
+    <string name="sound_silent_haptic_desc">Úplné ticho bez zvuku, pouze jemné uklidňující vibrace telefonu</string>
+    <string name="sound_custom_desc">Vlastní nahrávka (%1$s) přehrávaná ve smyčce s jemným náběhem hlasitosti</string>
+
+    <!-- Language options -->
+    <string name="language_option_system">Dle systému</string>
 </resources>

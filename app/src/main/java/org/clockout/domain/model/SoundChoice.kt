@@ -8,25 +8,12 @@ sealed interface SoundChoice {
 
     val id: String
 
-    fun label(language: AppLanguage): String
-
-    fun description(language: AppLanguage): String
-
     data class BuiltIn(val style: MeditationSoundStyle) : SoundChoice {
         override val id: String get() = style.id
-        override fun label(language: AppLanguage): String = style.label(language)
-        override fun description(language: AppLanguage): String = style.description(language)
     }
 
     data class Custom(val sound: CustomSound) : SoundChoice {
         override val id: String get() = sound.id
-        override fun label(language: AppLanguage): String = sound.displayName
-        override fun description(language: AppLanguage): String = when (language) {
-            AppLanguage.CZECH ->
-                "Vlastní nahrávka (${sound.formattedDuration}) přehrávaná ve smyčce s jemným náběhem hlasitosti"
-            AppLanguage.ENGLISH ->
-                "Your own recording (${sound.formattedDuration}) played in a gentle looping fade"
-        }
     }
 
     companion object {

@@ -47,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,6 +59,7 @@ import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.components.WideContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.AppStrings
+import org.clockout.presentation.util.labelRes
 import org.clockout.presentation.util.localizedAnswer
 import org.clockout.presentation.util.localizedQuestionText
 import org.clockout.ui.theme.IndigoAccent
@@ -258,7 +260,7 @@ fun HistoryScreen(
                                                     color = IndigoAccent
                                                 )
                                                 Text(
-                                                    text = mood.label(state.language),
+                                                    text = stringResource(mood.labelRes),
                                                     style = MaterialTheme.typography.labelSmall,
                                                     color = TextMuted
                                                 )
@@ -321,7 +323,7 @@ private fun HistoryEntryCard(
                             color = TextMuted
                         )
                         Text(
-                            text = entry.moodTag.label(language),
+                            text = stringResource(entry.moodTag.labelRes),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp

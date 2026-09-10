@@ -98,6 +98,8 @@ import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.components.ContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.AppStrings
+import org.clockout.presentation.util.localizedDescription
+import org.clockout.presentation.util.localizedLabel
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.IndigoPrimary
 import org.clockout.ui.theme.TextLight
@@ -587,7 +589,7 @@ fun SettingsScreen(
                                             )
                                             Spacer(modifier = Modifier.width(12.dp))
                                             Text(
-                                                text = state.soundChoice.label(state.language),
+                                                text = state.soundChoice.localizedLabel(),
                                                 style = MaterialTheme.typography.bodyMedium.copy(
                                                     fontWeight = FontWeight.Medium,
                                                     fontSize = 15.sp
@@ -629,8 +631,8 @@ fun SettingsScreen(
                                             },
                                             text = {
                                                 SoundChoiceMenuText(
-                                                    title = choice.label(state.language),
-                                                    description = choice.description(state.language),
+                                                    title = choice.localizedLabel(),
+                                                    description = choice.localizedDescription(),
                                                     isSelected = isSelected
                                                 )
                                             },
@@ -670,8 +672,8 @@ fun SettingsScreen(
                                             },
                                             text = {
                                                 SoundChoiceMenuText(
-                                                    title = choice.label(state.language),
-                                                    description = choice.description(state.language),
+                                                    title = choice.localizedLabel(),
+                                                    description = choice.localizedDescription(),
                                                     isSelected = isSelected
                                                 )
                                             },
@@ -740,7 +742,7 @@ fun SettingsScreen(
 
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = state.soundChoice.description(state.language),
+                                text = state.soundChoice.localizedDescription(),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSlate,
                                 fontSize = 12.5.sp,
@@ -777,7 +779,7 @@ fun SettingsScreen(
                                         text = if (state.isPreviewPlaying) {
                                             strings.soundPreviewPlaying
                                         } else {
-                                            "${strings.soundPreviewButton} (${state.soundChoice.label(state.language)})"
+                                            "${strings.soundPreviewButton} (${state.soundChoice.localizedLabel()})"
                                         },
                                         color = if (state.isPreviewPlaying) IndigoAccent else TextLight,
                                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
@@ -932,8 +934,8 @@ fun SettingsScreen(
                                         )
                                         Spacer(modifier = Modifier.width(12.dp))
                                         val displayLabel = when (state.selectedLanguageOption) {
-                                            LanguageOption.SYSTEM -> "${state.selectedLanguageOption.label(state.language)} (${state.language.displayName})"
-                                            else -> state.selectedLanguageOption.label(state.language)
+                                            LanguageOption.SYSTEM -> "${state.selectedLanguageOption.localizedLabel()} (${state.language.displayName})"
+                                            else -> state.selectedLanguageOption.localizedLabel()
                                         }
                                         Text(
                                             text = displayLabel,
@@ -967,7 +969,7 @@ fun SettingsScreen(
                                         text = {
                                             Column(verticalArrangement = Arrangement.Center) {
                                                 Text(
-                                                    text = option.label(state.language),
+                                                    text = option.localizedLabel(),
                                                     style = MaterialTheme.typography.bodyMedium.copy(
                                                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                                                     ),

@@ -220,4 +220,28 @@
         <item>Not opening the laptop again tonight</item>
         <item>Resting instead of pushing on</item>
     </string-array>
+
+    <!-- Mood tags -->
+    <string name="mood_calm_label">Calm</string>
+    <string name="mood_calm_desc">A sense of lightness and inner calm</string>
+    <string name="mood_tired_label">Tired</string>
+    <string name="mood_tired_desc">Well-deserved rest after a demanding day</string>
+    <string name="mood_satisfied_label">Satisfied</string>
+    <string name="mood_satisfied_desc">A sense of accomplishment and forward progress</string>
+    <string name="mood_tense_label">Tense</string>
+    <string name="mood_tense_desc">Time to leave tension behind closed doors</string>
+
+    <!-- Sound styles -->
+    <string name="sound_tibetan_bowl_label">Tibetan Singing Bowl &amp; Gong</string>
+    <string name="sound_tibetan_bowl_desc">Warm harmonic resonance of a meditation bowl at start and breath shifts</string>
+    <string name="sound_rain_pink_noise_label">Gentle Rain &amp; Pink Noise</string>
+    <string name="sound_rain_pink_noise_desc">Soothing soft ambient noise evoking summer raindrops without harsh frequencies</string>
+    <string name="sound_breathing_waves_label">Breathing Ocean Waves</string>
+    <string name="sound_breathing_waves_desc">Ocean wave swells smoothly synchronized with your inhale and exhale rhythm</string>
+    <string name="sound_silent_haptic_label">Silent &amp; Haptics Only</string>
+    <string name="sound_silent_haptic_desc">Complete silence with gentle tactile phone vibration cues</string>
+    <string name="sound_custom_desc">Your own recording (%1$s) played in a gentle looping fade</string>
+
+    <!-- Language options -->
+    <string name="language_option_system">System default</string>
 </resources>

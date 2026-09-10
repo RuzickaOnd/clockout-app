@@ -27,15 +27,6 @@ enum class LanguageOption(val code: String) {
     ENGLISH("en"),
     CZECH("cs");
 
-    fun label(language: AppLanguage): String = when (this) {
-        SYSTEM -> when (language) {
-            AppLanguage.CZECH -> "Dle systému"
-            AppLanguage.ENGLISH -> "System default"
-        }
-        ENGLISH -> "English"
-        CZECH -> "Čeština"
-    }
-
     fun resolveEffectiveLanguage(): AppLanguage = when (this) {
         SYSTEM -> AppLanguage.fromSystemLocale()
         ENGLISH -> AppLanguage.ENGLISH
