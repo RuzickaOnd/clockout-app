@@ -314,4 +314,41 @@
 
     <!-- Language options -->
     <string name="language_option_system">Dle systému</string>
+
+    <!-- Settings -->
+    <string name="settings_workday_end_time_title">Čas konce pracovního dne</string>
+    <string name="settings_notifications_disabled">Vypnuto</string>
+    <string name="settings_notifications_enabled">Zapnuto</string>
+    <string name="settings_permission_dialog_title">Povolení notifikací</string>
+    <string name="settings_permission_denied_message">Pro zasílání pravidelných připomenutí konce práce je potřeba povolit notifikace v systému.</string>
+    <string name="settings_currently_set_to">Aktuálně nastaveno: %1$s</string>
+    <string name="settings_quick_presets_label">Rychlá volba obvyklého času padla:</string>
+    <string name="settings_include_weekends_title">Zahrnout víkendy</string>
+    <string name="settings_include_weekends_desc">Zapnuto: rituál i připomínka běží 7 dní v týdnu. Vypnuto: jen pondělí až pátek.</string>
+    <string name="settings_test_mode_title">Rituál dostupný kdykoliv</string>
+    <string name="settings_test_mode_desc">Umožní spustit rituál i mimo hlavní okno (16:00–21:00) pro flexibilní pracovní dobu a testování.</string>
+    <string name="settings_ambient_sound_title">Zvuk a doprovod při dýchání</string>
+    <string name="settings_ambient_sound_desc">Uvolňující zvukový doprovod sladěný s dechovým cvičením pro snazší zklidnění.</string>
+    <string name="settings_sound_style_title">Styl meditačního zvuku</string>
+    <string name="settings_sound_preview_button">Vyzkoušet</string>
+    <string name="settings_sound_preview_playing">Hraje ukázka...</string>
+    <string name="settings_custom_sound_section_title">Vlastní zvuky</string>
+    <string name="settings_custom_sound_group_label">VLASTNÍ ZVUKY</string>
+    <string name="settings_built_in_sound_group_label">PŘEDPŘIPRAVENÉ</string>
+    <string name="settings_upload_custom_sound_button">Nahrát vlastní zvuk</string>
+    <string name="settings_uploading_custom_sound">Nahrávám soubor…</string>
+    <string name="settings_custom_sound_hint">Podporované formáty: MP3, WAV, OGG, M4A, FLAC (max. 25 MB, až 10 souborů). Soubor se uloží do aplikace a při dýchání se přehrává ve smyčce.</string>
+    <string name="settings_delete_custom_sound_title">Smazat vlastní zvuk?</string>
+    <string name="settings_delete_custom_sound_text">Soubor „%1$s“ bude z aplikace odstraněn.</string>
+    <string name="settings_custom_sound_error_unsupported">Tento soubor se nepodařilo přehrát. Vyber prosím platný zvukový soubor.</string>
+    <string name="settings_custom_sound_error_too_large">Soubor je příliš velký. Maximální velikost je 25 MB.</string>
+    <string name="settings_custom_sound_error_limit">Můžeš mít uložených nejvýše 10 vlastních zvuků. Nejprve nějaký smaž.</string>
+    <string name="settings_custom_sound_error_read">Soubor se nepodařilo načíst. Zkus to prosím znovu.</string>
+    <string name="settings_about_title">O aplikaci Padla</string>
+    <string name="settings_about_desc">Padla ti pomáhá vědomě uzavřít pracovní den a přepnout se z práce do osobního času. Nejvíc se hodí na home office, kde mezi kanceláří a domovem chybí přirozená hranice.\n\nStačí tři minuty denního rituálu: odpovíš na dnešní otázku a odložíš myšlenku, kterou už nemusíš nést, zklidníš dech v rytmu 4 s nádech / 4 s výdech, klepnutím zhasneš pracovní lampu a zaznamenáš, s jakou náladou den opouštíš.\n\nPráce se ti tak nepřelévá do večera, snáz vypneš hlavu a druhý den začínáš odpočatý. Všechno zůstává jen v telefonu — žádné účty, žádný cloud.</string>
+    <string name="settings_app_version_label">Verze</string>
+    <string name="settings_clear_data_button">Vymazat data a historii</string>
+    <string name="settings_clear_data_dialog_title">Vymazat data aplikace?</string>
+    <string name="settings_clear_data_dialog_text">Tato akce smaže historii zaznamenaných rituálů.</string>
+    <string name="settings_clear_data_confirm">Vymazat</string>
 </resources>

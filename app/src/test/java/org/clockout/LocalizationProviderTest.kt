@@ -135,4 +135,114 @@ class LocalizationProviderTest {
 
         composeTestRule.onNodeWithText("Výdech...").assertIsDisplayed()
     }
+
+    @Test
+    fun `the about title follows the provider language`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.ENGLISH) {
+                Text(stringResource(R.string.settings_about_title))
+            }
+        }
+
+        composeTestRule.onNodeWithText("About ClockOut").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the about title follows the provider language in czech`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                Text(stringResource(R.string.settings_about_title))
+            }
+        }
+
+        composeTestRule.onNodeWithText("O aplikaci Padla").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the history nav label follows the provider language`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.ENGLISH) {
+                Text(stringResource(R.string.nav_history))
+            }
+        }
+
+        composeTestRule.onNodeWithText("History").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the history nav label follows the provider language in czech`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                Text(stringResource(R.string.nav_history))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Historie").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the settings nav label follows the provider language`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.ENGLISH) {
+                Text(stringResource(R.string.nav_settings))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Settings").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the settings nav label follows the provider language in czech`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                Text(stringResource(R.string.nav_settings))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Nastavení").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the notifications disabled label follows the provider language`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.ENGLISH) {
+                Text(stringResource(R.string.settings_notifications_disabled))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Disabled").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the notifications disabled label follows the provider language in czech`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                Text(stringResource(R.string.settings_notifications_disabled))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Vypnuto").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the notifications enabled label follows the provider language`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.ENGLISH) {
+                Text(stringResource(R.string.settings_notifications_enabled))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Enabled").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the notifications enabled label follows the provider language in czech`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                Text(stringResource(R.string.settings_notifications_enabled))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Zapnuto").assertIsDisplayed()
+    }
 }

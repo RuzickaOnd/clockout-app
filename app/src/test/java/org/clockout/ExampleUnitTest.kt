@@ -3,7 +3,6 @@ package org.clockout
 import org.clockout.data.local.QuestionsData
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.LanguageOption
-import org.clockout.presentation.util.AppStrings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -33,26 +32,6 @@ class ExampleUnitTest {
 
         assertEquals(AppLanguage.ENGLISH, LanguageOption.ENGLISH.resolveEffectiveLanguage())
         assertEquals(AppLanguage.CZECH, LanguageOption.CZECH.resolveEffectiveLanguage())
-    }
-
-    @Test
-    fun testAppStringsLocalization() {
-        val enStrings = AppStrings(AppLanguage.ENGLISH)
-        val csStrings = AppStrings(AppLanguage.CZECH)
-
-        assertEquals("About ClockOut", enStrings.aboutTitle)
-        assertEquals("O aplikaci Padla", csStrings.aboutTitle)
-
-        assertEquals("History", enStrings.navHistory)
-        assertEquals("Historie", csStrings.navHistory)
-
-        assertEquals("Settings", enStrings.navSettings)
-        assertEquals("Nastavení", csStrings.navSettings)
-
-        assertEquals("Disabled", enStrings.notificationsDisabled)
-        assertEquals("Vypnuto", csStrings.notificationsDisabled)
-        assertEquals("Enabled", enStrings.notificationsEnabled)
-        assertEquals("Zapnuto", csStrings.notificationsEnabled)
     }
 
     @Test

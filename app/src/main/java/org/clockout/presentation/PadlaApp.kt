@@ -1,6 +1,7 @@
 package org.clockout.presentation
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -33,8 +34,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.window.core.layout.WindowWidthSizeClass
+import org.clockout.R
 import org.clockout.data.local.RitualPreferences
 import org.clockout.domain.model.AppLanguage
 import org.clockout.data.local.db.ClockoutDatabase
@@ -51,7 +54,6 @@ import org.clockout.presentation.ritual.RitualViewModel
 import org.clockout.presentation.settings.SettingsScreen
 import org.clockout.presentation.settings.SettingsViewModel
 import org.clockout.presentation.util.AppLocalization
-import org.clockout.presentation.util.AppStrings
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.TextSlate
 
@@ -118,7 +120,6 @@ fun PadlaApp(
     }
 
     val language by repository.getLanguage().collectAsState(initial = AppLanguage.ENGLISH)
-    val strings = remember(language) { AppStrings(language) }
 
     AppLocalization(language) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -160,7 +161,7 @@ fun PadlaApp(
                                     contentDescription = null
                                 )
                             },
-                            label = { Text(destination.label(strings)) },
+                            label = { Text(stringResource(destination.labelRes)) },
                             colors = railItemColors
                         )
                     }
@@ -266,9 +267,9 @@ fun PadlaApp(
 private enum class RailDestination(
     val screen: Screen,
     val icon: ImageVector,
-    val label: (AppStrings) -> String
+    @StringRes val labelRes: Int
 ) {
-    Home(Screen.Home, Icons.Default.Nightlight, { it.navHome }),
-    History(Screen.History, Icons.Default.History, { it.navHistory }),
-    Settings(Screen.Settings, Icons.Default.Settings, { it.navSettings })
+    Home(Screen.Home, Icons.Default.Nightlight, R.string.nav_home),
+    History(Screen.History, Icons.Default.History, R.string.nav_history),
+    Settings(Screen.Settings, Icons.Default.Settings, R.string.nav_settings)
 }
