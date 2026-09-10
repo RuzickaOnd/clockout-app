@@ -40,17 +40,8 @@ class ExampleUnitTest {
         val enStrings = AppStrings(AppLanguage.ENGLISH)
         val csStrings = AppStrings(AppLanguage.CZECH)
 
-        assertEquals("ClockOut", enStrings.appName)
-        assertEquals("Padla", csStrings.appName)
-
         assertEquals("About ClockOut", enStrings.aboutTitle)
         assertEquals("O aplikaci Padla", csStrings.aboutTitle)
-
-        assertEquals("Work → Leisure transition", enStrings.appSubtitle)
-        assertEquals("Přechod práce → volno", csStrings.appSubtitle)
-
-        assertEquals("Start ritual (2–3 min)", enStrings.startRitualButton)
-        assertEquals("Zahájit rituál (2–3 min)", csStrings.startRitualButton)
 
         assertEquals("History", enStrings.navHistory)
         assertEquals("Historie", csStrings.navHistory)

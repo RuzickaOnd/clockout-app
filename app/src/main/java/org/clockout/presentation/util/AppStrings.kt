@@ -5,10 +5,6 @@ import org.clockout.domain.model.AppLanguage
 class AppStrings(val language: AppLanguage) {
 
     // Common
-    val appName: String = when (language) {
-        AppLanguage.CZECH -> "Padla"
-        AppLanguage.ENGLISH -> "ClockOut"
-    }
     val back: String = when (language) {
         AppLanguage.CZECH -> "Zpět"
         AppLanguage.ENGLISH -> "Back"
@@ -22,17 +18,16 @@ class AppStrings(val language: AppLanguage) {
         AppLanguage.ENGLISH -> "Delete"
     }
 
-    /** Quotation marks differ per language, so logged answers are wrapped rather than hardcoded. */
+    /**
+     * Quotation marks differ per language, so logged answers are wrapped rather than hardcoded.
+     * Still used by HistoryScreen, which is not yet migrated to resources.
+     */
     fun quoted(text: String): String = when (language) {
-        AppLanguage.CZECH -> "\u201E$text\u201C"
-        AppLanguage.ENGLISH -> "\u201C$text\u201D"
+        AppLanguage.CZECH -> "„$text“"
+        AppLanguage.ENGLISH -> "“$text”"
     }
 
     // HomeScreen
-    val appSubtitle: String = when (language) {
-        AppLanguage.CZECH -> "Přechod práce → volno"
-        AppLanguage.ENGLISH -> "Work → Leisure transition"
-    }
     val navHome: String = when (language) {
         AppLanguage.CZECH -> "Dnešek"
         AppLanguage.ENGLISH -> "Today"
@@ -45,69 +40,10 @@ class AppStrings(val language: AppLanguage) {
         AppLanguage.CZECH -> "Nastavení"
         AppLanguage.ENGLISH -> "Settings"
     }
-    val slotWorkdayEnd: String = when (language) {
-        AppLanguage.CZECH -> "SLOT: KONEC PRÁCE (16–21h)"
-        AppLanguage.ENGLISH -> "SLOT: WORKDAY END (16–21h)"
-    }
-    val weekendSlotBadge: String = when (language) {
-        AppLanguage.CZECH -> "VÍKEND"
-        AppLanguage.ENGLISH -> "WEEKEND"
-    }
-    val weekendRestTitle: String = when (language) {
-        AppLanguage.CZECH -> "Dnes máš volno"
-        AppLanguage.ENGLISH -> "Today is yours"
-    }
-    val weekendRestDesc: String = when (language) {
-        AppLanguage.CZECH -> "Pracovní týden je za tebou. Rituál se vrátí v pondělí."
-        AppLanguage.ENGLISH -> "The work week is behind you. The ritual returns on Monday."
-    }
-    val todayClosedBadge: String = when (language) {
-        AppLanguage.CZECH -> "DNES UZAVŘENO ✓"
-        AppLanguage.ENGLISH -> "TODAY CLOSED ✓"
-    }
-    val workdayDoneTitle: String = when (language) {
-        AppLanguage.CZECH -> "Pracovní den je hotov"
-        AppLanguage.ENGLISH -> "Workday is completed"
-    }
+    /** Still used by RitualScreen's completion step, which is not yet migrated to resources. */
     fun workdayDoneDesc(moodLabel: String): String = when (language) {
         AppLanguage.CZECH -> "Nálada: $moodLabel. Užij si volný večer pro sebe a své tělo."
         AppLanguage.ENGLISH -> "Mood: $moodLabel. Enjoy your free evening for yourself and your mind."
-    }
-    val repeatRitual: String = when (language) {
-        AppLanguage.CZECH -> "Zopakovat rituál"
-        AppLanguage.ENGLISH -> "Repeat ritual"
-    }
-    val closeDayTitle: String = when (language) {
-        AppLanguage.CZECH -> "Uzavři vědomě dnešní den"
-        AppLanguage.ENGLISH -> "Close today's workday mindfully"
-    }
-    val closeDayDesc: String = when (language) {
-        AppLanguage.CZECH -> "Krátký 3minutový rituál ti pomůže odložit pracovní myšlenky a přepnout hlavu do volna."
-        AppLanguage.ENGLISH -> "A short 3-minute ritual helps you leave work thoughts behind and transition your mind into leisure."
-    }
-    val todayQuestionLabel: String = when (language) {
-        AppLanguage.CZECH -> "DNEŠNÍ OTÁZKA"
-        AppLanguage.ENGLISH -> "TODAY'S QUESTION"
-    }
-    val startRitualButton: String = when (language) {
-        AppLanguage.CZECH -> "Zahájit rituál (2–3 min)"
-        AppLanguage.ENGLISH -> "Start ritual (2–3 min)"
-    }
-    val thisWeekTitle: String = when (language) {
-        AppLanguage.CZECH -> "Tento týden"
-        AppLanguage.ENGLISH -> "This week"
-    }
-    fun daysClosedSummary(count: Int, target: Int): String = when (language) {
-        AppLanguage.CZECH -> "$count z $target dní uzavřeno"
-        AppLanguage.ENGLISH -> "$count of $target days closed"
-    }
-    val whyRitualTitle: String = when (language) {
-        AppLanguage.CZECH -> "Proč tento rituál?"
-        AppLanguage.ENGLISH -> "Why this ritual?"
-    }
-    val whyRitualDesc: String = when (language) {
-        AppLanguage.CZECH -> "Při práci z domova chybí fyzická cesta z kanceláře, která dříve přirozeně oddělovala den. Tyto 3 minuty ti dají jasný signál, že práce skončila a začíná tvůj vlastní čas."
-        AppLanguage.ENGLISH -> "When working from home, the physical commute that used to separate the day is missing. These 3 minutes give your brain a clear signal that work is over and your own time begins."
     }
 
     // RitualScreen

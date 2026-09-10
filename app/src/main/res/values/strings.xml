@@ -9,6 +9,29 @@
     <string name="update_ready">Update ready to install</string>
     <string name="update_restart">Restart</string>
 
+    <!-- Home -->
+    <string name="common_quoted">“%1$s”</string>
+    <string name="nav_home">Today</string>
+    <string name="nav_history">History</string>
+    <string name="nav_settings">Settings</string>
+    <string name="home_slot_workday_end">SLOT: WORKDAY END (16–21h)</string>
+    <string name="home_weekend_slot_badge">WEEKEND</string>
+    <string name="home_weekend_rest_title">Today is yours</string>
+    <string name="home_weekend_rest_desc">The work week is behind you. The ritual returns on Monday.</string>
+    <string name="home_today_closed_badge">TODAY CLOSED ✓</string>
+    <string name="home_workday_done_title">Workday is completed</string>
+    <string name="home_workday_done_desc">Mood: %1$s. Enjoy your free evening for yourself and your mind.</string>
+    <string name="home_close_day_title">Close today\'s workday mindfully</string>
+    <string name="home_close_day_desc">A short 3-minute ritual helps you leave work thoughts behind and transition your mind into leisure.</string>
+    <string name="home_today_question_label">TODAY\'S QUESTION</string>
+    <string name="home_this_week_title">This week</string>
+    <plurals name="home_days_closed_summary">
+        <item quantity="one">%1$d of %2$d day closed</item>
+        <item quantity="other">%1$d of %2$d days closed</item>
+    </plurals>
+    <string name="home_why_ritual_title">Why this ritual?</string>
+    <string name="home_why_ritual_desc">When working from home, the physical commute that used to separate the day is missing. These 3 minutes give your brain a clear signal that work is over and your own time begins.</string>
+
     <!-- Ritual question catalog -->
     <string name="ritual_question_success">What went well today?</string>
     <string-array name="ritual_answers_success">
