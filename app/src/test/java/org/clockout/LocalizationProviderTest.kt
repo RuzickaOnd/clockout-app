@@ -3,6 +3,7 @@ package org.clockout
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.material3.Text
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -10,7 +11,9 @@ import androidx.compose.ui.test.onNodeWithText
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import org.clockout.domain.model.AppLanguage
 import org.clockout.presentation.util.AppLocalization
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -228,11 +231,14 @@ class LocalizationProviderTest {
     }
 
     /**
-     * Regrese: localizedFor() dřív vracelo createConfigurationContext() přímo, což je nový
-     * Context nedohledatelný zpět k Activitě přes getBaseContext(). To tiše rozbilo každé
-     * composition local dohledávané procházením řetězu ContextWrapperů - LocalActivity i
-     * LocalActivityResultRegistryOwner - a spadlo na tom SettingsScreen, který uvnitř
-     * AppLocalization volá rememberLauncherForActivityResult().
+     * Regrese: AppLocalization dřív přebíjela LocalContext (nejdřív na
+     * createConfigurationContext() přímo, pak na ContextWrapper okolo něj). Cokoliv, co si
+     * Activitu dohledává procházením řetězu ContextWrapperů - findOwner() v activity-compose,
+     * na kterém stojí LocalActivity i LocalActivityResultRegistryOwner - i cokoliv, co
+     * potřebuje context is Activity přímo (WindowInfoTracker při detekci posture/fold), by
+     * na to tiše nebo hlasitě doplatilo. SettingsScreen na tom spadl přes
+     * rememberLauncherForActivityResult(). Oprava nechává LocalContext beze změny a přebíjí
+     * jen LocalResources/LocalConfiguration - viz i test níže.
      */
     @Test
     fun `the activity and its result registry stay reachable under a localized provider`() {
@@ -251,5 +257,28 @@ class LocalizationProviderTest {
             "LocalActivityResultRegistryOwner.current should resolve under AppLocalization",
             registryOwner
         )
+    }
+
+    /**
+     * Pin na invariantu, o kterou se tenhle celý příběh točí: AppLocalization smí přebít
+     * jazyk resources, ale nesmí přitom přestat platit LocalContext.current je Activita.
+     */
+    @Test
+    fun `LocalContext stays the activity while stringResource follows the chosen language`() {
+        var context: android.content.Context? = null
+        var czechTitle: String? = null
+
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                context = LocalContext.current
+                czechTitle = stringResource(R.string.settings_title)
+            }
+        }
+
+        assertTrue(
+            "LocalContext.current should still be the real Activity under AppLocalization",
+            context is android.app.Activity
+        )
+        assertEquals("Nastavení", czechTitle)
     }
 }

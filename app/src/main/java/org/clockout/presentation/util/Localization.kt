@@ -6,6 +6,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import org.clockout.R
 import org.clockout.domain.model.AppLanguage
@@ -16,22 +17,29 @@ import org.clockout.domain.model.SoundChoice
 import org.clockout.util.localizedFor
 
 /**
- * Podřídí resources ve stromu jazyku vybranému v aplikaci. stringResource() čte z
- * LocalResources, který je odvozený od LocalContext.resources, takže override Contextu
- * stačí; LocalConfiguration se poskytuje kvůli kódu, který si locale čte z konfigurace.
+ * Podřídí resources ve stromu jazyku vybranému v aplikaci tím, že přebije LocalResources,
+ * ne LocalContext. stringResource()/stringArrayResource()/pluralStringResource() čtou
+ * LocalResources.current, který je jinak jen computed-default odvozený z
+ * LocalContext.current.resources - stačí přebít přímo tenhle default a LocalContext
+ * (i LocalConfiguration jako dřív, kvůli kódu, který si locale čte z konfigurace) nechat
+ * beze změny.
  *
- * localizedFor() vrací ContextWrapper, který přes getBaseContext() dál vede k Activitě
- * (viz LocalizedContext.kt) - proto composition locals dohledávané procházením řetězu
- * ContextWrapperů (LocalActivity, LocalActivityResultRegistryOwner) fungují i pod tímto
- * providerem beze změny a není potřeba je předávat zvlášť.
+ * LocalContext tím zůstává skutečnou Activitou. Na tom stojí composition locals dohledávané
+ * procházením řetězu ContextWrapperů (LocalActivity, LocalActivityResultRegistryOwner) i
+ * WindowInfoTracker, jehož WM Extensions v1 i Sidecar backend pro detekci posture/fold
+ * vyžadují `context is Activity` (ani jeden nerozbaluje ContextWrapper.baseContext).
+ * Přepsání LocalContext na createConfigurationContext() (nebo i na ContextWrapper nad ním)
+ * by "context is Activity" nadobro rozbilo - proto se tu LocalContext nedotýká vůbec.
  */
 @Composable
 fun AppLocalization(language: AppLanguage, content: @Composable () -> Unit) {
     val context = LocalContext.current
-    val localized = remember(context, language) { context.localizedFor(language) }
+    val localizedResources = remember(context, language) {
+        context.localizedFor(language).resources
+    }
     CompositionLocalProvider(
-        LocalContext provides localized,
-        LocalConfiguration provides localized.resources.configuration,
+        LocalResources provides localizedResources,
+        LocalConfiguration provides localizedResources.configuration,
         content = content
     )
 }
