@@ -81,6 +81,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
+import org.clockout.R
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualStep
@@ -92,7 +93,6 @@ import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.components.ContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
-import org.clockout.presentation.util.AppStrings
 import org.clockout.presentation.util.descriptionRes
 import org.clockout.presentation.util.labelRes
 import org.clockout.ui.theme.FrostedGlassBackground
@@ -126,8 +126,6 @@ fun RitualScreen(
     modifier: Modifier = Modifier
 ) {
     KeepScreenOn()
-
-    val strings = remember(state.language) { AppStrings(state.language) }
 
     val stepIndex = when (state.currentStep) {
         is RitualStep.Question -> 1
@@ -169,7 +167,7 @@ fun RitualScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = strings.closeRitualConfirm,
+                            contentDescription = stringResource(R.string.ritual_close_confirm),
                             tint = TextSlate,
                             modifier = Modifier.size(20.dp)
                         )
@@ -177,7 +175,7 @@ fun RitualScreen(
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = strings.ritualHeaderTitle,
+                            text = stringResource(R.string.ritual_header_title),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.SemiBold,
                                 letterSpacing = 2.sp,
@@ -187,7 +185,7 @@ fun RitualScreen(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = strings.stepIndicator(stepIndex, 4),
+                            text = stringResource(R.string.ritual_step_indicator, stepIndex, 4),
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                             color = IndigoAccent
                         )
@@ -256,21 +254,18 @@ fun RitualScreen(
                     is RitualStep.Question -> {
                         StepQuestionContent(
                             state = state,
-                            strings = strings,
                             onIntent = onIntent
                         )
                     }
                     is RitualStep.Breathing -> {
                         StepBreathingContent(
                             secondsRemaining = state.breathingSecondsRemaining,
-                            strings = strings,
                             onIntent = onIntent
                         )
                     }
                     is RitualStep.Closing -> {
                         StepClosingContent(
                             isClosureTriggered = state.isClosureTriggered,
-                            strings = strings,
                             onIntent = onIntent
                         )
                     }
@@ -279,7 +274,6 @@ fun RitualScreen(
                             isSaved = state.isCompletedAndSaved,
                             selectedMood = state.selectedMood,
                             language = state.language,
-                            strings = strings,
                             onIntent = onIntent,
                             onFinish = onFinish
                         )
@@ -325,7 +319,6 @@ private fun RitualStepColumn(
 @Composable
 private fun StepQuestionContent(
     state: RitualState,
-    strings: AppStrings,
     onIntent: (RitualIntent) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -354,7 +347,7 @@ private fun StepQuestionContent(
 
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = strings.questionInstruction,
+            text = stringResource(R.string.ritual_question_instruction),
             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
             color = TextSlate,
             lineHeight = 22.sp
@@ -444,7 +437,7 @@ private fun StepQuestionContent(
                         onValueChange = { onIntent(RitualIntent.CustomAnswerChanged(it)) },
                         placeholder = {
                             Text(
-                                text = strings.customAnswerPlaceholder,
+                                text = stringResource(R.string.ritual_custom_answer_placeholder),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = TextMuted
                             )
@@ -488,7 +481,7 @@ private fun StepQuestionContent(
             )
         ) {
             Text(
-                text = strings.buttonContinueToBreathing,
+                text = stringResource(R.string.ritual_button_continue_to_breathing),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp
@@ -517,7 +510,7 @@ private fun StepQuestionContent(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = strings.questionCategory,
+                text = stringResource(R.string.ritual_question_category),
                 style = MaterialTheme.typography.labelSmall.copy(
                     letterSpacing = 1.5.sp,
                     fontSize = 11.sp
@@ -544,7 +537,6 @@ private val BREATH_VISUAL_MIN_SIZE = 200.dp
 @Composable
 private fun StepBreathingContent(
     secondsRemaining: Int,
-    strings: AppStrings,
     onIntent: (RitualIntent) -> Unit
 ) {
     // 8-second cycle: 4s inhale, 4s exhale
@@ -560,8 +552,8 @@ private fun StepBreathingContent(
     )
 
     val isInhale = scale >= 0.85f
-    val breathText = if (isInhale) strings.breathingInhale else strings.breathingExhale
-    val breathGuidance = if (isInhale) strings.breathingInhaleDesc else strings.breathingExhaleDesc
+    val breathText = stringResource(if (isInhale) R.string.ritual_breathing_inhale else R.string.ritual_breathing_exhale)
+    val breathGuidance = stringResource(if (isInhale) R.string.ritual_breathing_inhale_desc else R.string.ritual_breathing_exhale_desc)
 
     val haptic = LocalHapticFeedback.current
     LaunchedEffect(isInhale) {
@@ -573,7 +565,7 @@ private fun StepBreathingContent(
     RitualStepColumn { _, availableHeight ->
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = strings.breathingCategory,
+                text = stringResource(R.string.ritual_breathing_category),
                 style = MaterialTheme.typography.labelSmall.copy(
                     letterSpacing = 2.sp,
                     fontSize = 10.sp
@@ -582,7 +574,7 @@ private fun StepBreathingContent(
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = strings.breathingTitle,
+                text = stringResource(R.string.ritual_breathing_title),
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Light,
                     fontSize = 24.sp
@@ -692,7 +684,9 @@ private fun StepBreathingContent(
                 )
             ) {
                 Text(
-                    text = if (secondsRemaining <= 10) strings.buttonFinishBreathing else strings.buttonSkipBreathing,
+                    text = stringResource(
+                        if (secondsRemaining <= 10) R.string.ritual_button_finish_breathing else R.string.ritual_button_skip_breathing
+                    ),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp
@@ -707,7 +701,6 @@ private fun StepBreathingContent(
 @Composable
 private fun StepClosingContent(
     isClosureTriggered: Boolean,
-    strings: AppStrings,
     onIntent: (RitualIntent) -> Unit
 ) {
     val haptics = LocalHapticFeedback.current
@@ -728,7 +721,7 @@ private fun StepClosingContent(
     RitualStepColumn { _, _ ->
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = strings.closureCategory,
+                text = stringResource(R.string.ritual_closure_category),
                 style = MaterialTheme.typography.labelSmall.copy(
                     letterSpacing = 2.sp,
                     fontSize = 10.sp
@@ -738,7 +731,9 @@ private fun StepClosingContent(
             Spacer(modifier = Modifier.height(6.dp))
             ClosureCrossfade(isClosureTriggered) { triggered ->
                 Text(
-                    text = if (triggered) strings.closureDoneTitle else strings.closureTapPrompt,
+                    text = stringResource(
+                        if (triggered) R.string.ritual_closure_done_title else R.string.ritual_closure_tap_prompt
+                    ),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Light,
                         fontSize = 24.sp
@@ -773,7 +768,7 @@ private fun StepClosingContent(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         if (triggered) {
                             Text(
-                                text = strings.closureFinishedPrompt,
+                                text = stringResource(R.string.ritual_closure_finished_prompt),
                                 style = MaterialTheme.typography.headlineSmall.copy(
                                     fontWeight = FontWeight.Light,
                                     fontSize = 26.sp
@@ -784,7 +779,7 @@ private fun StepClosingContent(
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = strings.closureDoneMessage,
+                                text = stringResource(R.string.ritual_closure_done_message),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = TextSlate,
                                 textAlign = TextAlign.Center
@@ -793,7 +788,7 @@ private fun StepClosingContent(
                             // No title here: the heading right above the card already
                             // carries the same prompt, and so does the button below.
                             Text(
-                                text = strings.closureLampTurnOffPrompt,
+                                text = stringResource(R.string.ritual_closure_lamp_turn_off_prompt),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = TextSlate,
                                 textAlign = TextAlign.Center
@@ -826,7 +821,7 @@ private fun StepClosingContent(
                         )
                     ) {
                         Text(
-                            text = strings.buttonRecordMood,
+                            text = stringResource(R.string.ritual_button_record_mood),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp
@@ -856,7 +851,7 @@ private fun StepClosingContent(
                         )
                     ) {
                         Text(
-                            text = strings.closureTapPrompt,
+                            text = stringResource(R.string.ritual_closure_tap_prompt),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
                         )
                     }
@@ -897,7 +892,6 @@ private fun StepLogContent(
     isSaved: Boolean,
     selectedMood: MoodTag?,
     language: AppLanguage,
-    strings: AppStrings,
     onIntent: (RitualIntent) -> Unit,
     onFinish: () -> Unit
 ) {
@@ -906,7 +900,7 @@ private fun StepLogContent(
     RitualStepColumn { _, _ ->
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = strings.moodCategory,
+                text = stringResource(R.string.ritual_mood_category),
                 style = MaterialTheme.typography.labelSmall.copy(
                     letterSpacing = 2.sp,
                     fontSize = 10.sp
@@ -915,7 +909,7 @@ private fun StepLogContent(
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = strings.moodTitle,
+                text = stringResource(R.string.ritual_mood_title),
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Light,
                     fontSize = 24.sp
@@ -925,7 +919,7 @@ private fun StepLogContent(
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = strings.moodSubtitle,
+                text = stringResource(R.string.ritual_mood_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSlate
             )
@@ -957,7 +951,7 @@ private fun StepLogContent(
                     }
                     Spacer(modifier = Modifier.height(18.dp))
                     Text(
-                        text = strings.ritualCompletedNotice,
+                        text = stringResource(R.string.ritual_completed_notice),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 22.sp
@@ -966,7 +960,8 @@ private fun StepLogContent(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = strings.workdayDoneDesc(
+                        text = stringResource(
+                            R.string.home_workday_done_desc,
                             selectedMood?.let { stringResource(it.labelRes) } ?: ""
                         ),
                         style = MaterialTheme.typography.bodyMedium,
@@ -1039,7 +1034,7 @@ private fun StepLogContent(
                     )
                 ) {
                     Text(
-                        text = strings.returnHome,
+                        text = stringResource(R.string.ritual_return_home),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 16.sp
@@ -1060,7 +1055,7 @@ private fun StepLogContent(
                     border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
                 ) {
                     Text(
-                        text = strings.buttonSkipMood,
+                        text = stringResource(R.string.ritual_button_skip_mood),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

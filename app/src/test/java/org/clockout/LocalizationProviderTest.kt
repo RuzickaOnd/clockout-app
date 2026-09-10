@@ -91,4 +91,48 @@ class LocalizationProviderTest {
 
         composeTestRule.onNodeWithText("Padla").assertIsDisplayed()
     }
+
+    @Test
+    fun `the breathing inhale cue follows the provider language`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.ENGLISH) {
+                Text(stringResource(R.string.ritual_breathing_inhale))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Inhale...").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the breathing inhale cue follows the provider language in czech`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                Text(stringResource(R.string.ritual_breathing_inhale))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Nádech...").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the breathing exhale cue follows the provider language`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.ENGLISH) {
+                Text(stringResource(R.string.ritual_breathing_exhale))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Exhale...").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the breathing exhale cue follows the provider language in czech`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                Text(stringResource(R.string.ritual_breathing_exhale))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Výdech...").assertIsDisplayed()
+    }
 }

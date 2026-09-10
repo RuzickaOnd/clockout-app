@@ -259,6 +259,36 @@
         <item>Resting instead of pushing on</item>
     </string-array>
 
+    <!-- Ritual -->
+    <string name="ritual_header_title">CLOSING RITUAL</string>
+    <string name="ritual_step_indicator">Step %1$d of %2$d</string>
+    <string name="ritual_close_confirm">Exit</string>
+    <string name="ritual_question_category">MINDFUL CLOSURE</string>
+    <string name="ritual_question_instruction">Name one thing you don\'t need to carry anymore today. Leave it right here.</string>
+    <string name="ritual_custom_answer_placeholder">Or write your own thought...</string>
+    <string name="ritual_button_continue_to_breathing">Continue to breathing</string>
+    <string name="ritual_breathing_category">BREATHING SEQUENCE</string>
+    <string name="ritual_breathing_title">Mindful breath 4s / 4s</string>
+    <string name="ritual_breathing_inhale">Inhale...</string>
+    <string name="ritual_breathing_exhale">Exhale...</string>
+    <string name="ritual_breathing_inhale_desc">Fill your lungs with calm and fresh air</string>
+    <string name="ritual_breathing_exhale_desc">Release all work tension as you exhale</string>
+    <string name="ritual_button_finish_breathing">Continue to closure</string>
+    <string name="ritual_button_skip_breathing">Skip breathing</string>
+    <string name="ritual_closure_category">VISUAL CLOSURE</string>
+    <string name="ritual_closure_tap_prompt">Tap to close the day</string>
+    <string name="ritual_closure_done_title">Workday is closed</string>
+    <string name="ritual_closure_lamp_turn_off_prompt">Turn off the desk lamp and symbolically close the day.</string>
+    <string name="ritual_closure_finished_prompt">Work is done. The rest of the day is yours.</string>
+    <string name="ritual_closure_done_message">All messages and tasks will wait until tomorrow. You\'ve clocked out today.</string>
+    <string name="ritual_button_record_mood">Record mood</string>
+    <string name="ritual_mood_category">QUICK LOG</string>
+    <string name="ritual_mood_title">How do you feel at the end of the day?</string>
+    <string name="ritual_mood_subtitle">One tap to capture your evening mindset.</string>
+    <string name="ritual_button_skip_mood">Skip and close</string>
+    <string name="ritual_completed_notice">Ritual completed!</string>
+    <string name="ritual_return_home">Return to home page</string>
+
     <!-- Mood tags -->
     <string name="mood_calm_label">Calm</string>
     <string name="mood_calm_desc">A sense of lightness and inner calm</string>

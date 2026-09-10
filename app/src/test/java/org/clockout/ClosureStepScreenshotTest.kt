@@ -9,6 +9,7 @@ import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStep
 import org.clockout.presentation.ritual.RitualScreen
 import org.clockout.presentation.ritual.RitualState
+import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.MyApplicationTheme
 import org.junit.Rule
 import org.junit.Test
@@ -46,12 +47,14 @@ class ClosureStepScreenshotTest {
     private fun captureClosingStep(triggered: Boolean, fileName: String) {
         composeTestRule.mainClock.autoAdvance = false
         composeTestRule.setContent {
-            MyApplicationTheme {
-                RitualScreen(
-                    state = closingState(triggered),
-                    onIntent = {},
-                    onFinish = {}
-                )
+            AppLocalization(AppLanguage.CZECH) {
+                MyApplicationTheme {
+                    RitualScreen(
+                        state = closingState(triggered),
+                        onIntent = {},
+                        onFinish = {}
+                    )
+                }
             }
         }
         // Past the 1100 ms switch-off animation and its trailing copy delays.

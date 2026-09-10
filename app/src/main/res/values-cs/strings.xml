@@ -261,6 +261,36 @@
         <item>Že si odpočinu, místo abych tlačil(a) dál</item>
     </string-array>
 
+    <!-- Ritual -->
+    <string name="ritual_header_title">RITUÁL UZAVŘENÍ</string>
+    <string name="ritual_step_indicator">Krok %1$d ze %2$d</string>
+    <string name="ritual_close_confirm">Ukončit</string>
+    <string name="ritual_question_category">VĚDOMÉ UZAVŘENÍ DNE</string>
+    <string name="ritual_question_instruction">Pojmenuj jednu věc, kterou už dnes nemusíš řešit. Nech ji tady.</string>
+    <string name="ritual_custom_answer_placeholder">Nebo napiš vlastní myšlenku...</string>
+    <string name="ritual_button_continue_to_breathing">Pokračovat na dýchání</string>
+    <string name="ritual_breathing_category">DECHOVÁ SEKVENCE</string>
+    <string name="ritual_breathing_title">Vědomý dech 4s / 4s</string>
+    <string name="ritual_breathing_inhale">Nádech...</string>
+    <string name="ritual_breathing_exhale">Výdech...</string>
+    <string name="ritual_breathing_inhale_desc">Naplň plíce klidem a čerstvým vzduchem</string>
+    <string name="ritual_breathing_exhale_desc">S výdechem vypusť veškeré pracovní napětí</string>
+    <string name="ritual_button_finish_breathing">Pokračovat na uzavření</string>
+    <string name="ritual_button_skip_breathing">Přeskočit dýchání</string>
+    <string name="ritual_closure_category">VIZUÁLNÍ UZAVŘENÍ</string>
+    <string name="ritual_closure_tap_prompt">Klepnutím uzavři den</string>
+    <string name="ritual_closure_done_title">Pracovní den je uzavřen</string>
+    <string name="ritual_closure_lamp_turn_off_prompt">Zhasni pracovní lampu a symbolicky zavři dnešní den.</string>
+    <string name="ritual_closure_finished_prompt">Práce skončila. Zbytek dne patří jen tobě.</string>
+    <string name="ritual_closure_done_message">Všechny zprávy a úkoly počkají do zítra. Pro dnešek máš padla.</string>
+    <string name="ritual_button_record_mood">Zaznamenat náladu</string>
+    <string name="ritual_mood_category">RYCHLÝ ZÁZNAM</string>
+    <string name="ritual_mood_title">Jak se na konci dne cítíš?</string>
+    <string name="ritual_mood_subtitle">Jedno klepnutí pro zaznamenání tvého rozpoložení.</string>
+    <string name="ritual_button_skip_mood">Přeskočit a zavřít</string>
+    <string name="ritual_completed_notice">Rituál dokončen!</string>
+    <string name="ritual_return_home">Návrat na hlavní stránku</string>
+
     <!-- Mood tags -->
     <string name="mood_calm_label">Klidný</string>
     <string name="mood_calm_desc">Pocit lehkosti a vnitřního klidu</string>

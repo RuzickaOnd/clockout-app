@@ -49,12 +49,6 @@ class ExampleUnitTest {
         assertEquals("Settings", enStrings.navSettings)
         assertEquals("Nastavení", csStrings.navSettings)
 
-        assertEquals("Inhale...", enStrings.breathingInhale)
-        assertEquals("Nádech...", csStrings.breathingInhale)
-
-        assertEquals("Exhale...", enStrings.breathingExhale)
-        assertEquals("Výdech...", csStrings.breathingExhale)
-
         assertEquals("Disabled", enStrings.notificationsDisabled)
         assertEquals("Vypnuto", csStrings.notificationsDisabled)
         assertEquals("Enabled", enStrings.notificationsEnabled)
