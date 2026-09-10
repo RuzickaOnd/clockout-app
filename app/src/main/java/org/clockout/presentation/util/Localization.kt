@@ -19,19 +19,19 @@ import org.clockout.domain.model.SoundChoice
 import org.clockout.util.localizedFor
 
 /**
- * Podřídí resources ve stromu jazyku vybranému v aplikaci tím, že přebije LocalResources,
- * ne LocalContext. stringResource()/stringArrayResource()/pluralStringResource() čtou
- * LocalResources.current, který je jinak jen computed-default odvozený z
- * LocalContext.current.resources - stačí přebít přímo tenhle default a LocalContext
- * (i LocalConfiguration jako dřív, kvůli kódu, který si locale čte z konfigurace) nechat
- * beze změny.
+ * Subordinates the resources in the tree to the language chosen inside the app by overriding
+ * LocalResources rather than LocalContext. stringResource(), stringArrayResource() and
+ * pluralStringResource() all read LocalResources.current, which is otherwise just a computed
+ * default derived from LocalContext.current.resources - overriding that default directly is
+ * enough, and LocalContext (plus LocalConfiguration, for code that reads the locale off the
+ * configuration) can be left untouched.
  *
- * LocalContext tím zůstává skutečnou Activitou. Na tom stojí composition locals dohledávané
- * procházením řetězu ContextWrapperů (LocalActivity, LocalActivityResultRegistryOwner) i
- * WindowInfoTracker, jehož WM Extensions v1 i Sidecar backend pro detekci posture/fold
- * vyžadují `context is Activity` (ani jeden nerozbaluje ContextWrapper.baseContext).
- * Přepsání LocalContext na createConfigurationContext() (nebo i na ContextWrapper nad ním)
- * by "context is Activity" nadobro rozbilo - proto se tu LocalContext nedotýká vůbec.
+ * LocalContext therefore stays the real Activity. Composition locals resolved by walking the
+ * ContextWrapper chain depend on that (LocalActivity, LocalActivityResultRegistryOwner), and so
+ * does WindowInfoTracker: both its WM Extensions v1 and Sidecar backends require
+ * `context is Activity` for posture/fold detection, and neither unwraps ContextWrapper.baseContext.
+ * Overriding LocalContext with createConfigurationContext() - or even with a ContextWrapper around
+ * it - breaks `context is Activity` for good, which is why LocalContext is not touched here.
  */
 @Composable
 fun AppLocalization(language: AppLanguage, content: @Composable () -> Unit) {
@@ -83,7 +83,7 @@ val MeditationSoundStyle.descriptionRes: Int
         MeditationSoundStyle.SILENT_HAPTIC -> R.string.sound_silent_haptic_desc
     }
 
-/** Vlastní zvuk nese jméno souboru, které uživatel zvolil, a to se nepřekládá. */
+/** A custom sound carries the file name the user picked, which is never translated. */
 @Composable
 fun SoundChoice.localizedLabel(): String = when (this) {
     is SoundChoice.BuiltIn -> stringResource(style.labelRes)
@@ -96,11 +96,11 @@ fun SoundChoice.localizedDescription(): String = when (this) {
     is SoundChoice.Custom -> stringResource(R.string.sound_custom_desc, sound.formattedDuration)
 }
 
-/** Zkrácený název dne v týdnu (Po/Mon...) pro pruh dnů na Home - pořadí odpovídá `dayIndex`. */
+/** Short weekday name (Po/Mon...) for the Home week strip - the order matches `dayIndex`. */
 @Composable
 fun DayStatus.localizedDayName(): String = stringArrayResource(R.array.day_names_short)[dayIndex]
 
-/** Endonyma zůstávají v původním jazyce, překládá se jen volba "podle systému". */
+/** Endonyms stay in their own language; only the "system default" option is translated. */
 @Composable
 fun LanguageOption.localizedLabel(): String = when (this) {
     LanguageOption.SYSTEM -> stringResource(R.string.language_option_system)

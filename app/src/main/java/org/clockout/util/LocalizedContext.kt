@@ -6,16 +6,15 @@ import org.clockout.domain.model.AppLanguage
 import java.util.Locale
 
 /**
- * Resources pro jazyk vybraný v aplikaci, který se může lišit od systémového locale.
- * Jediné místo, kde se locale override vyrábí - používá ho katalog otázek
- * (QuestionsData) i Compose strom (AppLocalization, přes výsledné .resources).
+ * Resources for the language chosen inside the app, which may differ from the system locale.
+ * The single place the locale override is built - used by the question catalog (QuestionsData)
+ * and by the Compose tree (AppLocalization, through the resulting .resources).
  *
- * Vrací přímo createConfigurationContext() - žádný z volajících už dnes nepotřebuje nic
- * jiného než výsledné .resources, takže není důvod obalovat vrácený Context do
- * ContextWrapperu jen kvůli zachování řetězu zpět k Activitě. (AppLocalization dřív
- * přebíjela LocalContext tímhle Contextem, což tenhle řetěz rozbíjelo - opraveno tak, že
- * AppLocalization teď přebíjí jen LocalResources/LocalConfiguration a LocalContext
- * nechává být, viz Localization.kt.)
+ * Returns createConfigurationContext() directly: no caller needs anything but the resulting
+ * .resources, so there is no reason to wrap it in a ContextWrapper merely to keep the chain
+ * back to the Activity. AppLocalization used to override LocalContext with this Context, which
+ * broke that chain; it now overrides only LocalResources/LocalConfiguration and leaves
+ * LocalContext alone - see Localization.kt.
  */
 fun Context.localizedFor(language: AppLanguage): Context {
     val configuration = Configuration(resources.configuration).apply {

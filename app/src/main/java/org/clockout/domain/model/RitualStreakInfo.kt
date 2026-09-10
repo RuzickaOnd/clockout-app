@@ -1,10 +1,10 @@
 package org.clockout.domain.model
 
 /**
- * [dayIndex] je pořadí dne v týdnu od pondělí (0 = pondělí ... 6 = neděle) - odpovídá pořadí
- * položek v string-array `day_names_short`, ze kterého si prezentační vrstva vezme lokalizovaný
- * název dne (viz `presentation/util/Localization.kt`). Doménový model tím zůstává bez závislosti
- * na `R`, stejně jako u `MoodTag`.
+ * [dayIndex] is the day's position in the week counted from Monday (0 = Monday ... 6 = Sunday).
+ * It matches the item order of the `day_names_short` string array, from which the presentation
+ * layer takes the localized day name (see `presentation/util/Localization.kt`). The domain model
+ * therefore stays free of any `R` dependency, the same way `MoodTag` does.
  */
 data class DayStatus(
     val dayIndex: Int,

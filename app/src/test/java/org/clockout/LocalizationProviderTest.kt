@@ -21,8 +21,8 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * Jazyk vybraný v aplikaci se může lišit od systémového locale, takže resources musí
- * jít o zvolený jazyk požádat i na zařízení nastaveném jinak.
+ * The language chosen inside the app may differ from the system locale, so it must be possible to
+ * ask the resources for that language even on a device configured differently.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = RobolectricDeviceQualifiers.Pixel8, sdk = [36])
@@ -231,14 +231,14 @@ class LocalizationProviderTest {
     }
 
     /**
-     * Regrese: AppLocalization dřív přebíjela LocalContext (nejdřív na
-     * createConfigurationContext() přímo, pak na ContextWrapper okolo něj). Cokoliv, co si
-     * Activitu dohledává procházením řetězu ContextWrapperů - findOwner() v activity-compose,
-     * na kterém stojí LocalActivity i LocalActivityResultRegistryOwner - i cokoliv, co
-     * potřebuje context is Activity přímo (WindowInfoTracker při detekci posture/fold), by
-     * na to tiše nebo hlasitě doplatilo. SettingsScreen na tom spadl přes
-     * rememberLauncherForActivityResult(). Oprava nechává LocalContext beze změny a přebíjí
-     * jen LocalResources/LocalConfiguration - viz i test níže.
+     * Regression guard: AppLocalization used to override LocalContext, first with
+     * createConfigurationContext() directly and then with a ContextWrapper around it. Anything
+     * that finds the Activity by walking the ContextWrapper chain - findOwner() in
+     * activity-compose, which both LocalActivity and LocalActivityResultRegistryOwner rest on -
+     * and anything needing `context is Activity` outright (WindowInfoTracker during posture/fold
+     * detection) paid for it, quietly or loudly. SettingsScreen crashed on it through
+     * rememberLauncherForActivityResult(). The fix leaves LocalContext untouched and overrides
+     * only LocalResources/LocalConfiguration - see also the test below.
      */
     @Test
     fun `the activity and its result registry stay reachable under a localized provider`() {
@@ -260,8 +260,8 @@ class LocalizationProviderTest {
     }
 
     /**
-     * Pin na invariantu, o kterou se tenhle celý příběh točí: AppLocalization smí přebít
-     * jazyk resources, ale nesmí přitom přestat platit LocalContext.current je Activita.
+     * Pins the invariant this whole story turns on: AppLocalization may override the language of
+     * the resources, but LocalContext.current must stay the Activity while it does.
      */
     @Test
     fun `LocalContext stays the activity while stringResource follows the chosen language`() {

@@ -18,8 +18,8 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * Texty obrazovky teď určuje provider, ne pole ve stavu. Test drží stav v angličtině a
- * provider v češtině, aby bylo vidět, že rozhoduje provider.
+ * The screen's text is decided by the provider now, not by a field on the state. The test holds
+ * the state in English and the provider in Czech, so it is visible that the provider wins.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = RobolectricDeviceQualifiers.Pixel8, sdk = [36])

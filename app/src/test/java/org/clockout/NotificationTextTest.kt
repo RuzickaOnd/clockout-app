@@ -11,7 +11,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * Notifikace vzniká mimo Compose, takže si jazyk musí vyžádat sama.
+ * The notification is built outside Compose, so it has to ask for the language itself.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [36])
