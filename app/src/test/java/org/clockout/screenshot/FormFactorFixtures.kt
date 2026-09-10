@@ -32,18 +32,16 @@ object Fixtures {
         )
     )
 
-    private val weekDays = listOf("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
-        .mapIndexed { index, name ->
-            DayStatus(
-                dayNameCs = name,
-                dayNameEn = name,
-                dayOfMonth = index + 1,
-                dateString = "2026-09-0${index + 1}",
-                isToday = index == 2,
-                isCompleted = index < 2,
-                moodTag = if (index < 2) MoodTag.CALM else null
-            )
-        }
+    private val weekDays = (0..6).map { index ->
+        DayStatus(
+            dayIndex = index,
+            dayOfMonth = index + 1,
+            dateString = "2026-09-0${index + 1}",
+            isToday = index == 2,
+            isCompleted = index < 2,
+            moodTag = if (index < 2) MoodTag.CALM else null
+        )
+    }
 
     private fun streak(todayCompleted: Boolean, todayLog: RitualLogEntry?) = RitualStreakInfo(
         completedThisWeekCount = if (todayCompleted) 3 else 2,

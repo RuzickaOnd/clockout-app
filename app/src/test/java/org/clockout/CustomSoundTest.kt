@@ -1,6 +1,5 @@
 package org.clockout
 
-import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.MeditationSoundStyle
 import org.clockout.domain.model.SoundChoice
@@ -54,13 +53,5 @@ class CustomSoundTest {
     fun testDeletedCustomSoundFallsBackToDefault() {
         // Selected id survived in preferences but its metadata is gone
         assertEquals(SoundChoice.Default, SoundChoice.fromId(CustomSound.ID_PREFIX + "gone", listOf(sound())))
-    }
-
-    @Test
-    fun testCustomChoiceIsLabelledWithFileNameAndDuration() {
-        val choice = SoundChoice.Custom(sound())
-        assertEquals("Ocean night", choice.label(AppLanguage.ENGLISH))
-        assertTrue(choice.description(AppLanguage.CZECH).contains("2:34"))
-        assertTrue(choice.description(AppLanguage.ENGLISH).contains("2:34"))
     }
 }

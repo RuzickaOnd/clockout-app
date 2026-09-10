@@ -81,11 +81,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.clockout.BuildConfig
+import org.clockout.R
 import org.clockout.data.local.SoundImportError
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.CustomSound
@@ -97,7 +99,8 @@ import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.components.ContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
-import org.clockout.presentation.util.AppStrings
+import org.clockout.presentation.util.localizedDescription
+import org.clockout.presentation.util.localizedLabel
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.IndigoPrimary
 import org.clockout.ui.theme.TextLight
@@ -130,7 +133,6 @@ fun SettingsScreen(
     showBackButton: Boolean = true
 ) {
     val context = LocalContext.current
-    val strings = remember(state.language) { AppStrings(state.language) }
     val scrollState = rememberScrollState()
     var showResetDialog by remember { mutableStateOf(false) }
     var showPermissionDialog by remember { mutableStateOf(false) }
@@ -170,8 +172,8 @@ fun SettingsScreen(
             containerColor = Color(0xFF141526),
             titleContentColor = TextLight,
             textContentColor = TextSlate,
-            title = { Text(strings.clearDataDialogTitle) },
-            text = { Text(strings.clearDataDialogText) },
+            title = { Text(stringResource(R.string.settings_clear_data_dialog_title)) },
+            text = { Text(stringResource(R.string.settings_clear_data_dialog_text)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -179,12 +181,12 @@ fun SettingsScreen(
                         showResetDialog = false
                     }
                 ) {
-                    Text(strings.clearDataConfirm, color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.settings_clear_data_confirm), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showResetDialog = false }) {
-                    Text(strings.cancel, color = TextSlate)
+                    Text(stringResource(R.string.common_cancel), color = TextSlate)
                 }
             }
         )
@@ -197,8 +199,8 @@ fun SettingsScreen(
             containerColor = Color(0xFF141526),
             titleContentColor = TextLight,
             textContentColor = TextSlate,
-            title = { Text(strings.deleteCustomSoundTitle) },
-            text = { Text(strings.deleteCustomSoundText(pendingDeletion.displayName)) },
+            title = { Text(stringResource(R.string.settings_delete_custom_sound_title)) },
+            text = { Text(stringResource(R.string.settings_delete_custom_sound_text, pendingDeletion.displayName)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -207,12 +209,12 @@ fun SettingsScreen(
                     },
                     modifier = Modifier.testTag("confirm_delete_custom_sound")
                 ) {
-                    Text(strings.delete, color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { soundPendingDeletion = null }) {
-                    Text(strings.cancel, color = TextSlate)
+                    Text(stringResource(R.string.common_cancel), color = TextSlate)
                 }
             }
         )
@@ -224,8 +226,8 @@ fun SettingsScreen(
             containerColor = Color(0xFF141526),
             titleContentColor = TextLight,
             textContentColor = TextSlate,
-            title = { Text(strings.permissionDialogTitle) },
-            text = { Text(strings.permissionDeniedMessage) },
+            title = { Text(stringResource(R.string.settings_permission_dialog_title)) },
+            text = { Text(stringResource(R.string.settings_permission_denied_message)) },
             confirmButton = {
                 TextButton(onClick = { showPermissionDialog = false }) {
                     Text("OK", color = IndigoAccent)
@@ -248,7 +250,7 @@ fun SettingsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = strings.settingsTitle,
+                        text = stringResource(R.string.settings_title),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 20.sp
@@ -269,7 +271,7 @@ fun SettingsScreen(
                             IconButton(onClick = onBack, modifier = Modifier.testTag("settings_back_button")) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = strings.back,
+                                    contentDescription = stringResource(R.string.common_back),
                                     tint = TextSlate,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -306,7 +308,7 @@ fun SettingsScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = strings.workdayEndTimeTitle,
+                                    text = stringResource(R.string.settings_workday_end_time_title),
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 17.sp
@@ -316,9 +318,9 @@ fun SettingsScreen(
                                 Spacer(modifier = Modifier.height(3.dp))
                                 Text(
                                     text = if (state.isNotificationEnabled) {
-                                        strings.currentlySetTo(state.formattedTime)
+                                        stringResource(R.string.settings_currently_set_to, state.formattedTime)
                                     } else {
-                                        strings.notificationsDisabled
+                                        stringResource(R.string.settings_notifications_disabled)
                                     },
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (state.isNotificationEnabled) IndigoAccent else TextSlate
@@ -361,7 +363,7 @@ fun SettingsScreen(
                             Column {
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    text = strings.quickPresetsLabel,
+                                    text = stringResource(R.string.settings_quick_presets_label),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSlate
                                 )
@@ -415,7 +417,7 @@ fun SettingsScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = strings.includeWeekendsTitle,
+                                text = stringResource(R.string.settings_include_weekends_title),
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 16.sp
@@ -424,7 +426,7 @@ fun SettingsScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = strings.includeWeekendsDesc,
+                                text = stringResource(R.string.settings_include_weekends_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSlate
                             )
@@ -458,7 +460,7 @@ fun SettingsScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = strings.testModeTitle,
+                                text = stringResource(R.string.settings_test_mode_title),
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 16.sp
@@ -467,7 +469,7 @@ fun SettingsScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = strings.testModeDesc,
+                                text = stringResource(R.string.settings_test_mode_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSlate
                             )
@@ -505,7 +507,7 @@ fun SettingsScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = strings.ambientSoundTitle,
+                                    text = stringResource(R.string.settings_ambient_sound_title),
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 16.sp
@@ -514,7 +516,7 @@ fun SettingsScreen(
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = strings.ambientSoundDesc,
+                                    text = stringResource(R.string.settings_ambient_sound_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSlate
                                 )
@@ -544,7 +546,7 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Text(
-                                text = strings.soundStyleTitle,
+                                text = stringResource(R.string.settings_sound_style_title),
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 14.sp
@@ -587,7 +589,7 @@ fun SettingsScreen(
                                             )
                                             Spacer(modifier = Modifier.width(12.dp))
                                             Text(
-                                                text = state.soundChoice.label(state.language),
+                                                text = state.soundChoice.localizedLabel(),
                                                 style = MaterialTheme.typography.bodyMedium.copy(
                                                     fontWeight = FontWeight.Medium,
                                                     fontSize = 15.sp
@@ -613,7 +615,7 @@ fun SettingsScreen(
                                         .background(Color(0xFF181A2F))
                                         .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
                                 ) {
-                                    MenuSectionLabel(strings.builtInSoundGroupLabel)
+                                    MenuSectionLabel(stringResource(R.string.settings_built_in_sound_group_label))
 
                                     MeditationSoundStyle.entries.forEach { style ->
                                         val choice = SoundChoice.BuiltIn(style)
@@ -629,8 +631,8 @@ fun SettingsScreen(
                                             },
                                             text = {
                                                 SoundChoiceMenuText(
-                                                    title = choice.label(state.language),
-                                                    description = choice.description(state.language),
+                                                    title = choice.localizedLabel(),
+                                                    description = choice.localizedDescription(),
                                                     isSelected = isSelected
                                                 )
                                             },
@@ -653,7 +655,7 @@ fun SettingsScreen(
                                     }
 
                                     if (state.customSounds.isNotEmpty()) {
-                                        MenuSectionLabel(strings.customSoundGroupLabel)
+                                        MenuSectionLabel(stringResource(R.string.settings_custom_sound_group_label))
                                     }
 
                                     state.customSounds.forEach { customSound ->
@@ -670,8 +672,8 @@ fun SettingsScreen(
                                             },
                                             text = {
                                                 SoundChoiceMenuText(
-                                                    title = choice.label(state.language),
-                                                    description = choice.description(state.language),
+                                                    title = choice.localizedLabel(),
+                                                    description = choice.localizedDescription(),
                                                     isSelected = isSelected
                                                 )
                                             },
@@ -696,7 +698,7 @@ fun SettingsScreen(
                                                     ) {
                                                         Icon(
                                                             imageVector = Icons.Default.DeleteOutline,
-                                                            contentDescription = strings.delete,
+                                                            contentDescription = stringResource(R.string.common_delete),
                                                             tint = TextMuted,
                                                             modifier = Modifier.size(18.dp)
                                                         )
@@ -722,7 +724,7 @@ fun SettingsScreen(
                                         },
                                         text = {
                                             Text(
-                                                text = strings.uploadCustomSoundButton,
+                                                text = stringResource(R.string.settings_upload_custom_sound_button),
                                                 style = MaterialTheme.typography.bodyMedium.copy(
                                                     fontWeight = FontWeight.Medium
                                                 ),
@@ -740,7 +742,7 @@ fun SettingsScreen(
 
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = state.soundChoice.description(state.language),
+                                text = state.soundChoice.localizedDescription(),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSlate,
                                 fontSize = 12.5.sp,
@@ -775,9 +777,9 @@ fun SettingsScreen(
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = if (state.isPreviewPlaying) {
-                                            strings.soundPreviewPlaying
+                                            stringResource(R.string.settings_sound_preview_playing)
                                         } else {
-                                            "${strings.soundPreviewButton} (${state.soundChoice.label(state.language)})"
+                                            "${stringResource(R.string.settings_sound_preview_button)} (${state.soundChoice.localizedLabel()})"
                                         },
                                         color = if (state.isPreviewPlaying) IndigoAccent else TextLight,
                                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
@@ -795,7 +797,7 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Text(
-                                text = strings.customSoundSectionTitle,
+                                text = stringResource(R.string.settings_custom_sound_section_title),
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 14.sp
@@ -804,7 +806,7 @@ fun SettingsScreen(
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = strings.customSoundHint,
+                                text = stringResource(R.string.settings_custom_sound_hint),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSlate,
                                 fontSize = 12.5.sp,
@@ -841,9 +843,9 @@ fun SettingsScreen(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = if (state.isImportingSound) {
-                                        strings.uploadingCustomSound
+                                        stringResource(R.string.settings_uploading_custom_sound)
                                     } else {
-                                        strings.uploadCustomSoundButton
+                                        stringResource(R.string.settings_upload_custom_sound_button)
                                     },
                                     color = IndigoAccent,
                                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
@@ -865,10 +867,10 @@ fun SettingsScreen(
                                 ) {
                                     Text(
                                         text = when (importError) {
-                                            SoundImportError.UNSUPPORTED_FILE -> strings.customSoundErrorUnsupported
-                                            SoundImportError.FILE_TOO_LARGE -> strings.customSoundErrorTooLarge
-                                            SoundImportError.LIMIT_REACHED -> strings.customSoundErrorLimit
-                                            SoundImportError.READ_FAILED -> strings.customSoundErrorRead
+                                            SoundImportError.UNSUPPORTED_FILE -> stringResource(R.string.settings_custom_sound_error_unsupported)
+                                            SoundImportError.FILE_TOO_LARGE -> stringResource(R.string.settings_custom_sound_error_too_large)
+                                            SoundImportError.LIMIT_REACHED -> stringResource(R.string.settings_custom_sound_error_limit)
+                                            SoundImportError.READ_FAILED -> stringResource(R.string.settings_custom_sound_error_read)
                                         },
                                         style = MaterialTheme.typography.bodySmall,
                                         color = Color(0xFFFCA5A5),
@@ -893,7 +895,7 @@ fun SettingsScreen(
                 ) {
                     Column {
                         Text(
-                            text = strings.languageSectionTitle,
+                            text = stringResource(R.string.language_title),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp
@@ -932,8 +934,8 @@ fun SettingsScreen(
                                         )
                                         Spacer(modifier = Modifier.width(12.dp))
                                         val displayLabel = when (state.selectedLanguageOption) {
-                                            LanguageOption.SYSTEM -> "${state.selectedLanguageOption.label(state.language)} (${state.language.displayName})"
-                                            else -> state.selectedLanguageOption.label(state.language)
+                                            LanguageOption.SYSTEM -> "${state.selectedLanguageOption.localizedLabel()} (${state.language.displayName})"
+                                            else -> state.selectedLanguageOption.localizedLabel()
                                         }
                                         Text(
                                             text = displayLabel,
@@ -967,7 +969,7 @@ fun SettingsScreen(
                                         text = {
                                             Column(verticalArrangement = Arrangement.Center) {
                                                 Text(
-                                                    text = option.label(state.language),
+                                                    text = option.localizedLabel(),
                                                     style = MaterialTheme.typography.bodyMedium.copy(
                                                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                                                     ),
@@ -1014,7 +1016,7 @@ fun SettingsScreen(
                 ) {
                     Column {
                         Text(
-                            text = strings.aboutTitle,
+                            text = stringResource(R.string.settings_about_title),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp
@@ -1023,7 +1025,7 @@ fun SettingsScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = strings.aboutDesc,
+                            text = stringResource(R.string.settings_about_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = TextSlate,
                             lineHeight = 20.sp
@@ -1034,7 +1036,7 @@ fun SettingsScreen(
                 // Build identification, kept right under the About card so a user reporting a
                 // problem can read the exact build back without leaving Settings.
                 Text(
-                    text = "${strings.appVersionLabel} ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+                    text = "${stringResource(R.string.settings_app_version_label)} ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                     style = MaterialTheme.typography.labelSmall,
                     color = TextMuted,
                     textAlign = TextAlign.Center,
@@ -1056,7 +1058,7 @@ fun SettingsScreen(
                     )
                 ) {
                     Text(
-                        text = strings.clearDataButton,
+                        text = stringResource(R.string.settings_clear_data_button),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

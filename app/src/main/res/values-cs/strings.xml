@@ -9,6 +9,57 @@
     <string name="update_ready">Aktualizace je připravená</string>
     <string name="update_restart">Restartovat</string>
 
+    <!-- Home -->
+    <string name="common_quoted">„%1$s“</string>
+    <string name="nav_home">Dnešek</string>
+    <string name="nav_history">Historie</string>
+    <string name="nav_settings">Nastavení</string>
+    <string name="home_slot_workday_end">SLOT: KONEC PRÁCE (16–21h)</string>
+    <string name="home_weekend_slot_badge">VÍKEND</string>
+    <string name="home_weekend_rest_title">Dnes máš volno</string>
+    <string name="home_weekend_rest_desc">Pracovní týden je za tebou. Rituál se vrátí v pondělí.</string>
+    <string name="home_today_closed_badge">DNES UZAVŘENO ✓</string>
+    <string name="home_workday_done_title">Pracovní den je hotov</string>
+    <string name="home_workday_done_desc">Nálada: %1$s. Užij si volný večer pro sebe a své tělo.</string>
+    <string name="home_close_day_title">Uzavři vědomě dnešní den</string>
+    <string name="home_close_day_desc">Krátký 3minutový rituál ti pomůže odložit pracovní myšlenky a přepnout hlavu do volna.</string>
+    <string name="home_today_question_label">DNEŠNÍ OTÁZKA</string>
+    <string name="home_this_week_title">Tento týden</string>
+    <string-array name="day_names_short">
+        <item>Po</item>
+        <item>Út</item>
+        <item>St</item>
+        <item>Čt</item>
+        <item>Pá</item>
+        <item>So</item>
+        <item>Ne</item>
+    </string-array>
+    <plurals name="home_days_closed_summary">
+        <item quantity="one">%1$d z %2$d dne uzavřen</item>
+        <item quantity="few">%1$d z %2$d dnů uzavřeno</item>
+        <item quantity="many">%1$d z %2$d dne uzavřeno</item>
+        <item quantity="other">%1$d z %2$d dní uzavřeno</item>
+    </plurals>
+    <string name="home_why_ritual_title">Proč tento rituál?</string>
+    <string name="home_why_ritual_desc">Při práci z domova chybí fyzická cesta z kanceláře, která dříve přirozeně oddělovala den. Tyto 3 minuty ti dají jasný signál, že práce skončila a začíná tvůj vlastní čas.</string>
+
+    <!-- History -->
+    <string name="common_back">Zpět</string>
+    <string name="common_cancel">Zrušit</string>
+    <string name="common_delete">Smazat</string>
+    <string name="history_clear_tooltip">Smazat historii</string>
+    <string name="history_clear_dialog_title">Smazat historii rituálů?</string>
+    <string name="history_clear_dialog_text">Tato akce vymaže všechny dosud zaznamenané ukončené dny.</string>
+    <string name="history_empty_title">Zatím žádné záznamy</string>
+    <string name="history_empty_desc">Až dnes po práci projdeš svým prvním 3minutovým rituálem, objeví se zde tvá nálada i myšlenka.</string>
+    <plurals name="history_total_closed_days">
+        <item quantity="one">Celkem uzavřeno: %1$d den</item>
+        <item quantity="few">Celkem uzavřeno: %1$d dny</item>
+        <item quantity="many">Celkem uzavřeno: %1$d dne</item>
+        <item quantity="other">Celkem uzavřeno: %1$d dní</item>
+    </plurals>
+    <string name="history_padla_badge">Padla ✓</string>
+
     <!-- Ritual question catalog -->
     <string name="ritual_question_success">Co se dnes povedlo?</string>
     <string-array name="ritual_answers_success">
@@ -220,4 +271,98 @@
         <item>Že už dnes notebook neotevřu</item>
         <item>Že si odpočinu, místo abych tlačil(a) dál</item>
     </string-array>
+
+    <!-- Ritual -->
+    <string name="ritual_header_title">RITUÁL UZAVŘENÍ</string>
+    <string name="ritual_step_indicator">Krok %1$d ze %2$d</string>
+    <string name="ritual_close_confirm">Ukončit</string>
+    <string name="ritual_question_category">VĚDOMÉ UZAVŘENÍ DNE</string>
+    <string name="ritual_question_instruction">Pojmenuj jednu věc, kterou už dnes nemusíš řešit. Nech ji tady.</string>
+    <string name="ritual_custom_answer_placeholder">Nebo napiš vlastní myšlenku...</string>
+    <string name="ritual_button_continue_to_breathing">Pokračovat na dýchání</string>
+    <string name="ritual_breathing_category">DECHOVÁ SEKVENCE</string>
+    <string name="ritual_breathing_title">Vědomý dech 4s / 4s</string>
+    <string name="ritual_breathing_inhale">Nádech...</string>
+    <string name="ritual_breathing_exhale">Výdech...</string>
+    <string name="ritual_breathing_inhale_desc">Naplň plíce klidem a čerstvým vzduchem</string>
+    <string name="ritual_breathing_exhale_desc">S výdechem vypusť veškeré pracovní napětí</string>
+    <string name="ritual_button_finish_breathing">Pokračovat na uzavření</string>
+    <string name="ritual_button_skip_breathing">Přeskočit dýchání</string>
+    <string name="ritual_closure_category">VIZUÁLNÍ UZAVŘENÍ</string>
+    <string name="ritual_closure_tap_prompt">Klepnutím uzavři den</string>
+    <string name="ritual_closure_done_title">Pracovní den je uzavřen</string>
+    <string name="ritual_closure_lamp_turn_off_prompt">Zhasni pracovní lampu a symbolicky zavři dnešní den.</string>
+    <string name="ritual_closure_finished_prompt">Práce skončila. Zbytek dne patří jen tobě.</string>
+    <string name="ritual_closure_done_message">Všechny zprávy a úkoly počkají do zítra. Pro dnešek máš padla.</string>
+    <string name="ritual_button_record_mood">Zaznamenat náladu</string>
+    <string name="ritual_mood_category">RYCHLÝ ZÁZNAM</string>
+    <string name="ritual_mood_title">Jak se na konci dne cítíš?</string>
+    <string name="ritual_mood_subtitle">Jedno klepnutí pro zaznamenání tvého rozpoložení.</string>
+    <string name="ritual_button_skip_mood">Přeskočit a zavřít</string>
+    <string name="ritual_completed_notice">Rituál dokončen!</string>
+    <string name="ritual_return_home">Návrat na hlavní stránku</string>
+
+    <!-- Mood tags -->
+    <string name="mood_calm_label">Klidný</string>
+    <string name="mood_calm_desc">Pocit lehkosti a vnitřního klidu</string>
+    <string name="mood_tired_label">Unavený</string>
+    <string name="mood_tired_desc">Zasloužený odpočinek po náročném dni</string>
+    <string name="mood_satisfied_label">Spokojený</string>
+    <string name="mood_satisfied_desc">Pocit dobře odvedené práce a posunu</string>
+    <string name="mood_tense_label">Napjatý</string>
+    <string name="mood_tense_desc">Čas nechat napětí za zavřenými dveřmi</string>
+
+    <!-- Sound styles -->
+    <string name="sound_tibetan_bowl_label">Tibetská mísa a gong</string>
+    <string name="sound_tibetan_bowl_desc">Harmonický rezonující úder meditační mísy při začátku a změnách fází dechu</string>
+    <string name="sound_rain_pink_noise_label">Jemný déšť a růžový šum</string>
+    <string name="sound_rain_pink_noise_desc">Klidný měkký šum evokující kapky letního deště bez ostrých tónů</string>
+    <string name="sound_breathing_waves_label">Dechové vlny (příliv a odliv)</string>
+    <string name="sound_breathing_waves_desc">Příliv a odliv šumu plynule synchronizovaný s fázemi nádechu a výdechu</string>
+    <string name="sound_silent_haptic_label">Pouze ticho a haptika</string>
+    <string name="sound_silent_haptic_desc">Úplné ticho bez zvuku, pouze jemné uklidňující vibrace telefonu</string>
+    <string name="sound_custom_desc">Vlastní nahrávka (%1$s) přehrávaná ve smyčce s jemným náběhem hlasitosti</string>
+
+    <!-- Language options -->
+    <string name="language_option_system">Dle systému</string>
+
+    <!-- Settings -->
+    <string name="settings_workday_end_time_title">Čas konce pracovního dne</string>
+    <string name="settings_notifications_disabled">Vypnuto</string>
+    <string name="settings_permission_dialog_title">Povolení notifikací</string>
+    <string name="settings_permission_denied_message">Pro zasílání pravidelných připomenutí konce práce je potřeba povolit notifikace v systému.</string>
+    <string name="settings_currently_set_to">Aktuálně nastaveno: %1$s</string>
+    <string name="settings_quick_presets_label">Rychlá volba obvyklého času padla:</string>
+    <string name="settings_include_weekends_title">Zahrnout víkendy</string>
+    <string name="settings_include_weekends_desc">Zapnuto: rituál i připomínka běží 7 dní v týdnu. Vypnuto: jen pondělí až pátek.</string>
+    <string name="settings_test_mode_title">Rituál dostupný kdykoliv</string>
+    <string name="settings_test_mode_desc">Umožní spustit rituál i mimo hlavní okno (16:00–21:00) pro flexibilní pracovní dobu a testování.</string>
+    <string name="settings_ambient_sound_title">Zvuk a doprovod při dýchání</string>
+    <string name="settings_ambient_sound_desc">Uvolňující zvukový doprovod sladěný s dechovým cvičením pro snazší zklidnění.</string>
+    <string name="settings_sound_style_title">Styl meditačního zvuku</string>
+    <string name="settings_sound_preview_button">Vyzkoušet</string>
+    <string name="settings_sound_preview_playing">Hraje ukázka...</string>
+    <string name="settings_custom_sound_section_title">Vlastní zvuky</string>
+    <string name="settings_custom_sound_group_label">VLASTNÍ ZVUKY</string>
+    <string name="settings_built_in_sound_group_label">PŘEDPŘIPRAVENÉ</string>
+    <string name="settings_upload_custom_sound_button">Nahrát vlastní zvuk</string>
+    <string name="settings_uploading_custom_sound">Nahrávám soubor…</string>
+    <string name="settings_custom_sound_hint">Podporované formáty: MP3, WAV, OGG, M4A, FLAC (max. 25 MB, až 10 souborů). Soubor se uloží do aplikace a při dýchání se přehrává ve smyčce.</string>
+    <string name="settings_delete_custom_sound_title">Smazat vlastní zvuk?</string>
+    <string name="settings_delete_custom_sound_text">Soubor „%1$s“ bude z aplikace odstraněn.</string>
+    <string name="settings_custom_sound_error_unsupported">Tento soubor se nepodařilo přehrát. Vyber prosím platný zvukový soubor.</string>
+    <string name="settings_custom_sound_error_too_large">Soubor je příliš velký. Maximální velikost je 25 MB.</string>
+    <string name="settings_custom_sound_error_limit">Můžeš mít uložených nejvýše 10 vlastních zvuků. Nejprve nějaký smaž.</string>
+    <string name="settings_custom_sound_error_read">Soubor se nepodařilo načíst. Zkus to prosím znovu.</string>
+    <string name="settings_about_title">O aplikaci Padla</string>
+    <string name="settings_about_desc">Padla ti pomáhá vědomě uzavřít pracovní den a přepnout se z práce do osobního času. Nejvíc se hodí na home office, kde mezi kanceláří a domovem chybí přirozená hranice.\n\nStačí tři minuty denního rituálu: odpovíš na dnešní otázku a odložíš myšlenku, kterou už nemusíš nést, zklidníš dech v rytmu 4 s nádech / 4 s výdech, klepnutím zhasneš pracovní lampu a zaznamenáš, s jakou náladou den opouštíš.\n\nPráce se ti tak nepřelévá do večera, snáz vypneš hlavu a druhý den začínáš odpočatý. Všechno zůstává jen v telefonu — žádné účty, žádný cloud.</string>
+    <string name="settings_app_version_label">Verze</string>
+    <string name="settings_clear_data_button">Vymazat data a historii</string>
+    <string name="settings_clear_data_dialog_title">Vymazat data aplikace?</string>
+    <string name="settings_clear_data_dialog_text">Tato akce smaže historii zaznamenaných rituálů.</string>
+    <string name="settings_clear_data_confirm">Vymazat</string>
+
+    <!-- Notifications -->
+    <string name="notification_workday_end_title">Padla – čas ukončit práci</string>
+    <string name="notification_workday_end_text">Zastav se na 2 minuty a vědomě uzavři dnešní pracovní den.</string>
 </resources>

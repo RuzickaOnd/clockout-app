@@ -53,7 +53,8 @@ class RitualWeekOverviewTest {
 
         assertEquals(5, streakInfo.weekDays.size)
         assertEquals(5, streakInfo.targetWorkDays)
-        assertEquals(listOf("Mon", "Tue", "Wed", "Thu", "Fri"), streakInfo.weekDays.map { it.dayNameEn })
+        // dayIndex is Monday-relative (0 = Monday), matching the order of day_names_short.
+        assertEquals(listOf(0, 1, 2, 3, 4), streakInfo.weekDays.map { it.dayIndex })
     }
 
     @Test
@@ -65,8 +66,8 @@ class RitualWeekOverviewTest {
         assertEquals(7, streakInfo.weekDays.size)
         assertEquals(7, streakInfo.targetWorkDays)
         assertEquals(
-            listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"),
-            streakInfo.weekDays.map { it.dayNameEn }
+            listOf(0, 1, 2, 3, 4, 5, 6),
+            streakInfo.weekDays.map { it.dayIndex }
         )
     }
 }

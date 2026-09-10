@@ -40,17 +40,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.clockout.domain.model.AppLanguage
+import org.clockout.R
 import org.clockout.domain.model.DayStatus
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.presentation.components.FrostedBackgroundContainer
@@ -58,8 +59,9 @@ import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.components.ContentMaxWidth
 import org.clockout.presentation.components.WideContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
-import org.clockout.presentation.util.AppStrings
+import org.clockout.presentation.util.labelRes
 import org.clockout.presentation.util.localizedAnswer
+import org.clockout.presentation.util.localizedDayName
 import org.clockout.presentation.util.localizedQuestionText
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.IndigoPrimary
@@ -81,7 +83,6 @@ fun HomeScreen(
      */
     showTopBarNavigation: Boolean = true
 ) {
-    val strings = remember(state.language) { AppStrings(state.language) }
     val scrollState = rememberScrollState()
     val isCompleted = state.streakInfo?.isTodayCompleted == true
     val todayLog = state.streakInfo?.todayLog
@@ -120,7 +121,7 @@ fun HomeScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = strings.appName,
+                                    text = stringResource(R.string.app_name),
                                     style = MaterialTheme.typography.titleLarge.copy(
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 20.sp
@@ -128,7 +129,7 @@ fun HomeScreen(
                                     color = TextLight
                                 )
                                 Text(
-                                    text = strings.appSubtitle,
+                                    text = stringResource(R.string.app_subtitle),
                                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                                     color = TextMuted
                                 )
@@ -140,14 +141,14 @@ fun HomeScreen(
                         if (showTopBarNavigation) {
                             TopBarIconButton(
                                 icon = Icons.Default.History,
-                                contentDescription = strings.navHistory,
+                                contentDescription = stringResource(R.string.nav_history),
                                 onClick = onNavigateToHistory,
                                 testTag = "nav_history_button"
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             TopBarIconButton(
                                 icon = Icons.Default.Settings,
-                                contentDescription = strings.navSettings,
+                                contentDescription = stringResource(R.string.nav_settings),
                                 onClick = onNavigateToSettings,
                                 testTag = "nav_settings_button"
                             )
@@ -168,7 +169,6 @@ fun HomeScreen(
                 ) {
                     HomeContent(
                         state = state,
-                        strings = strings,
                         isCompleted = isCompleted,
                         todayLog = todayLog,
                         onStartRitual = onStartRitual,
@@ -194,7 +194,6 @@ private val HomeTwoPaneMinWidth = 840.dp
 @Composable
 private fun HomeContent(
     state: HomeState,
-    strings: AppStrings,
     isCompleted: Boolean,
     todayLog: RitualLogEntry?,
     onStartRitual: () -> Unit,
@@ -207,22 +206,22 @@ private fun HomeContent(
             horizontalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                HeroCard(state, strings, isCompleted, todayLog, onStartRitual)
+                HeroCard(state, isCompleted, todayLog, onStartRitual)
             }
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                WeeklyStreakCard(state, strings)
-                WhyRitualCard(strings)
+                WeeklyStreakCard(state)
+                WhyRitualCard()
             }
         }
     } else {
-        HeroCard(state, strings, isCompleted, todayLog, onStartRitual)
+        HeroCard(state, isCompleted, todayLog, onStartRitual)
         Spacer(modifier = Modifier.height(18.dp))
-        WeeklyStreakCard(state, strings)
+        WeeklyStreakCard(state)
         Spacer(modifier = Modifier.height(18.dp))
-        WhyRitualCard(strings)
+        WhyRitualCard()
     }
     Spacer(modifier = Modifier.height(24.dp))
 }
@@ -230,7 +229,6 @@ private fun HomeContent(
 @Composable
 private fun HeroCard(
     state: HomeState,
-    strings: AppStrings,
     isCompleted: Boolean,
     todayLog: RitualLogEntry?,
     onStartRitual: () -> Unit
@@ -262,9 +260,9 @@ private fun HeroCard(
                 ) {
                     Text(
                         text = when {
-                            isCompleted -> strings.todayClosedBadge
-                            !state.isRitualDay -> strings.weekendSlotBadge
-                            else -> strings.slotWorkdayEnd
+                            isCompleted -> stringResource(R.string.home_today_closed_badge)
+                            !state.isRitualDay -> stringResource(R.string.home_weekend_slot_badge)
+                            else -> stringResource(R.string.home_slot_workday_end)
                         },
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.SemiBold,
@@ -288,7 +286,7 @@ private fun HeroCard(
 
             if (isCompleted) {
                 Text(
-                    text = strings.workdayDoneTitle,
+                    text = stringResource(R.string.home_workday_done_title),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Light,
                         fontSize = 26.sp
@@ -297,7 +295,10 @@ private fun HeroCard(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = strings.workdayDoneDesc(todayLog?.moodTag?.label(state.language) ?: ""),
+                    text = stringResource(
+                        R.string.home_workday_done_desc,
+                        todayLog?.moodTag?.let { stringResource(it.labelRes) } ?: ""
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSlate
                 )
@@ -324,7 +325,7 @@ private fun HeroCard(
                                 Spacer(modifier = Modifier.height(4.dp))
                             }
                             Text(
-                                text = strings.quoted(todayAnswer),
+                                text = stringResource(R.string.common_quoted, todayAnswer),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = IndigoAccent
                             )
@@ -347,12 +348,12 @@ private fun HeroCard(
                         ),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x666366F1))
                     ) {
-                        Text(strings.repeatRitual)
+                        Text(stringResource(R.string.repeat_ritual))
                     }
                 }
             } else if (!state.isRitualDay) {
                 Text(
-                    text = strings.weekendRestTitle,
+                    text = stringResource(R.string.home_weekend_rest_title),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Light,
                         fontSize = 26.sp
@@ -361,14 +362,14 @@ private fun HeroCard(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = strings.weekendRestDesc,
+                    text = stringResource(R.string.home_weekend_rest_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSlate,
                     lineHeight = 22.sp
                 )
             } else {
                 Text(
-                    text = strings.closeDayTitle,
+                    text = stringResource(R.string.home_close_day_title),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Light,
                         fontSize = 26.sp
@@ -377,7 +378,7 @@ private fun HeroCard(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = strings.closeDayDesc,
+                    text = stringResource(R.string.home_close_day_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSlate,
                     lineHeight = 22.sp
@@ -393,7 +394,7 @@ private fun HeroCard(
                 ) {
                     Column {
                         Text(
-                            text = strings.todayQuestionLabel,
+                            text = stringResource(R.string.home_today_question_label),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 letterSpacing = 1.sp,
                                 fontSize = 10.sp
@@ -429,7 +430,7 @@ private fun HeroCard(
                     Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = strings.startRitualButton,
+                        text = stringResource(R.string.start_ritual),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 16.sp
@@ -443,8 +444,7 @@ private fun HeroCard(
 
 @Composable
 private fun WeeklyStreakCard(
-    state: HomeState,
-    strings: AppStrings
+    state: HomeState
 ) {
     // Weekly Streak Card with Frosted Glass styling
     Box(
@@ -462,17 +462,21 @@ private fun WeeklyStreakCard(
             ) {
                 Column {
                     Text(
-                        text = strings.thisWeekTitle,
+                        text = stringResource(R.string.home_this_week_title),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 17.sp
                         ),
                         color = TextLight
                     )
+                    val closedCount = state.streakInfo?.completedThisWeekCount ?: 0
+                    val targetCount = state.streakInfo?.targetWorkDays ?: 0
                     Text(
-                        text = strings.daysClosedSummary(
-                            state.streakInfo?.completedThisWeekCount ?: 0,
-                            state.streakInfo?.targetWorkDays ?: 0
+                        text = pluralStringResource(
+                            R.plurals.home_days_closed_summary,
+                            targetCount,
+                            closedCount,
+                            targetCount
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSlate
@@ -501,7 +505,7 @@ private fun WeeklyStreakCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 state.streakInfo?.weekDays?.forEach { day ->
-                    DayIndicatorItem(day = day, language = state.language)
+                    DayIndicatorItem(day = day)
                 }
             }
         }
@@ -509,7 +513,7 @@ private fun WeeklyStreakCard(
 }
 
 @Composable
-private fun WhyRitualCard(strings: AppStrings) {
+private fun WhyRitualCard() {
     // Home Office Ritual Value Card
     Box(
         modifier = Modifier
@@ -519,7 +523,7 @@ private fun WhyRitualCard(strings: AppStrings) {
     ) {
         Column {
             Text(
-                text = strings.whyRitualTitle,
+                text = stringResource(R.string.home_why_ritual_title),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp
@@ -528,7 +532,7 @@ private fun WhyRitualCard(strings: AppStrings) {
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = strings.whyRitualDesc,
+                text = stringResource(R.string.home_why_ritual_desc),
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
                 color = TextSlate,
                 lineHeight = 20.sp
@@ -564,15 +568,14 @@ private fun TopBarIconButton(
 
 @Composable
 private fun DayIndicatorItem(
-    day: DayStatus,
-    language: AppLanguage
+    day: DayStatus
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.width(38.dp)
     ) {
         Text(
-            text = day.dayName(language),
+            text = day.localizedDayName(),
             style = MaterialTheme.typography.labelSmall,
             color = if (day.isToday) IndigoAccent else TextMuted,
             fontWeight = if (day.isToday) FontWeight.Bold else FontWeight.Normal

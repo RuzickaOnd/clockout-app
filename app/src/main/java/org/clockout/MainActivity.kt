@@ -8,7 +8,6 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.Surface
@@ -69,16 +68,17 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val updateState by appUpdateController.state.collectAsStateWithLifecycle()
 
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        PadlaApp()
-                        AppUpdateBanner(
-                            state = updateState,
-                            onInstall = { appUpdateController.completeUpdate() },
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .navigationBarsPadding()
-                        )
-                    }
+                    PadlaApp(
+                        overlay = {
+                            AppUpdateBanner(
+                                state = updateState,
+                                onInstall = { appUpdateController.completeUpdate() },
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .navigationBarsPadding()
+                            )
+                        }
+                    )
                 }
             }
         }
