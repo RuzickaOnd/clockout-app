@@ -38,3 +38,7 @@ __pycache__/
 
 # Lokální referenční snímky pro form faktory (nahrávají se přes recordRoborazziDebug)
 app/src/test/screenshots/formfactor/
+
+# Claude Code worktrees a scratch
+.claude/worktrees/
+.superpowers/
