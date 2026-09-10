@@ -82,8 +82,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.clockout.BuildConfig
 import org.clockout.data.local.SoundImportError
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.CustomSound
@@ -1028,6 +1030,18 @@ fun SettingsScreen(
                         )
                     }
                 }
+
+                // Build identification, kept right under the About card so a user reporting a
+                // problem can read the exact build back without leaving Settings.
+                Text(
+                    text = "${strings.appVersionLabel} ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextMuted,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("app_version")
+                )
 
                 // Reset Data Button
                 OutlinedButton(

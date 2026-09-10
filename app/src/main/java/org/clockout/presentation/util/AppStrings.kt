@@ -413,6 +413,10 @@ class AppStrings(val language: AppLanguage) {
         AppLanguage.CZECH -> "Padla ti pomáhá vědomě uzavřít pracovní den a přepnout se z práce do osobního času. Nejvíc se hodí na home office, kde mezi kanceláří a domovem chybí přirozená hranice.\n\nStačí tři minuty denního rituálu: odpovíš na dnešní otázku a odložíš myšlenku, kterou už nemusíš nést, zklidníš dech v rytmu 4 s nádech / 4 s výdech, klepnutím zhasneš pracovní lampu a zaznamenáš, s jakou náladou den opouštíš.\n\nPráce se ti tak nepřelévá do večera, snáz vypneš hlavu a druhý den začínáš odpočatý. Všechno zůstává jen v telefonu — žádné účty, žádný cloud."
         AppLanguage.ENGLISH -> "ClockOut helps you consciously close your workday and switch from work into your own time. It matters most when you work from home, where the boundary between the office and the living room is missing.\n\nAll it takes is a three-minute daily ritual: answer today's question and park a thought you no longer need to carry, calm your breath at 4s in / 4s out, tap to turn off the desk lamp, and note the mood you are leaving the day with.\n\nWork stops spilling into your evening, you unwind more easily, and you start the next day rested. Everything stays on your phone — no accounts, no cloud."
     }
+    val appVersionLabel: String = when (language) {
+        AppLanguage.CZECH -> "Verze"
+        AppLanguage.ENGLISH -> "Version"
+    }
     val clearDataButton: String = when (language) {
         AppLanguage.CZECH -> "Vymazat data a historii"
         AppLanguage.ENGLISH -> "Clear data and history"
