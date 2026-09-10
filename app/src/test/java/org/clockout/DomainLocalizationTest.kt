@@ -41,6 +41,18 @@ class DomainLocalizationTest {
     }
 
     @Test
+    fun `every mood tag maps to its own label resource`() {
+        show(AppLanguage.CZECH) {
+            MoodTag.entries.forEach { mood -> Text(stringResource(mood.labelRes)) }
+        }
+
+        composeTestRule.onNodeWithText("Klidný").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Unavený").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Spokojený").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Napjatý").assertIsDisplayed()
+    }
+
+    @Test
     fun `a built-in sound is named in the app language`() {
         show(AppLanguage.ENGLISH) {
             Text(SoundChoice.BuiltIn(MeditationSoundStyle.TIBETAN_BOWL).localizedLabel())
@@ -75,9 +87,18 @@ class DomainLocalizationTest {
         show(AppLanguage.CZECH) {
             Text(LanguageOption.SYSTEM.localizedLabel())
             Text(LanguageOption.ENGLISH.localizedLabel())
+            Text(LanguageOption.CZECH.localizedLabel())
         }
 
         composeTestRule.onNodeWithText("Dle systému").assertIsDisplayed()
         composeTestRule.onNodeWithText("English").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Čeština").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the system language option is translated in english too`() {
+        show(AppLanguage.ENGLISH) { Text(LanguageOption.SYSTEM.localizedLabel()) }
+
+        composeTestRule.onNodeWithText("System default").assertIsDisplayed()
     }
 }
