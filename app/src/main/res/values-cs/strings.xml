@@ -318,7 +318,6 @@
     <!-- Settings -->
     <string name="settings_workday_end_time_title">Čas konce pracovního dne</string>
     <string name="settings_notifications_disabled">Vypnuto</string>
-    <string name="settings_notifications_enabled">Zapnuto</string>
     <string name="settings_permission_dialog_title">Povolení notifikací</string>
     <string name="settings_permission_denied_message">Pro zasílání pravidelných připomenutí konce práce je potřeba povolit notifikace v systému.</string>
     <string name="settings_currently_set_to">Aktuálně nastaveno: %1$s</string>

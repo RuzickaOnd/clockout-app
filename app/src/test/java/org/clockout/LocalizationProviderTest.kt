@@ -1,5 +1,7 @@
 package org.clockout
 
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.material3.Text
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.assertIsDisplayed
@@ -8,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import org.clockout.domain.model.AppLanguage
 import org.clockout.presentation.util.AppLocalization
+import org.junit.Assert.assertNotNull
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -224,25 +227,29 @@ class LocalizationProviderTest {
         composeTestRule.onNodeWithText("Vypnuto").assertIsDisplayed()
     }
 
+    /**
+     * Regrese: localizedFor() dřív vracelo createConfigurationContext() přímo, což je nový
+     * Context nedohledatelný zpět k Activitě přes getBaseContext(). To tiše rozbilo každé
+     * composition local dohledávané procházením řetězu ContextWrapperů - LocalActivity i
+     * LocalActivityResultRegistryOwner - a spadlo na tom SettingsScreen, který uvnitř
+     * AppLocalization volá rememberLauncherForActivityResult().
+     */
     @Test
-    fun `the notifications enabled label follows the provider language`() {
-        composeTestRule.setContent {
-            AppLocalization(AppLanguage.ENGLISH) {
-                Text(stringResource(R.string.settings_notifications_enabled))
-            }
-        }
+    fun `the activity and its result registry stay reachable under a localized provider`() {
+        var activity: android.app.Activity? = null
+        var registryOwner: androidx.activity.result.ActivityResultRegistryOwner? = null
 
-        composeTestRule.onNodeWithText("Enabled").assertIsDisplayed()
-    }
-
-    @Test
-    fun `the notifications enabled label follows the provider language in czech`() {
         composeTestRule.setContent {
             AppLocalization(AppLanguage.CZECH) {
-                Text(stringResource(R.string.settings_notifications_enabled))
+                activity = LocalActivity.current
+                registryOwner = LocalActivityResultRegistryOwner.current
             }
         }
 
-        composeTestRule.onNodeWithText("Zapnuto").assertIsDisplayed()
+        assertNotNull("LocalActivity.current should resolve under AppLocalization", activity)
+        assertNotNull(
+            "LocalActivityResultRegistryOwner.current should resolve under AppLocalization",
+            registryOwner
+        )
     }
 }

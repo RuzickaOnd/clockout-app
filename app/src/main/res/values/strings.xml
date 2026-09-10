@@ -316,7 +316,6 @@
     <!-- Settings -->
     <string name="settings_workday_end_time_title">Workday end time</string>
     <string name="settings_notifications_disabled">Disabled</string>
-    <string name="settings_notifications_enabled">Enabled</string>
     <string name="settings_permission_dialog_title">Notification Permission</string>
     <string name="settings_permission_denied_message">Notification permission is required to send daily reminders when your workday ends.</string>
     <string name="settings_currently_set_to">Currently set to: %1$s</string>

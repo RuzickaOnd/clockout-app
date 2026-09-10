@@ -1,10 +1,8 @@
 package org.clockout.presentation.util
 
-import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -22,26 +20,20 @@ import org.clockout.util.localizedFor
  * LocalResources, který je odvozený od LocalContext.resources, takže override Contextu
  * stačí; LocalConfiguration se poskytuje kvůli kódu, který si locale čte z konfigurace.
  *
- * LocalActivityResultRegistryOwner se dohledává procházením řetězu ContextWrapperů z
- * LocalContext.current, ale createConfigurationContext() vrací nový Context, který zpět
- * na Activity neukazuje. Bez výslovného předání by proto rememberLauncherForActivityResult()
- * volané kdekoliv v tomto podstromu (např. výběr vlastního zvuku v SettingsScreen) spadlo.
+ * localizedFor() vrací ContextWrapper, který přes getBaseContext() dál vede k Activitě
+ * (viz LocalizedContext.kt) - proto composition locals dohledávané procházením řetězu
+ * ContextWrapperů (LocalActivity, LocalActivityResultRegistryOwner) fungují i pod tímto
+ * providerem beze změny a není potřeba je předávat zvlášť.
  */
 @Composable
 fun AppLocalization(language: AppLanguage, content: @Composable () -> Unit) {
     val context = LocalContext.current
     val localized = remember(context, language) { context.localizedFor(language) }
-    val activityResultRegistryOwner = LocalActivityResultRegistryOwner.current
-
-    val providedValues = mutableListOf<ProvidedValue<*>>(
+    CompositionLocalProvider(
         LocalContext provides localized,
-        LocalConfiguration provides localized.resources.configuration
+        LocalConfiguration provides localized.resources.configuration,
+        content = content
     )
-    activityResultRegistryOwner?.let {
-        providedValues += LocalActivityResultRegistryOwner provides it
-    }
-
-    CompositionLocalProvider(*providedValues.toTypedArray(), content = content)
 }
 
 @get:StringRes
