@@ -348,4 +348,8 @@
     <string name="settings_clear_data_dialog_title">Clear app data?</string>
     <string name="settings_clear_data_dialog_text">This action will delete all recorded ritual history.</string>
     <string name="settings_clear_data_confirm">Clear</string>
+
+    <!-- Notifications -->
+    <string name="notification_workday_end_title">ClockOut – time to wrap up work</string>
+    <string name="notification_workday_end_text">Take 2 minutes to pause and close your workday.</string>
 </resources>

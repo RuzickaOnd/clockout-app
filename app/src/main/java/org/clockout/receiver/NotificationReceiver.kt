@@ -15,6 +15,7 @@ import org.clockout.domain.model.RitualDayPolicy
 import org.clockout.notification.NotificationScheduler
 import org.clockout.notification.ReminderOutcome
 import org.clockout.notification.ReminderPolicy
+import org.clockout.util.localizedFor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -84,15 +85,9 @@ class NotificationReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val title = when (language) {
-            AppLanguage.CZECH -> "Padla – čas ukončit práci"
-            AppLanguage.ENGLISH -> "ClockOut – time to wrap up work"
-        }
-
-        val text = when (language) {
-            AppLanguage.CZECH -> "Zastav se na 2 minuty a vědomě uzavři dnešní pracovní den."
-            AppLanguage.ENGLISH -> "Take 2 minutes to pause and close your workday."
-        }
+        val resources = context.localizedFor(language).resources
+        val title = resources.getString(R.string.notification_workday_end_title)
+        val text = resources.getString(R.string.notification_workday_end_text)
 
         val notification = NotificationCompat.Builder(context, NotificationScheduler.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)

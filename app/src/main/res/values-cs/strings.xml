@@ -350,4 +350,8 @@
     <string name="settings_clear_data_dialog_title">Vymazat data aplikace?</string>
     <string name="settings_clear_data_dialog_text">Tato akce smaže historii zaznamenaných rituálů.</string>
     <string name="settings_clear_data_confirm">Vymazat</string>
+
+    <!-- Notifications -->
+    <string name="notification_workday_end_title">Padla – čas ukončit práci</string>
+    <string name="notification_workday_end_text">Zastav se na 2 minuty a vědomě uzavři dnešní pracovní den.</string>
 </resources>
