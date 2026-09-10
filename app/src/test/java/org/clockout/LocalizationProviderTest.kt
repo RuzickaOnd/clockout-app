@@ -58,4 +58,37 @@ class LocalizationProviderTest {
 
         composeTestRule.onNodeWithText("Nastavení").assertIsDisplayed()
     }
+
+    @Test
+    fun `the start ritual button keeps its deliberate wording in english`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.ENGLISH) {
+                Text(stringResource(R.string.start_ritual))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Start ritual (2–3 min)").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the start ritual button keeps its deliberate wording in czech`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                Text(stringResource(R.string.start_ritual))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Zahájit rituál (2–3 min)").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the czech app name is served under a czech provider`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                Text(stringResource(R.string.app_name))
+            }
+        }
+
+        composeTestRule.onNodeWithText("Padla").assertIsDisplayed()
+    }
 }

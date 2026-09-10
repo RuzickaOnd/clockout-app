@@ -23,8 +23,8 @@ class AppStrings(val language: AppLanguage) {
      * Still used by HistoryScreen, which is not yet migrated to resources.
      */
     fun quoted(text: String): String = when (language) {
-        AppLanguage.CZECH -> "„$text“"
-        AppLanguage.ENGLISH -> "“$text”"
+        AppLanguage.CZECH -> "\u201E$text\u201C"
+        AppLanguage.ENGLISH -> "\u201C$text\u201D"
     }
 
     // HomeScreen
