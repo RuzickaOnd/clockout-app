@@ -1,14 +1,12 @@
 package org.clockout.data.local
 
 import android.content.Context
-import android.content.res.Configuration
-import android.content.res.Resources
 import androidx.annotation.ArrayRes
 import androidx.annotation.StringRes
 import org.clockout.R
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.RitualQuestion
-import java.util.Locale
+import org.clockout.util.localizedFor
 import kotlin.random.Random
 
 object QuestionsData {
@@ -97,7 +95,8 @@ object QuestionsData {
      * cannot come from the configuration the app happens to run under.
      */
     fun initialize(context: Context) {
-        val resourcesByLanguage = AppLanguage.entries.associateWith { context.resourcesFor(it) }
+        val resourcesByLanguage =
+            AppLanguage.entries.associateWith { context.localizedFor(it).resources }
         catalog = Catalog(
             catalogResources.map { question ->
                 fun text(language: AppLanguage) =
@@ -115,13 +114,6 @@ object QuestionsData {
                 )
             }
         )
-    }
-
-    private fun Context.resourcesFor(language: AppLanguage): Resources {
-        val configuration = Configuration(resources.configuration).apply {
-            setLocale(Locale.forLanguageTag(language.code))
-        }
-        return createConfigurationContext(configuration).resources
     }
 
     val questions: List<RitualQuestion> get() = loaded.questions
