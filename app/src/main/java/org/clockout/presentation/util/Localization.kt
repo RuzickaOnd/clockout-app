@@ -7,9 +7,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import org.clockout.R
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.DayStatus
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.MeditationSoundStyle
 import org.clockout.domain.model.MoodTag
@@ -34,7 +36,8 @@ import org.clockout.util.localizedFor
 @Composable
 fun AppLocalization(language: AppLanguage, content: @Composable () -> Unit) {
     val context = LocalContext.current
-    val localizedResources = remember(context, language) {
+    val configuration = LocalConfiguration.current
+    val localizedResources = remember(context, configuration, language) {
         context.localizedFor(language).resources
     }
     CompositionLocalProvider(
@@ -92,6 +95,10 @@ fun SoundChoice.localizedDescription(): String = when (this) {
     is SoundChoice.BuiltIn -> stringResource(style.descriptionRes)
     is SoundChoice.Custom -> stringResource(R.string.sound_custom_desc, sound.formattedDuration)
 }
+
+/** Zkrácený název dne v týdnu (Po/Mon...) pro pruh dnů na Home - pořadí odpovídá `dayIndex`. */
+@Composable
+fun DayStatus.localizedDayName(): String = stringArrayResource(R.array.day_names_short)[dayIndex]
 
 /** Endonyma zůstávají v původním jazyce, překládá se jen volba "podle systému". */
 @Composable

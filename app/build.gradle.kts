@@ -91,6 +91,15 @@ android {
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
   sourceSets["androidTest"].assets.srcDir("$projectDir/schemas")
+  // Aplikace přepíná jazyk v appce nezávisle na systémovém locale, takže musí mít všechny
+  // jazykové zdroje v základním APK - jinak by Play instaloval jen jazykový split odpovídající
+  // systémovým locale zařízení a přepnutí na jazyk bez nainstalovaného splitu by potichu spadlo
+  // zpátky na angličtinu. Při dvou locale je cena za to pár kB navíc ve staženém balíčku.
+  bundle {
+    language {
+      enableSplit = false
+    }
+  }
   dependenciesInfo {
     includeInApk = false
     includeInBundle = true

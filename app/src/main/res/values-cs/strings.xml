@@ -25,9 +25,19 @@
     <string name="home_close_day_desc">Krátký 3minutový rituál ti pomůže odložit pracovní myšlenky a přepnout hlavu do volna.</string>
     <string name="home_today_question_label">DNEŠNÍ OTÁZKA</string>
     <string name="home_this_week_title">Tento týden</string>
+    <string-array name="day_names_short">
+        <item>Po</item>
+        <item>Út</item>
+        <item>St</item>
+        <item>Čt</item>
+        <item>Pá</item>
+        <item>So</item>
+        <item>Ne</item>
+    </string-array>
     <plurals name="home_days_closed_summary">
         <item quantity="one">%1$d z %2$d dne uzavřen</item>
         <item quantity="few">%1$d z %2$d dnů uzavřeno</item>
+        <item quantity="many">%1$d z %2$d dne uzavřeno</item>
         <item quantity="other">%1$d z %2$d dní uzavřeno</item>
     </plurals>
     <string name="home_why_ritual_title">Proč tento rituál?</string>
@@ -45,6 +55,7 @@
     <plurals name="history_total_closed_days">
         <item quantity="one">Celkem uzavřeno: %1$d den</item>
         <item quantity="few">Celkem uzavřeno: %1$d dny</item>
+        <item quantity="many">Celkem uzavřeno: %1$d dne</item>
         <item quantity="other">Celkem uzavřeno: %1$d dní</item>
     </plurals>
     <string name="history_padla_badge">Padla ✓</string>

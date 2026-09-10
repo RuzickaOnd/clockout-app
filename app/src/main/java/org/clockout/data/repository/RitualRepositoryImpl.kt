@@ -79,8 +79,6 @@ class RitualRepositoryImpl(
         val daysFromMonday = if (currentDayOfWeek == Calendar.SUNDAY) 6 else currentDayOfWeek - Calendar.MONDAY
         calendar.add(Calendar.DAY_OF_YEAR, -daysFromMonday)
 
-        val dayNamesCs = listOf("Po", "Út", "St", "Čt", "Pá", "So", "Ne")
-        val dayNamesEn = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         // Only the days the ritual is offered on make it into the strip, so the summary
         // underneath counts against the same set of days.
         val offeredDayCount = if (includeWeekends) 7 else 5
@@ -99,8 +97,7 @@ class RitualRepositoryImpl(
 
             weekDays.add(
                 DayStatus(
-                    dayNameCs = dayNamesCs[i],
-                    dayNameEn = dayNamesEn[i],
+                    dayIndex = i,
                     dayOfMonth = dayOfMonth,
                     dateString = dateStr,
                     isToday = isToday,

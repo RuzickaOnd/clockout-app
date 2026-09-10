@@ -25,6 +25,15 @@
     <string name="home_close_day_desc">A short 3-minute ritual helps you leave work thoughts behind and transition your mind into leisure.</string>
     <string name="home_today_question_label">TODAY\'S QUESTION</string>
     <string name="home_this_week_title">This week</string>
+    <string-array name="day_names_short">
+        <item>Mon</item>
+        <item>Tue</item>
+        <item>Wed</item>
+        <item>Thu</item>
+        <item>Fri</item>
+        <item>Sat</item>
+        <item>Sun</item>
+    </string-array>
     <plurals name="home_days_closed_summary">
         <item quantity="one">%1$d of %2$d day closed</item>
         <item quantity="other">%1$d of %2$d days closed</item>

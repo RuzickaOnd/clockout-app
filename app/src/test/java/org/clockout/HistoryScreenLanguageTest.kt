@@ -74,6 +74,20 @@ class HistoryScreenLanguageTest {
 
     @Test
     fun `czech declines the day count`() {
+        assertTotalClosedDaysText(totalCount = 1, expected = "Celkem uzavřeno: 1 den")
+    }
+
+    @Test
+    fun `czech declines the day count for the few form`() {
+        assertTotalClosedDaysText(totalCount = 3, expected = "Celkem uzavřeno: 3 dny")
+    }
+
+    @Test
+    fun `czech declines the day count for the other form`() {
+        assertTotalClosedDaysText(totalCount = 5, expected = "Celkem uzavřeno: 5 dní")
+    }
+
+    private fun assertTotalClosedDaysText(totalCount: Int, expected: String) {
         val logs = listOf(czechLog)
 
         composeTestRule.setContent {
@@ -83,7 +97,7 @@ class HistoryScreenLanguageTest {
                         state = HistoryState(
                             language = AppLanguage.CZECH,
                             logs = logs,
-                            totalCount = 1
+                            totalCount = totalCount
                         ),
                         onBack = {},
                         onClearHistory = {}
@@ -92,6 +106,6 @@ class HistoryScreenLanguageTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Celkem uzavřeno: 1 den").assertIsDisplayed()
+        composeTestRule.onNodeWithText(expected).assertIsDisplayed()
     }
 }

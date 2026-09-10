@@ -52,7 +52,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.clockout.R
-import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.DayStatus
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.presentation.components.FrostedBackgroundContainer
@@ -62,6 +61,7 @@ import org.clockout.presentation.components.WideContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.labelRes
 import org.clockout.presentation.util.localizedAnswer
+import org.clockout.presentation.util.localizedDayName
 import org.clockout.presentation.util.localizedQuestionText
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.IndigoPrimary
@@ -505,7 +505,7 @@ private fun WeeklyStreakCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 state.streakInfo?.weekDays?.forEach { day ->
-                    DayIndicatorItem(day = day, language = state.language)
+                    DayIndicatorItem(day = day)
                 }
             }
         }
@@ -568,15 +568,14 @@ private fun TopBarIconButton(
 
 @Composable
 private fun DayIndicatorItem(
-    day: DayStatus,
-    language: AppLanguage
+    day: DayStatus
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.width(38.dp)
     ) {
         Text(
-            text = day.dayName(language),
+            text = day.localizedDayName(),
             style = MaterialTheme.typography.labelSmall,
             color = if (day.isToday) IndigoAccent else TextMuted,
             fontWeight = if (day.isToday) FontWeight.Bold else FontWeight.Normal
