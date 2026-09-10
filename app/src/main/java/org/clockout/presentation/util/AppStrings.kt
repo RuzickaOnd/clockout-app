@@ -5,26 +5,20 @@ import org.clockout.domain.model.AppLanguage
 class AppStrings(val language: AppLanguage) {
 
     // Common
+    /** Still used by SettingsScreen, which Task 6 migrates to resources; that task removes this. */
     val back: String = when (language) {
         AppLanguage.CZECH -> "Zpět"
         AppLanguage.ENGLISH -> "Back"
     }
+    /** Still used by SettingsScreen, which Task 6 migrates to resources; that task removes this. */
     val cancel: String = when (language) {
         AppLanguage.CZECH -> "Zrušit"
         AppLanguage.ENGLISH -> "Cancel"
     }
+    /** Still used by SettingsScreen, which Task 6 migrates to resources; that task removes this. */
     val delete: String = when (language) {
         AppLanguage.CZECH -> "Smazat"
         AppLanguage.ENGLISH -> "Delete"
-    }
-
-    /**
-     * Quotation marks differ per language, so logged answers are wrapped rather than hardcoded.
-     * Still used by HistoryScreen, which is not yet migrated to resources.
-     */
-    fun quoted(text: String): String = when (language) {
-        AppLanguage.CZECH -> "\u201E$text\u201C"
-        AppLanguage.ENGLISH -> "\u201C$text\u201D"
     }
 
     // HomeScreen
@@ -182,40 +176,6 @@ class AppStrings(val language: AppLanguage) {
     val returnHome: String = when (language) {
         AppLanguage.CZECH -> "Návrat na hlavní stránku"
         AppLanguage.ENGLISH -> "Return to home page"
-    }
-
-    // HistoryScreen
-    val historyTitle: String = when (language) {
-        AppLanguage.CZECH -> "Historie rituálů"
-        AppLanguage.ENGLISH -> "Ritual History"
-    }
-    val clearHistoryTooltip: String = when (language) {
-        AppLanguage.CZECH -> "Smazat historii"
-        AppLanguage.ENGLISH -> "Clear history"
-    }
-    val clearHistoryDialogTitle: String = when (language) {
-        AppLanguage.CZECH -> "Smazat historii rituálů?"
-        AppLanguage.ENGLISH -> "Delete ritual history?"
-    }
-    val clearHistoryDialogText: String = when (language) {
-        AppLanguage.CZECH -> "Tato akce vymaže všechny dosud zaznamenané ukončené dny."
-        AppLanguage.ENGLISH -> "This action will delete all recorded completed workdays."
-    }
-    val emptyHistoryTitle: String = when (language) {
-        AppLanguage.CZECH -> "Zatím žádné záznamy"
-        AppLanguage.ENGLISH -> "No records yet"
-    }
-    val emptyHistoryDesc: String = when (language) {
-        AppLanguage.CZECH -> "Až dnes po práci projdeš svým prvním 3minutovým rituálem, objeví se zde tvá nálada i myšlenka."
-        AppLanguage.ENGLISH -> "Once you complete your first 3-minute ritual after work today, your mood and reflection will appear here."
-    }
-    fun totalClosedDays(count: Int): String = when (language) {
-        AppLanguage.CZECH -> "Celkem uzavřeno: $count dnů"
-        AppLanguage.ENGLISH -> "Total closed: $count days"
-    }
-    val padlaBadge: String = when (language) {
-        AppLanguage.CZECH -> "Padla ✓"
-        AppLanguage.ENGLISH -> "Done ✓"
     }
 
     // SettingsScreen

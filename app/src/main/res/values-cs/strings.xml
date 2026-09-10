@@ -33,6 +33,22 @@
     <string name="home_why_ritual_title">Proč tento rituál?</string>
     <string name="home_why_ritual_desc">Při práci z domova chybí fyzická cesta z kanceláře, která dříve přirozeně oddělovala den. Tyto 3 minuty ti dají jasný signál, že práce skončila a začíná tvůj vlastní čas.</string>
 
+    <!-- History -->
+    <string name="common_back">Zpět</string>
+    <string name="common_cancel">Zrušit</string>
+    <string name="common_delete">Smazat</string>
+    <string name="history_clear_tooltip">Smazat historii</string>
+    <string name="history_clear_dialog_title">Smazat historii rituálů?</string>
+    <string name="history_clear_dialog_text">Tato akce vymaže všechny dosud zaznamenané ukončené dny.</string>
+    <string name="history_empty_title">Zatím žádné záznamy</string>
+    <string name="history_empty_desc">Až dnes po práci projdeš svým prvním 3minutovým rituálem, objeví se zde tvá nálada i myšlenka.</string>
+    <plurals name="history_total_closed_days">
+        <item quantity="one">Celkem uzavřeno: %1$d den</item>
+        <item quantity="few">Celkem uzavřeno: %1$d dny</item>
+        <item quantity="other">Celkem uzavřeno: %1$d dní</item>
+    </plurals>
+    <string name="history_padla_badge">Padla ✓</string>
+
     <!-- Ritual question catalog -->
     <string name="ritual_question_success">Co se dnes povedlo?</string>
     <string-array name="ritual_answers_success">

@@ -32,6 +32,21 @@
     <string name="home_why_ritual_title">Why this ritual?</string>
     <string name="home_why_ritual_desc">When working from home, the physical commute that used to separate the day is missing. These 3 minutes give your brain a clear signal that work is over and your own time begins.</string>
 
+    <!-- History -->
+    <string name="common_back">Back</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_delete">Delete</string>
+    <string name="history_clear_tooltip">Clear history</string>
+    <string name="history_clear_dialog_title">Delete ritual history?</string>
+    <string name="history_clear_dialog_text">This action will delete all recorded completed workdays.</string>
+    <string name="history_empty_title">No records yet</string>
+    <string name="history_empty_desc">Once you complete your first 3-minute ritual after work today, your mood and reflection will appear here.</string>
+    <plurals name="history_total_closed_days">
+        <item quantity="one">Total closed: %1$d day</item>
+        <item quantity="other">Total closed: %1$d days</item>
+    </plurals>
+    <string name="history_padla_badge">Done ✓</string>
+
     <!-- Ritual question catalog -->
     <string name="ritual_question_success">What went well today?</string>
     <string-array name="ritual_answers_success">

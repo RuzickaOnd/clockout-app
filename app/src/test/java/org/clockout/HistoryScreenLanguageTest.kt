@@ -9,6 +9,7 @@ import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.presentation.history.HistoryScreen
 import org.clockout.presentation.history.HistoryState
+import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.MyApplicationTheme
 import org.junit.Rule
 import org.junit.Test
@@ -36,12 +37,14 @@ class HistoryScreenLanguageTest {
 
     private fun setContent(language: AppLanguage, log: RitualLogEntry) {
         composeTestRule.setContent {
-            MyApplicationTheme {
-                HistoryScreen(
-                    state = HistoryState(language = language, logs = listOf(log), totalCount = 1),
-                    onBack = {},
-                    onClearHistory = {}
-                )
+            AppLocalization(language) {
+                MyApplicationTheme {
+                    HistoryScreen(
+                        state = HistoryState(language = language, logs = listOf(log), totalCount = 1),
+                        onBack = {},
+                        onClearHistory = {}
+                    )
+                }
             }
         }
     }
@@ -67,5 +70,28 @@ class HistoryScreenLanguageTest {
         setContent(AppLanguage.ENGLISH, czechLog.copy(selectedAnswer = "Konečně dopsaný dopis"))
 
         composeTestRule.onNodeWithText("“Konečně dopsaný dopis”").assertIsDisplayed()
+    }
+
+    @Test
+    fun `czech declines the day count`() {
+        val logs = listOf(czechLog)
+
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                MyApplicationTheme {
+                    HistoryScreen(
+                        state = HistoryState(
+                            language = AppLanguage.CZECH,
+                            logs = logs,
+                            totalCount = 1
+                        ),
+                        onBack = {},
+                        onClearHistory = {}
+                    )
+                }
+            }
+        }
+
+        composeTestRule.onNodeWithText("Celkem uzavřeno: 1 den").assertIsDisplayed()
     }
 }

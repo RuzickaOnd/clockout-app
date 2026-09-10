@@ -47,10 +47,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.clockout.R
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualLogEntry
@@ -58,7 +60,6 @@ import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.components.WideContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
-import org.clockout.presentation.util.AppStrings
 import org.clockout.presentation.util.labelRes
 import org.clockout.presentation.util.localizedAnswer
 import org.clockout.presentation.util.localizedQuestionText
@@ -87,7 +88,6 @@ fun HistoryScreen(
      */
     showBackButton: Boolean = true
 ) {
-    val strings = remember(state.language) { AppStrings(state.language) }
     var showClearDialog by remember { mutableStateOf(false) }
 
     if (showClearDialog) {
@@ -96,8 +96,8 @@ fun HistoryScreen(
             containerColor = Color(0xFF141526),
             titleContentColor = TextLight,
             textContentColor = TextSlate,
-            title = { Text(strings.clearHistoryDialogTitle) },
-            text = { Text(strings.clearHistoryDialogText) },
+            title = { Text(stringResource(R.string.history_clear_dialog_title)) },
+            text = { Text(stringResource(R.string.history_clear_dialog_text)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -105,12 +105,12 @@ fun HistoryScreen(
                         showClearDialog = false
                     }
                 ) {
-                    Text(strings.delete, color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearDialog = false }) {
-                    Text(strings.cancel, color = TextSlate)
+                    Text(stringResource(R.string.common_cancel), color = TextSlate)
                 }
             }
         )
@@ -130,7 +130,7 @@ fun HistoryScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = strings.historyTitle,
+                        text = stringResource(R.string.history_title),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 20.sp
@@ -151,7 +151,7 @@ fun HistoryScreen(
                             IconButton(onClick = onBack, modifier = Modifier.testTag("history_back_button")) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = strings.back,
+                                    contentDescription = stringResource(R.string.common_back),
                                     tint = TextSlate,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -172,7 +172,7 @@ fun HistoryScreen(
                             IconButton(onClick = { showClearDialog = true }) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = strings.clearHistoryTooltip,
+                                    contentDescription = stringResource(R.string.history_clear_tooltip),
                                     tint = TextSlate,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -197,7 +197,7 @@ fun HistoryScreen(
                         Text(text = "🌙", fontSize = 48.sp)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = strings.emptyHistoryTitle,
+                            text = stringResource(R.string.history_empty_title),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 18.sp
@@ -206,7 +206,7 @@ fun HistoryScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = strings.emptyHistoryDesc,
+                            text = stringResource(R.string.history_empty_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             color = TextSlate,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -237,7 +237,11 @@ fun HistoryScreen(
                             ) {
                                 Column {
                                     Text(
-                                        text = strings.totalClosedDays(state.totalCount),
+                                        text = pluralStringResource(
+                                            R.plurals.history_total_closed_days,
+                                            state.totalCount,
+                                            state.totalCount
+                                        ),
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontWeight = FontWeight.SemiBold,
                                             fontSize = 17.sp
@@ -274,7 +278,11 @@ fun HistoryScreen(
                     }
 
                     items(state.logs, key = { it.date + it.timestamp }) { entry ->
-                        HistoryEntryCard(entry = entry, language = state.language, doneBadgeText = strings.padlaBadge)
+                        HistoryEntryCard(
+                            entry = entry,
+                            language = state.language,
+                            doneBadgeText = stringResource(R.string.history_padla_badge)
+                        )
                     }
 
                     item(span = { GridItemSpan(maxLineSpan) }) {
@@ -366,7 +374,7 @@ private fun HistoryEntryCard(
                             Spacer(modifier = Modifier.height(2.dp))
                         }
                         Text(
-                            text = AppStrings(language).quoted(answer),
+                            text = stringResource(R.string.common_quoted, answer),
                             style = MaterialTheme.typography.bodyMedium,
                             color = IndigoAccent
                         )
