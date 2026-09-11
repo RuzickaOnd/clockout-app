@@ -89,15 +89,17 @@ Single Gradle module, `:app` (root project name `Padla`), package `org.clockout`
 
 `testDebugUnitTest` runs the screenshot tests but does **not** compare images — only the `verifyRoborazzi*` tasks do. A green `testDebugUnitTest` therefore says nothing about screenshots.
 
-Not every screenshot failure is a regression:
+Only `closure_lamp_off.png` and `closure_lamp_on.png` are tracked in git. Everything under `app/src/test/screenshots/formfactor/**` is **git-ignored and recorded per machine**: a fresh clone has no baselines there, and every test in `org.clockout.screenshot` fails with "original file was not found" until
 
-- `app/src/test/screenshots/formfactor/**` is **git-ignored**. A fresh clone has no baselines there and every `FormFactorScreenshotTest` fails with "original file was not found" until `recordRoborazziDebug` runs once.
-- `greeting.png` is tracked but **stale on `main`** — it fails every run (same text, different background).
-- `PhoneNavigationTest` and `TabletNavigationTest` are **flaky**: they render the whole `PadlaApp` with real DataStore and Room, so the async streak/week load races the capture, and their content depends on the calendar date (the daily question rotates by day-of-year). Three runs on identical code have produced 3, 1 and 2 failures.
-- `home_open.png` and `home_closed.png` are **stale on `main` for the same reason as `greeting.png`**: `50111ac` widened `day_names_short` from `Mo`/`Tu` to `Mon`/`Tue` and the baselines were never re-recorded, so all four form factors fail on those two captures. `FormFactorScreenshotTest.captureScreen` also renders without an `AppLocalization` wrapper, so its strings come from the test's default locale rather than the state's language.
-- The deterministic gate worth trusting: `ClosureStepScreenshotTest` plus the `ritual*`, `history` and `settings` captures of the four `FormFactorScreenshotTest` subclasses, which render single screens with fixed state.
+```bash
+./gradlew :app:recordRoborazziDebug --tests "org.clockout.screenshot.*"
+```
 
-A test that renders a screen directly must wrap it in `AppLocalization(language)`; otherwise strings resolve against the test's default locale instead of the app's chosen language.
+runs once. That also means a stale baseline there is a local condition, never something a commit can fix for anyone else.
+
+`PhoneNavigationTest` and `TabletNavigationTest` render the whole `PadlaApp` against real DataStore and Room, so their captures contain today's question, which rotates by day-of-year. A baseline recorded on one day drifts on the next — re-record those two when the date rolls over rather than reading it as a regression. Every other capture renders a single screen from a fixed fixture and is deterministic; `ClosureStepScreenshotTest` and the four `FormFactorScreenshotTest` subclasses are the gate worth trusting.
+
+A test that renders a screen directly must wrap it in `AppLocalization(language)`, otherwise strings resolve against the test's default locale instead of the app's chosen language. `FormFactorScreenshotTest.captureScreen` does this for every capture it takes and accepts the language as a parameter.
 
 ## Strings and localization — non-negotiable rules
 

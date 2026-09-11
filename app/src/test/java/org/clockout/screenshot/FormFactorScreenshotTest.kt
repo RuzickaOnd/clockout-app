@@ -5,12 +5,14 @@ import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
+import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.RitualStep
 import org.clockout.presentation.history.HistoryScreen
 import org.clockout.presentation.home.HomeScreen
 import org.clockout.presentation.ritual.RitualScreen
 import org.clockout.presentation.ritual.RitualState
 import org.clockout.presentation.settings.SettingsScreen
+import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.MyApplicationTheme
 import org.junit.Rule
 import org.junit.Test
@@ -33,7 +35,7 @@ abstract class FormFactorScreenshotTest(private val device: String) {
     @get:Rule val composeTestRule = createComposeRule()
 
     private fun capture(name: String, content: @Composable () -> Unit) {
-        composeTestRule.captureScreen("$device/$name", content)
+        composeTestRule.captureScreen("$device/$name", content = content)
     }
 
     @Test fun homeOpen() = capture("home_open") {
@@ -94,9 +96,15 @@ abstract class FormFactorScreenshotTest(private val device: String) {
  * The breathing halo and the closure bulb animate forever, so the clock is driven by hand to a
  * fixed point instead of waiting for an idle state that never arrives.
  */
-internal fun ComposeContentTestRule.captureScreen(path: String, content: @Composable () -> Unit) {
+internal fun ComposeContentTestRule.captureScreen(
+    path: String,
+    language: AppLanguage = AppLanguage.ENGLISH,
+    content: @Composable () -> Unit
+) {
     mainClock.autoAdvance = false
-    setContent { MyApplicationTheme { content() } }
+    // Without AppLocalization the strings resolve against the test's default locale instead of
+    // the language the fixtures declare, which is not what the app renders by.
+    setContent { AppLocalization(language) { MyApplicationTheme { content() } } }
     mainClock.advanceTimeBy(2000)
     onRoot().captureRoboImage(filePath = "src/test/screenshots/formfactor/$path.png")
 }
