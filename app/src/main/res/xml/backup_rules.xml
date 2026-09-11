@@ -5,6 +5,10 @@
    Backed up: the Room database holding the ritual logs (moods, answers, dates) and the
    DataStore file holding app settings. The database uses JournalMode.TRUNCATE, so the single
    .db file is a consistent snapshot and no -wal/-shm sidecar files need to be included.
+
+   Imported audio files are deliberately absent. These releases have no device-to-device
+   transfer, so the only consumer of this file is the cloud backup and its 25 MB per-app quota,
+   which a custom sound library would blow - taking the ritual history down with it.
 -->
 <full-backup-content>
     <include domain="database" path="clockout.db" />

@@ -93,7 +93,12 @@ fun SoundChoice.localizedLabel(): String = when (this) {
 @Composable
 fun SoundChoice.localizedDescription(): String = when (this) {
     is SoundChoice.BuiltIn -> stringResource(style.descriptionRes)
-    is SoundChoice.Custom -> stringResource(R.string.sound_custom_desc, sound.formattedDuration)
+    is SoundChoice.Custom -> if (sound.isAvailable) {
+        stringResource(R.string.sound_custom_desc, sound.formattedDuration)
+    } else {
+        // A restored cloud backup brings the metadata back without the audio file
+        stringResource(R.string.settings_custom_sound_missing_desc)
+    }
 }
 
 /** Short weekday name (Po/Mon...) for the Home week strip - the order matches `dayIndex`. */

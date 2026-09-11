@@ -344,6 +344,8 @@
     <string name="settings_upload_custom_sound_button">Upload your own sound</string>
     <string name="settings_uploading_custom_sound">Importing file…</string>
     <string name="settings_custom_sound_hint">Supported formats: MP3, WAV, OGG, M4A, FLAC (max 25 MB, up to 10 files). The file is stored inside the app and loops during the breathing exercise.</string>
+    <string name="settings_custom_sound_backup_hint">Your own sounds come with you when you transfer to a new phone. A cloud backup restores only their names, so their files have to be uploaded again.</string>
+    <string name="settings_custom_sound_missing_desc">File missing – tap to upload it again</string>
     <string name="settings_delete_custom_sound_title">Delete your own sound?</string>
     <string name="settings_delete_custom_sound_text">The file \"%1$s\" will be removed from the app.</string>
     <string name="settings_custom_sound_error_unsupported">This file could not be played. Please choose a valid audio file.</string>

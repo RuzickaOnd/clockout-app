@@ -28,7 +28,14 @@ import java.util.Locale
 class RitualRepositoryImpl(
     private val preferences: RitualPreferences,
     private val ritualLogDao: RitualLogDao,
-    private val logMigrator: RitualLogMigrator = RitualLogMigrator(preferences, ritualLogDao)
+    private val logMigrator: RitualLogMigrator = RitualLogMigrator(preferences, ritualLogDao),
+    /**
+     * Whether the audio file behind a custom sound is still on disk. Injected because the check
+     * needs a Context the repository has no other use for, and because it lets a test reproduce
+     * a restored cloud backup without touching the file system. Defaults to "everything is
+     * there", which is what a test that does not care about sounds wants.
+     */
+    private val soundFileExists: (fileName: String) -> Boolean = { true }
 ) : RitualRepository {
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -166,12 +173,17 @@ class RitualRepositoryImpl(
 
     override fun getSoundChoice(): Flow<SoundChoice> = combine(
         preferences.selectedSoundIdFlow,
-        preferences.customSoundsFlow
+        customSoundsFlow
     ) { selectedId, customSounds ->
         SoundChoice.fromId(selectedId, customSounds)
     }
 
-    override fun getCustomSounds(): Flow<List<CustomSound>> = preferences.customSoundsFlow
+    /** Metadata from DataStore, stamped with whether the audio file it names is still there. */
+    private val customSoundsFlow: Flow<List<CustomSound>> = preferences.customSoundsFlow.map { sounds ->
+        sounds.map { it.copy(isAvailable = soundFileExists(it.fileName)) }
+    }
+
+    override fun getCustomSounds(): Flow<List<CustomSound>> = customSoundsFlow
 
     override suspend fun addCustomSound(sound: CustomSound) = preferences.addCustomSound(sound)
 

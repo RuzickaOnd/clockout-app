@@ -50,6 +50,13 @@ class CustomSoundTest {
     }
 
     @Test
+    fun testRestoredCustomSoundWithoutItsFileFallsBackToDefault() {
+        // Cloud backup brought the metadata back but not the audio file
+        val restored = sound().copy(isAvailable = false)
+        assertEquals(SoundChoice.Default, SoundChoice.fromId(restored.id, listOf(restored)))
+    }
+
+    @Test
     fun testDeletedCustomSoundFallsBackToDefault() {
         // Selected id survived in preferences but its metadata is gone
         assertEquals(SoundChoice.Default, SoundChoice.fromId(CustomSound.ID_PREFIX + "gone", listOf(sound())))

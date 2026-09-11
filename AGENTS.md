@@ -92,7 +92,8 @@ Not every screenshot failure is a regression:
 - `app/src/test/screenshots/formfactor/**` is **git-ignored**. A fresh clone has no baselines there and every `FormFactorScreenshotTest` fails with "original file was not found" until `recordRoborazziDebug` runs once.
 - `greeting.png` is tracked but **stale on `main`** — it fails every run (same text, different background).
 - `PhoneNavigationTest` and `TabletNavigationTest` are **flaky**: they render the whole `PadlaApp` with real DataStore and Room, so the async streak/week load races the capture, and their content depends on the calendar date (the daily question rotates by day-of-year). Three runs on identical code have produced 3, 1 and 2 failures.
-- The deterministic gate worth trusting: `ClosureStepScreenshotTest` plus the four `FormFactorScreenshotTest` subclasses, which render single screens with fixed state.
+- `home_open.png` and `home_closed.png` are **stale on `main` for the same reason as `greeting.png`**: `50111ac` widened `day_names_short` from `Mo`/`Tu` to `Mon`/`Tue` and the baselines were never re-recorded, so all four form factors fail on those two captures. `FormFactorScreenshotTest.captureScreen` also renders without an `AppLocalization` wrapper, so its strings come from the test's default locale rather than the state's language.
+- The deterministic gate worth trusting: `ClosureStepScreenshotTest` plus the `ritual*`, `history` and `settings` captures of the four `FormFactorScreenshotTest` subclasses, which render single screens with fixed state.
 
 A test that renders a screen directly must wrap it in `AppLocalization(language)`; otherwise strings resolve against the test's default locale instead of the app's chosen language.
 
@@ -121,6 +122,24 @@ Reminders are scheduled with `AlarmManager.setAndAllowWhileIdle` — inexact, bu
 
 Wide windows switch to a navigation rail and multi-column layouts via `currentWindowAdaptiveInfo()`, which is a further reason `LocalContext` must stay the Activity.
 
+## Persistence and backup
+
+Everything the user sets or records stays on the device and survives an app update untouched: DataStore (`padla_preferences`) holds every Settings value, Room holds the ritual logs, and imported audio sits in `filesDir/custom_sounds/`. Installing a new version clears none of it.
+
+Surviving a *reinstall* is Android Auto Backup's job, and the two rule files split on purpose:
+
+| Data | Cloud backup | Device transfer |
+|---|---|---|
+| `clockout.db` — ritual logs | yes | yes |
+| `datastore/` — every Settings value | yes | yes |
+| `custom_sounds/` — imported audio | **no** | yes |
+
+Auto Backup allows 25 MB of cloud data per app and backs up **nothing at all** once that is exceeded, while `CustomSoundStorage` permits ten files of 25 MB each. Putting the audio in the cloud backup would therefore trade away the ritual history. Device-to-device transfer has no such ceiling, so the files ride along there. `backup_rules.xml` (API ≤ 30) lists no sounds either, because those releases have no device transfer and the file feeds only the cloud backup. `BackupRulesTest` pins all of it.
+
+A restored cloud backup consequently holds sound metadata whose file is gone. `RitualRepositoryImpl` resolves that on every read through its injected `soundFileExists` predicate — `PadlaApp` supplies the real file check — and stamps `CustomSound.isAvailable`, which is never serialized. `SoundChoice.fromId` treats an unavailable sound like a deleted one and falls back to the default style, so playback never silently fails. Settings keeps the entry visible under its old name, describes it as missing and opens the picker when tapped; `SettingsViewModel.replaceCustomSound` stores the new file under the **old id**, so an existing selection stays valid, and does not count the entry being replaced against the ten-sound limit.
+
+Auto Backup is best effort: it needs backup enabled and a Google account, and runs roughly daily while charging on Wi-Fi. An update loses nothing; a reinstall restores only what a backup managed to capture.
+
 ## Dependency management
 
 All versions go through the version catalog at `gradle/libs.versions.toml` — never hardcode a version in a build file. Several dependencies are deliberately commented out in `app/build.gradle.kts` (Retrofit, OkHttp, Moshi, Firebase AI, App Check); leave them that way unless a feature genuinely needs them. Re-enabling any of them would also mean adding the `INTERNET` permission the app currently does without. The Firebase BOM and the `google-services` plugin are applied, but no Firebase library is actually enabled.
@@ -132,6 +151,8 @@ All versions go through the version catalog at `gradle/libs.versions.toml` — n
 ## What NOT to do
 
 - Do not commit, stage, or push without explicit approval in the same turn.
+- Do not add `custom_sounds/` to the cloud backup — the 25 MB quota would drop the whole backup, ritual history included.
+- Do not persist `CustomSound.isAvailable` — it is resolved against the file system on every read.
 - Do not override `LocalContext` to localize strings.
 - Do not resolve resources by name at runtime.
 - Do not remove `enableSplit = false` from the bundle config.

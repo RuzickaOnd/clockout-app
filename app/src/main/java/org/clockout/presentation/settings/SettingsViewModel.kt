@@ -17,12 +17,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val repository: RitualRepository,
-    private val audioPlayer: AmbientAudioPlayer = AmbientAudioPlayer()
+    private val audioPlayer: AmbientAudioPlayer = AmbientAudioPlayer(),
+    /**
+     * Copies a picked file into app storage, refusing once [CustomSoundStorage.MAX_CUSTOM_SOUNDS]
+     * slots are taken. A seam rather than a direct call, so a test can exercise the import and
+     * replace flows without a content provider and a decodable audio file.
+     */
+    private val importSound: suspend (Context, Uri, Int) -> SoundImportResult =
+        { context, uri, existingCount -> CustomSoundStorage(context).import(uri, existingCount) }
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsState())
@@ -179,11 +187,39 @@ class SettingsViewModel(
             audioPlayer.stopAmbient()
             _state.update { it.copy(isImportingSound = true, isPreviewPlaying = false, soundImportError = null) }
 
-            val result = CustomSoundStorage(appContext).import(uri, _state.value.customSounds.size)
+            val result = importSound(appContext, uri, _state.value.customSounds.size)
             when (result) {
                 is SoundImportResult.Success -> {
                     repository.addCustomSound(result.sound)
                     repository.setSoundChoice(SoundChoice.Custom(result.sound))
+                    _state.update { it.copy(isImportingSound = false, soundImportError = null) }
+                }
+
+                is SoundImportResult.Failure -> {
+                    _state.update { it.copy(isImportingSound = false, soundImportError = result.error) }
+                }
+            }
+        }
+    }
+
+    /**
+     * Puts a freshly picked file in the place of [replaced], whose audio a cloud backup left
+     * behind. Keeping the id matters: preferences store the selected sound by id, so a new one
+     * would strand that selection a second time.
+     */
+    fun replaceCustomSound(context: Context, uri: Uri?, replaced: CustomSound) {
+        if (uri == null) return
+        val appContext = context.applicationContext
+        viewModelScope.launch {
+            audioPlayer.stopAmbient()
+            _state.update { it.copy(isImportingSound = true, isPreviewPlaying = false, soundImportError = null) }
+
+            // The entry being replaced holds no slot of its own - its file is what is missing.
+            val occupiedSlots = repository.getCustomSounds().first().count { it.id != replaced.id }
+            when (val result = importSound(appContext, uri, occupiedSlots)) {
+                is SoundImportResult.Success -> {
+                    CustomSoundStorage(appContext).delete(replaced)
+                    repository.addCustomSound(result.sound.copy(id = replaced.id))
                     _state.update { it.copy(isImportingSound = false, soundImportError = null) }
                 }
 

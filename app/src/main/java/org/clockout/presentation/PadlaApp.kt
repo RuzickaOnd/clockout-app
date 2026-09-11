@@ -38,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.window.core.layout.WindowWidthSizeClass
 import org.clockout.R
+import org.clockout.data.local.CustomSoundStorage
 import org.clockout.data.local.RitualPreferences
 import org.clockout.domain.model.AppLanguage
 import org.clockout.data.local.db.ClockoutDatabase
@@ -99,7 +100,10 @@ fun PadlaApp(
     val repository = remember {
         RitualRepositoryImpl(
             preferences = preferences,
-            ritualLogDao = ClockoutDatabase.getInstance(context).ritualLogDao()
+            ritualLogDao = ClockoutDatabase.getInstance(context).ritualLogDao(),
+            // A cloud backup restores the sound metadata but not the audio files, which travel
+            // only on a device-to-device transfer, so what is on disk has the last word.
+            soundFileExists = { fileName -> CustomSoundStorage.resolveFile(context, fileName).exists() }
         )
     }
     val getTodayRitualUseCase = remember { GetTodayRitualUseCase(repository) }
@@ -249,6 +253,7 @@ fun PadlaApp(
                                 onSoundChoiceSelected = { settingsViewModel.setSoundChoice(it) },
                                 onTogglePreviewSound = { settingsViewModel.togglePreviewSound(it, context) },
                                 onUploadCustomSound = { uri -> settingsViewModel.importCustomSound(context, uri) },
+                                onReplaceCustomSound = { uri, sound -> settingsViewModel.replaceCustomSound(context, uri, sound) },
                                 onDeleteCustomSound = { item -> settingsViewModel.deleteCustomSound(context, item) },
                                 onDismissSoundImportError = { settingsViewModel.dismissSoundImportError() },
                                 onClearData = { settingsViewModel.clearAllData() },

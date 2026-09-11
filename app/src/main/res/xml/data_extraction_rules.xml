@@ -3,7 +3,15 @@
    See https://developer.android.com/about/versions/12/backup-restore#xml-changes
 
    Both cloud backup and device-to-device transfer carry the ritual log database and the
-   settings DataStore, so reinstalling the app restores the user's history.
+   settings DataStore, so reinstalling the app restores the user's history and every choice
+   made in Settings.
+
+   The imported audio files under files/custom_sounds/ are the one exception: they go only to
+   device-transfer. Auto Backup allows 25 MB of cloud data per app and backs up *nothing* once
+   that is exceeded, and a user may keep up to ten sounds of 25 MB each - including them would
+   trade the ritual history for the audio. Device-to-device transfer has no such ceiling.
+   A restored cloud backup therefore holds sound metadata whose file is gone; the repository
+   flags those entries as unavailable and Settings offers to upload them again.
 -->
 <data-extraction-rules>
     <cloud-backup>
@@ -13,5 +21,6 @@
     <device-transfer>
         <include domain="database" path="clockout.db" />
         <include domain="file" path="datastore/" />
+        <include domain="file" path="custom_sounds/" />
     </device-transfer>
 </data-extraction-rules>

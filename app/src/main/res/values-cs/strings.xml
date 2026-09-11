@@ -348,6 +348,8 @@
     <string name="settings_upload_custom_sound_button">Nahrát vlastní zvuk</string>
     <string name="settings_uploading_custom_sound">Nahrávám soubor…</string>
     <string name="settings_custom_sound_hint">Podporované formáty: MP3, WAV, OGG, M4A, FLAC (max. 25 MB, až 10 souborů). Soubor se uloží do aplikace a při dýchání se přehrává ve smyčce.</string>
+    <string name="settings_custom_sound_backup_hint">Vlastní zvuky se přenesou při přechodu na nový telefon. Ze zálohy v cloudu se obnoví jen jejich názvy, soubory je potřeba nahrát znovu.</string>
+    <string name="settings_custom_sound_missing_desc">Soubor chybí – klepnutím ho nahraj znovu</string>
     <string name="settings_delete_custom_sound_title">Smazat vlastní zvuk?</string>
     <string name="settings_delete_custom_sound_text">Soubor „%1$s“ bude z aplikace odstraněn.</string>
     <string name="settings_custom_sound_error_unsupported">Tento soubor se nepodařilo přehrát. Vyber prosím platný zvukový soubor.</string>

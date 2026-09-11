@@ -122,6 +122,7 @@ fun SettingsScreen(
     onSoundChoiceSelected: (SoundChoice) -> Unit = {},
     onTogglePreviewSound: (SoundChoice) -> Unit = {},
     onUploadCustomSound: (Uri) -> Unit = {},
+    onReplaceCustomSound: (Uri, CustomSound) -> Unit = { _, _ -> },
     onDeleteCustomSound: (CustomSound) -> Unit = {},
     onDismissSoundImportError: () -> Unit = {},
     onClearData: () -> Unit,
@@ -137,12 +138,17 @@ fun SettingsScreen(
     var showResetDialog by remember { mutableStateOf(false) }
     var showPermissionDialog by remember { mutableStateOf(false) }
     var soundPendingDeletion by remember { mutableStateOf<CustomSound?>(null) }
+    // Set when the picker was opened from a sound whose file is gone, so the file that comes
+    // back replaces that entry instead of arriving as an eleventh sound.
+    var soundPendingReplacement by remember { mutableStateOf<CustomSound?>(null) }
 
     val customSoundPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
+        val replaced = soundPendingReplacement
+        soundPendingReplacement = null
         if (uri != null) {
-            onUploadCustomSound(uri)
+            if (replaced != null) onReplaceCustomSound(uri, replaced) else onUploadCustomSound(uri)
         }
     }
 
@@ -666,7 +672,11 @@ fun SettingsScreen(
                                                 Icon(
                                                     imageVector = Icons.Default.MusicNote,
                                                     contentDescription = null,
-                                                    tint = if (isSelected) IndigoAccent else TextMuted,
+                                                    tint = when {
+                                                        !customSound.isAvailable -> MissingFileAmber
+                                                        isSelected -> IndigoAccent
+                                                        else -> TextMuted
+                                                    },
                                                     modifier = Modifier.size(20.dp)
                                                 )
                                             },
@@ -706,8 +716,13 @@ fun SettingsScreen(
                                                 }
                                             },
                                             onClick = {
-                                                onSoundChoiceSelected(choice)
                                                 soundDropdownExpanded = false
+                                                if (customSound.isAvailable) {
+                                                    onSoundChoiceSelected(choice)
+                                                } else {
+                                                    soundPendingReplacement = customSound
+                                                    customSoundPickerLauncher.launch(AUDIO_MIME_FILTER)
+                                                }
                                             },
                                             modifier = Modifier.testTag("sound_style_${customSound.id}")
                                         )
@@ -809,6 +824,14 @@ fun SettingsScreen(
                                 text = stringResource(R.string.settings_custom_sound_hint),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSlate,
+                                fontSize = 12.5.sp,
+                                lineHeight = 17.sp
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = stringResource(R.string.settings_custom_sound_backup_hint),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextMuted,
                                 fontSize = 12.5.sp,
                                 lineHeight = 17.sp
                             )
@@ -1070,6 +1093,9 @@ fun SettingsScreen(
 }
 
 private const val AUDIO_MIME_FILTER = "audio/*"
+
+/** Marks a custom sound whose audio file is gone - the same amber the import errors use. */
+private val MissingFileAmber = Color(0xFFFCA5A5)
 
 private fun soundChoiceIcon(choice: SoundChoice): ImageVector = when (choice) {
     is SoundChoice.Custom -> Icons.Default.MusicNote
