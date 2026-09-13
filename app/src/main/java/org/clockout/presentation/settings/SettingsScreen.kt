@@ -46,6 +46,7 @@ import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.filled.WaterDrop
@@ -62,6 +63,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -106,6 +108,7 @@ import org.clockout.ui.theme.IndigoPrimary
 import org.clockout.ui.theme.TextLight
 import org.clockout.ui.theme.TextMuted
 import org.clockout.ui.theme.TextSlate
+import org.clockout.util.openPlayStoreListing
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -1026,6 +1029,64 @@ fun SettingsScreen(
                                     )
                                 }
                             }
+                        }
+                    }
+                }
+
+                // Rate the app: sits above the About card, so a user who has just read what the
+                // app is for meets the ask right afterwards rather than next to the destructive
+                // "Clear data" button at the bottom.
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .frostedGlass(cornerRadius = 22.dp)
+                        .padding(20.dp)
+                        .testTag("rate_app_card")
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.StarRate,
+                                contentDescription = null,
+                                tint = IndigoAccent,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = stringResource(R.string.settings_rate_title),
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp
+                                ),
+                                color = TextLight
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(R.string.settings_rate_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextSlate,
+                            lineHeight = 20.sp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { context.openPlayStoreListing() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .testTag("rate_app_button"),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = IndigoPrimary,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(
+                                text = stringResource(R.string.settings_rate_button),
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
                         }
                     }
                 }

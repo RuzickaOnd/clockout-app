@@ -18,5 +18,7 @@ data class RitualState(
     val isSoundMuted: Boolean = false,
     val soundChoice: SoundChoice = SoundChoice.Default,
     val isClosureTriggered: Boolean = false,
-    val isCompletedAndSaved: Boolean = false
+    val isCompletedAndSaved: Boolean = false,
+    /** Set for one frame once a finished ritual earns a Play Store review request. */
+    val shouldRequestReview: Boolean = false
 )

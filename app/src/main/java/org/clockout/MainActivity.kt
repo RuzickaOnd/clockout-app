@@ -19,15 +19,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.review.ReviewManagerFactory
 import org.clockout.presentation.PadlaApp
 import org.clockout.ui.theme.FrostedCanvas
 import org.clockout.ui.theme.MyApplicationTheme
+import org.clockout.review.InAppReviewController
 import org.clockout.update.AppUpdateBanner
 import org.clockout.update.AppUpdateController
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var appUpdateController: AppUpdateController
+    private lateinit var inAppReviewController: InAppReviewController
 
     private val updateFlowLauncher =
         registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
@@ -39,6 +42,7 @@ class MainActivity : ComponentActivity() {
 
         appUpdateController = AppUpdateController(AppUpdateManagerFactory.create(this))
         appUpdateController.checkForUpdate(updateFlowLauncher)
+        inAppReviewController = InAppReviewController(ReviewManagerFactory.create(this))
         
         // Configure edge-to-edge so both status bar and navigation bar are transparent
         enableEdgeToEdge(
@@ -68,6 +72,7 @@ class MainActivity : ComponentActivity() {
                     val updateState by appUpdateController.state.collectAsStateWithLifecycle()
 
                     PadlaApp(
+                        onRequestReview = { inAppReviewController.requestReview(this@MainActivity) },
                         overlay = {
                             AppUpdateBanner(
                                 state = updateState,

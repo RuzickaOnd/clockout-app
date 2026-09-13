@@ -10,6 +10,7 @@ import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.RitualStep
 import org.clockout.domain.usecase.GetTodayRitualUseCase
 import org.clockout.domain.usecase.LogMoodUseCase
+import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.sound.AmbientAudioPlayer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,6 +26,7 @@ class RitualViewModel(
     private val appContext: Context,
     private val getTodayRitualUseCase: GetTodayRitualUseCase,
     private val logMoodUseCase: LogMoodUseCase,
+    private val shouldRequestReviewUseCase: ShouldRequestReviewUseCase,
     private val ritualRepository: RitualRepository,
     private val audioPlayer: AmbientAudioPlayer = AmbientAudioPlayer()
 ) : ViewModel() {
@@ -157,7 +159,7 @@ class RitualViewModel(
                 handleMoodSelected(intent.mood)
             }
             is RitualIntent.SkipMood -> {
-                handleMoodSelected(MoodTag.CALM)
+                handleMoodSelected(MoodTag.CALM, moodWasChosen = false)
             }
         }
     }
@@ -187,7 +189,12 @@ class RitualViewModel(
         }
     }
 
-    private fun handleMoodSelected(mood: MoodTag) {
+    /**
+     * [moodWasChosen] is false when the user skipped the step. Skipping still logs [MoodTag.CALM],
+     * because the history needs something to show, but it is not the user saying the day went well
+     * - so it must never be read as the good mood that earns a review request.
+     */
+    private fun handleMoodSelected(mood: MoodTag, moodWasChosen: Boolean = true) {
         _state.update { it.copy(selectedMood = mood) }
         viewModelScope.launch {
             val currentState = _state.value
@@ -199,8 +206,18 @@ class RitualViewModel(
                 mood = mood,
                 questionText = currentState.question.text(currentState.language)
             )
-            _state.update { it.copy(isCompletedAndSaved = true) }
+            _state.update {
+                it.copy(
+                    isCompletedAndSaved = true,
+                    shouldRequestReview = moodWasChosen && shouldRequestReviewUseCase(mood)
+                )
+            }
         }
+    }
+
+    /** Clears the one-shot flag once the host has handed the request over to Play. */
+    fun onReviewRequestHandled() {
+        _state.update { it.copy(shouldRequestReview = false) }
     }
 
     override fun onCleared() {

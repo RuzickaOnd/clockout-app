@@ -352,6 +352,10 @@
     <string name="settings_custom_sound_error_too_large">The file is too large. The maximum size is 25 MB.</string>
     <string name="settings_custom_sound_error_limit">You can keep at most 10 custom sounds. Delete one first.</string>
     <string name="settings_custom_sound_error_read">The file could not be read. Please try again.</string>
+    <string name="settings_rate_title">Rate the app</string>
+    <string name="settings_rate_desc">Has ClockOut helped you close your workday? A short rating on Google Play takes a minute and helps other people who struggle to switch off find the app.</string>
+    <string name="settings_rate_button">Rate</string>
+
     <string name="settings_about_title">About ClockOut</string>
     <string name="settings_about_desc">ClockOut helps you consciously close your workday and switch from work into your own time. It matters most when you work from home, where the boundary between the office and the living room is missing.\n\nAll it takes is a three-minute daily ritual: answer today\'s question and park a thought you no longer need to carry, calm your breath at 4s in / 4s out, tap to turn off the desk lamp, and note the mood you are leaving the day with.\n\nWork stops spilling into your evening, you unwind more easily, and you start the next day rested. Everything stays on your phone — no accounts, no cloud.</string>
     <string name="settings_app_version_label">Version</string>

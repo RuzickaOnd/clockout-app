@@ -46,6 +46,7 @@ import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.domain.usecase.GetStreakUseCase
 import org.clockout.domain.usecase.GetTodayRitualUseCase
 import org.clockout.domain.usecase.LogMoodUseCase
+import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.history.HistoryScreen
 import org.clockout.presentation.history.HistoryViewModel
 import org.clockout.presentation.home.HomeScreen
@@ -93,6 +94,11 @@ private val ScreenSaver = Saver<Screen, Int>(
 @Composable
 fun PadlaApp(
     modifier: Modifier = Modifier,
+    /**
+     * Hands a finished ritual over to the Play in-app review flow, which needs an Activity and so
+     * can only be supplied by [org.clockout.MainActivity]. Previews and tests leave it a no-op.
+     */
+    onRequestReview: () -> Unit = {},
     overlay: @Composable BoxScope.() -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -108,6 +114,7 @@ fun PadlaApp(
     }
     val getTodayRitualUseCase = remember { GetTodayRitualUseCase(repository) }
     val logMoodUseCase = remember { LogMoodUseCase(repository) }
+    val shouldRequestReviewUseCase = remember { ShouldRequestReviewUseCase(repository) }
     val getStreakUseCase = remember { GetStreakUseCase(repository) }
 
     var currentScreen by rememberSaveable(stateSaver = ScreenSaver) {
@@ -203,12 +210,23 @@ fun PadlaApp(
                                     context.applicationContext,
                                     getTodayRitualUseCase,
                                     logMoodUseCase,
+                                    shouldRequestReviewUseCase,
                                     repository
                                 )
                             }
                             // Resets the ritual only when the user actually started it again.
                             LaunchedEffect(ritualSession) { ritualViewModel.startSession(ritualSession) }
                             val ritualState by ritualViewModel.state.collectAsState()
+
+                            // The request goes out on the completion card rather than on the way
+                            // home: the user is done, nothing is interrupted, and the good mood
+                            // that earned the request is still on screen.
+                            LaunchedEffect(ritualState.shouldRequestReview) {
+                                if (ritualState.shouldRequestReview) {
+                                    onRequestReview()
+                                    ritualViewModel.onReviewRequestHandled()
+                                }
+                            }
 
                             val leaveRitual = {
                                 ritualViewModel.stopSession()

@@ -21,7 +21,16 @@ import org.json.JSONObject
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "padla_preferences")
 
-class RitualPreferences(private val context: Context) : LegacyRitualLogSource {
+/**
+ * Every Settings value, in DataStore.
+ *
+ * The store is a constructor parameter rather than a lookup on the context because
+ * [preferencesDataStore] caches one instance for the whole process: tests that shared it would
+ * also share the ritual counter and the review flag, and would then depend on each other's order.
+ */
+class RitualPreferences(private val dataStore: DataStore<Preferences>) : LegacyRitualLogSource {
+
+    constructor(context: Context) : this(context.dataStore)
 
     // Legacy: ritual logs used to live here as a JSON blob. They now live in the Room
     // "ritual_logs" table; these keys only exist so RitualLogMigrator can import them once.
@@ -36,105 +45,133 @@ class RitualPreferences(private val context: Context) : LegacyRitualLogSource {
     private val KEY_CUSTOM_SOUNDS = stringPreferencesKey("custom_sounds_json")
     private val KEY_LANGUAGE = stringPreferencesKey("app_language")
     private val KEY_INCLUDE_WEEKENDS = booleanPreferencesKey("include_weekends")
+    private val KEY_COMPLETED_RITUALS = intPreferencesKey("ritual_completed_count")
+    private val KEY_REVIEW_PROMPT_SHOWN = booleanPreferencesKey("review_prompt_shown")
 
-    val notificationEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+    val notificationEnabledFlow: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[KEY_NOTIF_ENABLED] ?: false
     }
 
-    val languageOptionFlow: Flow<LanguageOption> = context.dataStore.data.map { preferences ->
+    val languageOptionFlow: Flow<LanguageOption> = dataStore.data.map { preferences ->
         LanguageOption.fromCode(preferences[KEY_LANGUAGE])
     }
 
-    val languageFlow: Flow<AppLanguage> = context.dataStore.data.map { preferences ->
+    val languageFlow: Flow<AppLanguage> = dataStore.data.map { preferences ->
         val option = LanguageOption.fromCode(preferences[KEY_LANGUAGE])
         option.resolveEffectiveLanguage()
     }
 
-    private val legacyLogsFlow: Flow<List<RitualLogEntry>> = context.dataStore.data.map { preferences ->
+    private val legacyLogsFlow: Flow<List<RitualLogEntry>> = dataStore.data.map { preferences ->
         deserializeLogs(preferences[KEY_LOGS] ?: "[]")
     }
 
     override suspend fun readLegacyLogs(): List<RitualLogEntry> = legacyLogsFlow.first()
 
     override suspend fun isLogsMigratedToRoom(): Boolean =
-        context.dataStore.data.map { it[KEY_LOGS_MIGRATED] ?: false }.first()
+        dataStore.data.map { it[KEY_LOGS_MIGRATED] ?: false }.first()
 
     override suspend fun markLogsMigratedToRoom() {
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             preferences.remove(KEY_LOGS)
             preferences[KEY_LOGS_MIGRATED] = true
         }
     }
 
-    val notificationHourFlow: Flow<Int> = context.dataStore.data.map { preferences ->
+    val notificationHourFlow: Flow<Int> = dataStore.data.map { preferences ->
         preferences[KEY_NOTIF_HOUR] ?: 17
     }
 
-    val notificationMinuteFlow: Flow<Int> = context.dataStore.data.map { preferences ->
+    val notificationMinuteFlow: Flow<Int> = dataStore.data.map { preferences ->
         preferences[KEY_NOTIF_MINUTE] ?: 30
     }
 
     /** Whether Saturday and Sunday offer the ritual too; off means Monday to Friday only. */
-    val includeWeekendsFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+    val includeWeekendsFlow: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[KEY_INCLUDE_WEEKENDS] ?: false
     }
 
-    val testModeFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+    val testModeFlow: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[KEY_TEST_MODE] ?: true // default to true so users can experience it immediately at any time
     }
 
-    val soundEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+    val soundEnabledFlow: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[KEY_SOUND_ENABLED] ?: true
     }
 
     /** Id of the selected sound: a built-in style id, or a [CustomSound] id. */
-    val selectedSoundIdFlow: Flow<String?> = context.dataStore.data.map { preferences ->
+    val selectedSoundIdFlow: Flow<String?> = dataStore.data.map { preferences ->
         preferences[KEY_SOUND_STYLE]
     }
 
-    val customSoundsFlow: Flow<List<CustomSound>> = context.dataStore.data.map { preferences ->
+    val customSoundsFlow: Flow<List<CustomSound>> = dataStore.data.map { preferences ->
         deserializeCustomSounds(preferences[KEY_CUSTOM_SOUNDS] ?: "[]")
     }
 
+    /**
+     * Counts every ritual the user has finished, for [org.clockout.domain.model.ReviewPromptPolicy].
+     * It deliberately outlives "Clear data and history": that wipes the history, not the fact that
+     * the app has already had its chance to ask for a review.
+     */
+    suspend fun incrementCompletedRitualCount(): Int {
+        var updated = 0
+        dataStore.edit { preferences ->
+            updated = (preferences[KEY_COMPLETED_RITUALS] ?: 0) + 1
+            preferences[KEY_COMPLETED_RITUALS] = updated
+        }
+        return updated
+    }
+
+    suspend fun getCompletedRitualCount(): Int =
+        dataStore.data.map { it[KEY_COMPLETED_RITUALS] ?: 0 }.first()
+
+    suspend fun isReviewPromptShown(): Boolean =
+        dataStore.data.map { it[KEY_REVIEW_PROMPT_SHOWN] ?: false }.first()
+
+    suspend fun markReviewPromptShown() {
+        dataStore.edit { preferences ->
+            preferences[KEY_REVIEW_PROMPT_SHOWN] = true
+        }
+    }
+
     suspend fun setNotificationTime(hour: Int, minute: Int) {
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             preferences[KEY_NOTIF_HOUR] = hour
             preferences[KEY_NOTIF_MINUTE] = minute
         }
     }
 
     suspend fun setNotificationEnabled(enabled: Boolean) {
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             preferences[KEY_NOTIF_ENABLED] = enabled
         }
     }
 
     suspend fun setIncludeWeekends(enabled: Boolean) {
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             preferences[KEY_INCLUDE_WEEKENDS] = enabled
         }
     }
 
     suspend fun setTestMode(enabled: Boolean) {
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             preferences[KEY_TEST_MODE] = enabled
         }
     }
 
     suspend fun setSoundEnabled(enabled: Boolean) {
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             preferences[KEY_SOUND_ENABLED] = enabled
         }
     }
 
     suspend fun setSelectedSoundId(id: String) {
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             preferences[KEY_SOUND_STYLE] = id
         }
     }
 
     suspend fun addCustomSound(sound: CustomSound) {
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             val current = deserializeCustomSounds(preferences[KEY_CUSTOM_SOUNDS] ?: "[]").toMutableList()
             current.removeAll { it.id == sound.id }
             current.add(0, sound)
@@ -143,14 +180,14 @@ class RitualPreferences(private val context: Context) : LegacyRitualLogSource {
     }
 
     suspend fun removeCustomSound(id: String) {
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             val current = deserializeCustomSounds(preferences[KEY_CUSTOM_SOUNDS] ?: "[]")
             preferences[KEY_CUSTOM_SOUNDS] = serializeCustomSounds(current.filterNot { it.id == id })
         }
     }
 
     suspend fun setLanguageOption(option: LanguageOption) {
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             preferences[KEY_LANGUAGE] = option.code
         }
     }

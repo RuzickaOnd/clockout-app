@@ -134,7 +134,14 @@ class RitualRepositoryImpl(
         )
         logMigrator.ensureMigrated()
         ritualLogDao.upsert(entry.toEntity())
+        preferences.incrementCompletedRitualCount()
     }
+
+    override suspend fun getCompletedRitualCount(): Int = preferences.getCompletedRitualCount()
+
+    override suspend fun isReviewPromptShown(): Boolean = preferences.isReviewPromptShown()
+
+    override suspend fun markReviewPromptShown() = preferences.markReviewPromptShown()
 
     override fun isWithinWorkdayCloseWindow(): Boolean {
         val calendar = Calendar.getInstance()

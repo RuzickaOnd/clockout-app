@@ -356,6 +356,10 @@
     <string name="settings_custom_sound_error_too_large">Soubor je příliš velký. Maximální velikost je 25 MB.</string>
     <string name="settings_custom_sound_error_limit">Můžeš mít uložených nejvýše 10 vlastních zvuků. Nejprve nějaký smaž.</string>
     <string name="settings_custom_sound_error_read">Soubor se nepodařilo načíst. Zkus to prosím znovu.</string>
+    <string name="settings_rate_title">Ohodnotit aplikaci</string>
+    <string name="settings_rate_desc">Pomohla vám Padla zavřít pracovní den? Krátké hodnocení na Google Play zabere minutu a pomůže appku najít dalším lidem, kteří se těžko vypínají.</string>
+    <string name="settings_rate_button">Ohodnotit</string>
+
     <string name="settings_about_title">O aplikaci Padla</string>
     <string name="settings_about_desc">Padla ti pomáhá vědomě uzavřít pracovní den a přepnout se z práce do osobního času. Nejvíc se hodí na home office, kde mezi kanceláří a domovem chybí přirozená hranice.\n\nStačí tři minuty denního rituálu: odpovíš na dnešní otázku a odložíš myšlenku, kterou už nemusíš nést, zklidníš dech v rytmu 4 s nádech / 4 s výdech, klepnutím zhasneš pracovní lampu a zaznamenáš, s jakou náladou den opouštíš.\n\nPráce se ti tak nepřelévá do večera, snáz vypneš hlavu a druhý den začínáš odpočatý. Všechno zůstává jen v telefonu — žádné účty, žádný cloud.</string>
     <string name="settings_app_version_label">Verze</string>

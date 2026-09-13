@@ -8,6 +8,7 @@ import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.domain.usecase.GetTodayRitualUseCase
 import org.clockout.domain.usecase.LogMoodUseCase
+import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
 import org.junit.After
@@ -51,6 +52,7 @@ class RitualSessionSurvivalTest {
             appContext = context,
             getTodayRitualUseCase = GetTodayRitualUseCase(repository),
             logMoodUseCase = LogMoodUseCase(repository),
+            shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
             ritualRepository = repository
         )
     }

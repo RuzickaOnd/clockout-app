@@ -31,8 +31,8 @@ android {
     applicationId = "org.clockout"
     minSdk = 26
     targetSdk = 37
-    versionCode = 1000101
-    versionName = "1.0.1"
+    versionCode = 1000201
+    versionName = "1.0.2"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -186,6 +186,7 @@ dependencies {
   // implementation(libs.moshi.kotlin)
   // implementation(libs.okhttp)
   implementation(libs.play.app.update)
+  implementation(libs.play.review)
   // implementation(libs.play.services.location)
   // implementation(libs.retrofit)
   testImplementation(libs.androidx.compose.ui.test.junit4)

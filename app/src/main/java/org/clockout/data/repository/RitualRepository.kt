@@ -14,7 +14,11 @@ interface RitualRepository {
     fun getTodayQuestion(): RitualQuestion
     fun getLogs(): Flow<List<RitualLogEntry>>
     fun getStreakInfo(): Flow<RitualStreakInfo>
+    /** Records a finished ritual: the log entry itself, and the lifetime completion count. */
     suspend fun logRitual(selectedAnswer: String?, mood: MoodTag, questionText: String)
+    suspend fun getCompletedRitualCount(): Int
+    suspend fun isReviewPromptShown(): Boolean
+    suspend fun markReviewPromptShown()
     fun isWithinWorkdayCloseWindow(): Boolean
     fun getIncludeWeekends(): Flow<Boolean>
     suspend fun setIncludeWeekends(enabled: Boolean)

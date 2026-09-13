@@ -45,9 +45,9 @@ When in doubt: if a future agent reading only the MD files would be misled by th
 
 Padla (Czech) / ClockOut (English) — an Android app for closing the workday with a four-step, roughly three-minute ritual: today's question, 4 s / 4 s guided breathing, a visual lamp-off, and a mood log. Aimed at home-office and hybrid workers who struggle to switch off.
 
-Version 1.0.1 (`versionCode` 1000100). `minSdk` 26, `targetSdk` 37, `compileSdk` 37.1. AGP 9.4.0, Kotlin 2.4.20, Compose BOM 2026.08.00, Robolectric 4.16.1, Roborazzi 1.74.0.
+Version 1.0.1 (`versionCode` 1000100). `minSdk` 26, `targetSdk` 37, `compileSdk` 37.1. AGP 9.4.0, Kotlin 2.4.20, Compose BOM 2026.08.00, Robolectric 4.16.1, Roborazzi 1.74.0, Play App Update 2.1.0, Play Review 2.0.2.
 
-All data stays on the device — Room for ritual logs, DataStore for preferences. No accounts, no cloud sync, no ads. The app ships **without the `INTERNET` permission**; Play In-App Update reaches the Play Store over IPC, not over the network.
+All data stays on the device — Room for ritual logs, DataStore for preferences. No accounts, no cloud sync, no ads. The app ships **without the `INTERNET` permission**; Play In-App Update and Play In-App Review both reach the Play Store over IPC, not over the network, and the "Rate the app" button hands a `market://` intent to the Play app (or a browser) rather than fetching anything itself.
 
 ## Module layout
 
@@ -60,7 +60,7 @@ Single Gradle module, `:app` (root project name `Padla`), package `org.clockout`
 | `presentation/{home,history,ritual,settings}` | Compose screens with their state holders |
 | `presentation/components`, `presentation/util` | Shared composables; localization provider and enum → resource mapping |
 | `notification`, `receiver` | Reminder scheduling and the broadcast receiver that fires it |
-| `sound`, `update`, `ui/theme`, `util` | Ambient sound playback, in-app update flow, Material 3 theme, context helpers |
+| `sound`, `update`, `review`, `ui/theme`, `util` | Ambient sound playback, in-app update flow, Play in-app review flow, Material 3 theme, context helpers |
 
 ## Commands
 
@@ -97,7 +97,9 @@ Only `closure_lamp_off.png` and `closure_lamp_on.png` are tracked in git. Everyt
 
 runs once. That also means a stale baseline there is a local condition, never something a commit can fix for anyone else.
 
-`PhoneNavigationTest` and `TabletNavigationTest` render the whole `PadlaApp` against real DataStore and Room, so their captures contain today's question, which rotates by day-of-year. A baseline recorded on one day drifts on the next — re-record those two when the date rolls over rather than reading it as a regression. Every other capture renders a single screen from a fixed fixture and is deterministic; `ClosureStepScreenshotTest` and the four `FormFactorScreenshotTest` subclasses are the gate worth trusting.
+`PhoneNavigationTest` and `TabletNavigationTest` render the whole `PadlaApp` against real DataStore and Room, so their captures contain today's question, which rotates by day-of-year. A baseline recorded on one day drifts on the next — re-record those two when the date rolls over rather than reading it as a regression.
+
+Both also fail outright **at the weekend**: `TabletNavigationTest."the ritual keeps the whole window and hides the rail"` clicks `start_ritual_button`, which the home screen does not offer on a Saturday or Sunday while `includeWeekends` is off, and the thrown assertion then perturbs the shared process enough that the sibling `PhoneNavigationTest` capture can catch the week overview before its flow has emitted ("0 of 0 days closed" instead of "0 of 5"). Run either class on its own and both pass. Check the day of the week before treating either as a regression. Every other capture renders a single screen from a fixed fixture and is deterministic; `ClosureStepScreenshotTest` and the four `FormFactorScreenshotTest` subclasses are the gate worth trusting.
 
 A test that renders a screen directly must wrap it in `AppLocalization(language)`, otherwise strings resolve against the test's default locale instead of the app's chosen language. `FormFactorScreenshotTest.captureScreen` does this for every capture it takes and accepts the language as a parameter.
 
@@ -124,11 +126,17 @@ The app switches language **in-app, independently of the system locale**. All us
 
 Reminders are scheduled with `AlarmManager.setAndAllowWhileIdle` — inexact, but it fires in Doze — and are re-registered after reboot. `ReminderPolicy` and `RitualDayPolicy` decide whether a given day takes part, honouring the weekend setting.
 
+Asking for a Play Store review is governed by `ReviewPromptPolicy` (`domain/model`): at least ten finished rituals behind the user, a mood of `SATISFIED` or `CALM` on the ritual just logged, and never more than once. A bad day only postpones the question — the next good one picks it up. `ShouldRequestReviewUseCase` applies the policy and marks the question asked; `RitualViewModel` raises a one-shot `shouldRequestReview` flag, `PadlaApp` turns it into its `onRequestReview` callback, and `MainActivity` supplies `InAppReviewController`, which needs an Activity. The request goes out on the completion card, not on the way home. Settings also carries a plain "Rate the app" card, which opens the Play listing through `Context.openPlayStoreListing()` — Play exposes no public deep link straight to the review form.
+
 Wide windows switch to a navigation rail and multi-column layouts via `currentWindowAdaptiveInfo()`, which is a further reason `LocalContext` must stay the Activity.
 
 ## Persistence and backup
 
 Everything the user sets or records stays on the device and survives an app update untouched: DataStore (`padla_preferences`) holds every Settings value, Room holds the ritual logs, and imported audio sits in `filesDir/custom_sounds/`. Installing a new version clears none of it.
+
+`RitualPreferences` takes its `DataStore` as a constructor parameter, with a `Context` convenience constructor for the app. `preferencesDataStore` caches one instance per process, so tests that went through the context would share the ritual counter and the review flag and become order-dependent; `ReviewPromptFlowTest` passes its own store instead.
+
+The ritual counter (`ritual_completed_count`) and the review flag (`review_prompt_shown`) are bumped inside `RitualRepositoryImpl.logRitual`, which is also why the counter is immune to Room collapsing several rituals logged on one day into a single row. Both deliberately survive "Clear data and history": that clears the history, not the fact that the app has already had its one chance to ask for a review.
 
 Surviving a *reinstall* is Android Auto Backup's job, and the two rule files split on purpose:
 
@@ -157,6 +165,7 @@ All versions go through the version catalog at `gradle/libs.versions.toml` — n
 - Do not commit, stage, or push without explicit approval in the same turn.
 - Do not add `custom_sounds/` to the cloud backup — the 25 MB quota would drop the whole backup, ritual history included.
 - Do not persist `CustomSound.isAvailable` — it is resolved against the file system on every read.
+- Do not reset the ritual counter or the review flag when clearing data — that would hand out a second review request on every wipe.
 - Do not override `LocalContext` to localize strings.
 - Do not resolve resources by name at runtime.
 - Do not remove `enableSplit = false` from the bundle config.

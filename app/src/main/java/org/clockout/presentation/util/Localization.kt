@@ -51,8 +51,8 @@ fun AppLocalization(language: AppLanguage, content: @Composable () -> Unit) {
 val MoodTag.labelRes: Int
     get() = when (this) {
         MoodTag.CALM -> R.string.mood_calm_label
-        MoodTag.TIRED -> R.string.mood_tired_label
         MoodTag.SATISFIED -> R.string.mood_satisfied_label
+        MoodTag.TIRED -> R.string.mood_tired_label
         MoodTag.TENSE -> R.string.mood_tense_label
     }
 
