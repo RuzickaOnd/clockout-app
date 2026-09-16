@@ -3,6 +3,8 @@
 > **Mindful Workday Shutdown & Transition Ritual for Android**  
 > Aplikace pro vědomé uzavření pracovního dne a přepnutí do večerního volna na home office.
 
+**Ke stažení na Google Play / Available on Google Play:** <https://play.google.com/store/apps/details?id=org.clockout>
+
 ---
 
 ## 🇨🇿 O aplikaci (CZ)
