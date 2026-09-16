@@ -7,6 +7,7 @@ import org.clockout.data.local.db.RitualLogDao
 import org.clockout.data.local.db.toDomain
 import org.clockout.data.local.db.toEntity
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.SoundChoice
@@ -205,6 +206,10 @@ class RitualRepositoryImpl(
     override suspend fun setLanguage(language: AppLanguage) = preferences.setLanguage(language)
 
     override suspend fun setLanguageOption(option: LanguageOption) = preferences.setLanguageOption(option)
+
+    override fun getBreathingStyle(): Flow<BreathingStyle> = preferences.breathingStyleFlow
+
+    override suspend fun setBreathingStyle(style: BreathingStyle) = preferences.setBreathingStyle(style)
 
     override suspend fun clearLogs() {
         // Migrate first so the legacy blob is dropped too, otherwise it would reappear later.

@@ -13,6 +13,7 @@ import org.clockout.R
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.DayStatus
 import org.clockout.domain.model.LanguageOption
+import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.MeditationSoundStyle
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.SoundChoice
@@ -81,6 +82,20 @@ val MeditationSoundStyle.descriptionRes: Int
         MeditationSoundStyle.RAIN_PINK_NOISE -> R.string.sound_rain_pink_noise_desc
         MeditationSoundStyle.BREATHING_WAVES -> R.string.sound_breathing_waves_desc
         MeditationSoundStyle.SILENT_HAPTIC -> R.string.sound_silent_haptic_desc
+    }
+
+@get:StringRes
+val BreathingStyle.labelRes: Int
+    get() = when (this) {
+        BreathingStyle.CLASSIC_CIRCLE -> R.string.breathing_style_classic_circle_label
+        BreathingStyle.AURORA -> R.string.breathing_style_aurora_label
+    }
+
+@get:StringRes
+val BreathingStyle.descriptionRes: Int
+    get() = when (this) {
+        BreathingStyle.CLASSIC_CIRCLE -> R.string.breathing_style_classic_circle_desc
+        BreathingStyle.AURORA -> R.string.breathing_style_aurora_desc
     }
 
 /** A custom sound carries the file name the user picked, which is never translated. */

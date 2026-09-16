@@ -33,3 +33,11 @@ val BulbAmber = Color(0xFFFBBF24)
 val BulbAmberDeep = Color(0xFFF59E0B)
 val BulbGlow = Color(0x66FBBF24)
 val BulbOff = Color(0xFF475569)
+
+// Aurora palette for the breathing visual. The liquid inside the blob needs a real gradient to
+// read as layered water rather than one colour at three opacities, so a cold third tone joins
+// the indigo and the purple: deep indigo sits at the bottom, purple in the middle, teal rides
+// the crest. Nothing outside the breathing step uses these.
+val AuroraDeep = Color(0xFF3730A3)
+val AuroraTeal = Color(0xFF22D3EE)
+val AuroraCrest = Color(0xFFA5F3FC)

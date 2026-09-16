@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import org.clockout.data.repository.RitualRepository
+import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.MeditationSoundStyle
 import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.RitualStep
 import org.clockout.domain.usecase.GetTodayRitualUseCase
@@ -60,9 +62,13 @@ class RitualViewModel(
         _state.update { current ->
             RitualState(
                 question = getTodayRitualUseCase(),
+                // Everything a preference feeds has to be carried over by hand: the flows only
+                // re-emit when the stored value changes, so a fresh RitualState would otherwise
+                // start the ritual on the defaults until the user next edits Settings.
                 language = current.language,
                 isSoundMuted = current.isSoundMuted,
-                soundChoice = current.soundChoice
+                soundChoice = current.soundChoice,
+                breathingStyle = current.breathingStyle
             )
         }
     }
@@ -79,15 +85,17 @@ class RitualViewModel(
             combine(
                 ritualRepository.getLanguage(),
                 ritualRepository.getSoundEnabled(),
-                ritualRepository.getSoundChoice()
-            ) { lang, soundEnabled, soundChoice ->
-                Triple(lang, soundEnabled, soundChoice)
-            }.collect { (lang, soundEnabled, soundChoice) ->
+                ritualRepository.getSoundChoice(),
+                ritualRepository.getBreathingStyle()
+            ) { language, soundEnabled, soundChoice, breathingStyle ->
+                RitualPreferencesSnapshot(language, soundEnabled, soundChoice, breathingStyle)
+            }.collect { snapshot ->
                 _state.update {
                     it.copy(
-                        language = lang,
-                        isSoundMuted = !soundEnabled,
-                        soundChoice = soundChoice
+                        language = snapshot.language,
+                        isSoundMuted = !snapshot.soundEnabled,
+                        soundChoice = snapshot.soundChoice,
+                        breathingStyle = snapshot.breathingStyle
                     )
                 }
             }
@@ -226,3 +234,11 @@ class RitualViewModel(
         audioPlayer.stopAmbient()
     }
 }
+
+/** The Settings values the ritual reacts to, combined so one emission updates the state once. */
+private data class RitualPreferencesSnapshot(
+    val language: AppLanguage,
+    val soundEnabled: Boolean,
+    val soundChoice: SoundChoice,
+    val breathingStyle: BreathingStyle
+)

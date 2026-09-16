@@ -1,6 +1,7 @@
 package org.clockout.presentation.ritual
 
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualQuestion
@@ -17,6 +18,7 @@ data class RitualState(
     val isBreathingRunning: Boolean = true,
     val isSoundMuted: Boolean = false,
     val soundChoice: SoundChoice = SoundChoice.Default,
+    val breathingStyle: BreathingStyle = BreathingStyle.CLASSIC_CIRCLE,
     val isClosureTriggered: Boolean = false,
     val isCompletedAndSaved: Boolean = false,
     /** Set for one frame once a finished ritual earns a Play Store review request. */

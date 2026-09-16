@@ -37,6 +37,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Check
@@ -101,6 +102,7 @@ import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.components.ContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
+import org.clockout.presentation.util.labelRes
 import org.clockout.presentation.util.localizedDescription
 import org.clockout.presentation.util.localizedLabel
 import org.clockout.ui.theme.IndigoAccent
@@ -128,6 +130,7 @@ fun SettingsScreen(
     onReplaceCustomSound: (Uri, CustomSound) -> Unit = { _, _ -> },
     onDeleteCustomSound: (CustomSound) -> Unit = {},
     onDismissSoundImportError: () -> Unit = {},
+    onOpenBreathingStyle: () -> Unit = {},
     onClearData: () -> Unit,
     modifier: Modifier = Modifier,
     /**
@@ -907,6 +910,48 @@ fun SettingsScreen(
                             }
                         }
                     }
+                }
+
+                // Breathing animation style: right after the sound card, because both are about
+                // how the ritual feels rather than when it happens. The choosing happens on its
+                // own screen, which has room for running previews and for styles added later.
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .frostedGlass(cornerRadius = 22.dp)
+                        .clickable(onClick = onOpenBreathingStyle)
+                        .padding(20.dp)
+                        .testTag("breathing_style_card"),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.settings_breathing_style_title),
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 17.sp
+                            ),
+                            color = TextLight
+                        )
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = stringResource(state.breathingStyle.labelRes),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = IndigoAccent
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = stringResource(R.string.settings_breathing_style_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextMuted
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = TextSlate,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
 
                 // App Language Dropdown Card (penultimate position, before About Padla)

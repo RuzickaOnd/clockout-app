@@ -37,12 +37,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.window.core.layout.WindowWidthSizeClass
+import android.content.Intent
+import org.clockout.BreathingStyleActivity
 import org.clockout.R
-import org.clockout.data.local.CustomSoundStorage
-import org.clockout.data.local.RitualPreferences
 import org.clockout.domain.model.AppLanguage
-import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.domain.usecase.GetStreakUseCase
 import org.clockout.domain.usecase.GetTodayRitualUseCase
 import org.clockout.domain.usecase.LogMoodUseCase
@@ -102,16 +100,7 @@ fun PadlaApp(
     overlay: @Composable BoxScope.() -> Unit = {}
 ) {
     val context = LocalContext.current
-    val preferences = remember { RitualPreferences(context) }
-    val repository = remember {
-        RitualRepositoryImpl(
-            preferences = preferences,
-            ritualLogDao = ClockoutDatabase.getInstance(context).ritualLogDao(),
-            // A cloud backup restores the sound metadata but not the audio files, which travel
-            // only on a device-to-device transfer, so what is on disk has the last word.
-            soundFileExists = { fileName -> CustomSoundStorage.resolveFile(context, fileName).exists() }
-        )
-    }
+    val repository = rememberRitualRepository(context)
     val getTodayRitualUseCase = remember { GetTodayRitualUseCase(repository) }
     val logMoodUseCase = remember { LogMoodUseCase(repository) }
     val shouldRequestReviewUseCase = remember { ShouldRequestReviewUseCase(repository) }
@@ -274,6 +263,9 @@ fun PadlaApp(
                                 onReplaceCustomSound = { uri, sound -> settingsViewModel.replaceCustomSound(context, uri, sound) },
                                 onDeleteCustomSound = { item -> settingsViewModel.deleteCustomSound(context, item) },
                                 onDismissSoundImportError = { settingsViewModel.dismissSoundImportError() },
+                                onOpenBreathingStyle = {
+                                    context.startActivity(Intent(context, BreathingStyleActivity::class.java))
+                                },
                                 onClearData = { settingsViewModel.clearAllData() },
                                 showBackButton = !showRail
                             )

@@ -58,9 +58,9 @@ Single Gradle module, `:app` (root project name `Padla`), package `org.clockout`
 | `data/local`, `data/local/db`, `data/repository` | DataStore preferences, Room database, DAO and entity mappers, repository implementations, question catalog, custom-sound storage, legacy-log migration |
 | `domain/model`, `domain/usecase` | Pure Kotlin models and use cases. **No `R` references, no androidx imports.** |
 | `presentation/{home,history,ritual,settings}` | Compose screens with their state holders |
-| `presentation/components`, `presentation/util` | Shared composables; localization provider and enum → resource mapping |
+| `presentation/components`, `presentation/util` | Shared composables, including the two breathing visuals and the closure bulb; localization provider and enum → resource mapping |
 | `notification`, `receiver` | Reminder scheduling and the broadcast receiver that fires it |
-| `sound`, `update`, `review`, `ui/theme`, `util` | Ambient sound playback, in-app update flow, Play in-app review flow, Material 3 theme, context helpers |
+| `sound`, `update`, `review`, `ui/theme`, `util` | Ambient sound playback, in-app update flow, Play in-app review flow, Material 3 theme, context and window-chrome helpers |
 
 ## Commands
 
@@ -120,6 +120,16 @@ The app switches language **in-app, independently of the system locale**. All us
 
 `RitualStep` (`domain/model`) is a sealed interface with four steps — Question, Breathing, Closing, Log — driven from `RitualScreen` through `RitualIntent`.
 
+The breathing step draws `BreathingAurora` (`presentation/components`): an organic blob built from eight anchors bent into a closed bezier, filled with three phase-shifted wave layers that rise on the inhale and fall on the exhale, trailed by two lagging copies of its own outline. Two things about it are load-bearing. The layers are listed and drawn **from the highest surface down to the lowest**, because each one fills to the bottom of the blob — paint a lower layer last and it covers the band the layer above it was meant to leave visible, and the water flattens into a single slab. And the water never drains completely: below roughly 0.62 of the radius the lower bands fall outside the blob and clip away.
+
+Its rhythm comes from `rememberBreathCycle()`, a linear 0f..1f over `BREATH_CYCLE_MILLIS`, turned into depth by `breathCurve()` — a raised cosine. That shape stalls at both turning points, moves fastest halfway through, and closes its loop without a seam, which an eased tween played in `RepeatMode.Reverse` does not: that combination made the exhale end in a jolt and left the phase to be guessed from the scale rather than read off the turning point. `isInhalePhase()` splits the cycle at 0.5, so the guidance text and the haptic tick land exactly where the breath turns. `BreathCurveTest` pins all of it. Everything the visual draws is a function of the cycle alone — no randomness — which is what lets the screenshot tests capture it by advancing the clock by hand.
+
+Which visual the step draws is a Settings choice. `BreathingStyle` (`domain/model`) holds the options, `BreathingVisual` (`presentation/components`) is the single call that dispatches between `BreathingPulse` — the concentric rings the app shipped with — and `BreathingAurora`. Both take the same cycle and centre the same content, so adding a style is a composable, a branch, an enum entry and two strings. `CLASSIC_CIRCLE` is the fallback in `fromId`, so an install predating the setting keeps the visual it already had rather than changing appearance on an update. `BreathingPulse` runs on `breathCurve` like everything else: what the classic style preserves is the look, not the old easing's jolt.
+
+The picker is `BreathingStyleActivity`, an Activity of its own rather than a fifth `Screen`. Navigation in `PadlaApp` is a hand-rolled sealed interface whose saver writes screens down as plain integers, and every destination in it is reachable from the navigation rail; a picker hanging off Settings is a peer of neither Home nor History. As a separate Activity it gets the system back stack and state restoration for free and the rail is simply not part of it. The cost is that it has to build its own root: `applyFrostedWindowChrome()` (`util/ActivityChrome.kt`, shared with `MainActivity`) for the transparent system bars, and its own `AppLocalization` wrapper, with `rememberRitualRepository()` (`presentation/RitualDependencies.kt`, also shared with `PadlaApp`) called above it so DataStore and Room never see a locale-overridden context.
+
+`BreathingStyleScreen` shows every style running rather than described — the choice is entirely visual — with one large preview above a `FlowRow` of tiles. Every tile reserves `DESCRIPTION_LINES` lines for its description. That is what makes the tiles equal height: a lazy grid measures its items with unbounded height, so `fillMaxHeight` there does nothing, and `FlowRow`'s `fillMaxRowHeight` settles the row height before the text has wrapped and clips the longer description. Reserving the lines needs no help from the container. Czech runs to three lines where English runs to two, so a new style's description has to fit three lines in both.
+
 `PadlaApp` owns navigation, builds `RitualPreferences` and the Room database from the **original** context (above `AppLocalization`, so DataStore and Room never receive a locale-overridden context), and exposes an `overlay` slot where `MainActivity` injects `AppUpdateBanner`.
 
 `QuestionsData` loads the entire question catalog for **both** languages at startup from string arrays; `getTodayQuestion(dayOfYear, year)` then walks a permutation reshuffled once per year, so the day's question is stable and the whole pool is used before anything repeats.
@@ -135,6 +145,8 @@ Wide windows switch to a navigation rail and multi-column layouts via `currentWi
 Everything the user sets or records stays on the device and survives an app update untouched: DataStore (`padla_preferences`) holds every Settings value, Room holds the ritual logs, and imported audio sits in `filesDir/custom_sounds/`. Installing a new version clears none of it.
 
 `RitualPreferences` takes its `DataStore` as a constructor parameter, with a `Context` convenience constructor for the app. `preferencesDataStore` caches one instance per process, so tests that went through the context would share the ritual counter and the review flag and become order-dependent; `ReviewPromptFlowTest` passes its own store instead.
+
+The chosen breathing visual lives in DataStore under `breathing_style`, so it rides along with every other Settings value on both a cloud backup and a device transfer.
 
 The ritual counter (`ritual_completed_count`) and the review flag (`review_prompt_shown`) are bumped inside `RitualRepositoryImpl.logRitual`, which is also why the counter is immune to Room collapsing several rituals logged on one day into a single row. Both deliberately survive "Clear data and history": that clears the history, not the fact that the app has already had its one chance to ask for a review.
 
@@ -169,6 +181,9 @@ All versions go through the version catalog at `gradle/libs.versions.toml` — n
 - Do not override `LocalContext` to localize strings.
 - Do not resolve resources by name at runtime.
 - Do not remove `enableSplit = false` from the bundle config.
+- Do not reorder `WAVE_LAYERS` in `BreathingAurora` by depth — the list is in draw order, top surface first, and sorting it the other way collapses the water into one flat slab.
+- Do not make `AURORA` the fallback in `BreathingStyle.fromId` — an update would then change the look of the ritual for every existing install without being asked.
+- Do not rebuild the window chrome or the repository inside a new Activity by hand — call `applyFrostedWindowChrome()` and `rememberRitualRepository()`, and keep the repository call above `AppLocalization`.
 - Do not re-record screenshot baselines to make a failing test pass — establish first whether the change to the rendering was intended.
 - Do not add strings to only one of the two locale files.
 - Do not put user-facing text, `R` references, or androidx imports into `domain/`.

@@ -1,6 +1,7 @@
 package org.clockout.data.repository
 
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.MoodTag
@@ -39,6 +40,8 @@ interface RitualRepository {
     fun getLanguageOption(): Flow<LanguageOption>
     suspend fun setLanguage(language: AppLanguage)
     suspend fun setLanguageOption(option: LanguageOption)
+    fun getBreathingStyle(): Flow<BreathingStyle>
+    suspend fun setBreathingStyle(style: BreathingStyle)
     suspend fun clearLogs()
     fun getTodayDateString(): String
 }

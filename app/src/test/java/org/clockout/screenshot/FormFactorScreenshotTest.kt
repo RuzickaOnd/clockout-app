@@ -6,11 +6,13 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.RitualStep
 import org.clockout.presentation.history.HistoryScreen
 import org.clockout.presentation.home.HomeScreen
 import org.clockout.presentation.ritual.RitualScreen
 import org.clockout.presentation.ritual.RitualState
+import org.clockout.presentation.settings.BreathingStyleScreen
 import org.clockout.presentation.settings.SettingsScreen
 import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.MyApplicationTheme
@@ -54,6 +56,16 @@ abstract class FormFactorScreenshotTest(private val device: String) {
         RitualScreen(state = ritualState(RitualStep.Breathing), onIntent = {}, onFinish = {})
     }
 
+    // Both breathing visuals are user-selectable, so both need a reference. The default style is
+    // the one ritualBreathing above renders.
+    @Test fun ritualBreathingAurora() = capture("ritual_breathing_aurora") {
+        RitualScreen(
+            state = ritualState(RitualStep.Breathing).copy(breathingStyle = BreathingStyle.AURORA),
+            onIntent = {},
+            onFinish = {}
+        )
+    }
+
     @Test fun ritualClosing() = capture("ritual_closing") {
         RitualScreen(state = ritualState(RitualStep.Closing), onIntent = {}, onFinish = {})
     }
@@ -82,6 +94,14 @@ abstract class FormFactorScreenshotTest(private val device: String) {
             onDeleteCustomSound = {},
             onDismissSoundImportError = {},
             onClearData = {}
+        )
+    }
+
+    @Test fun breathingStylePicker() = capture("breathing_style_picker") {
+        BreathingStyleScreen(
+            selectedStyle = BreathingStyle.AURORA,
+            onStyleSelected = {},
+            onBack = {}
         )
     }
 

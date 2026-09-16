@@ -3,11 +3,6 @@ package org.clockout.presentation.ritual
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -65,8 +60,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
@@ -83,14 +76,18 @@ import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import org.clockout.R
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualStep
 import org.clockout.presentation.components.CLOSURE_BULB_ANIM_MILLIS
 import org.clockout.presentation.components.CLOSURE_BUTTON_IN_DELAY_MILLIS
 import org.clockout.presentation.components.CLOSURE_TEXT_IN_DELAY_MILLIS
+import org.clockout.presentation.components.BreathingVisual
 import org.clockout.presentation.components.ClosureBulb
 import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
+import org.clockout.presentation.components.isInhalePhase
+import org.clockout.presentation.components.rememberBreathCycle
 import org.clockout.presentation.components.ContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.descriptionRes
@@ -260,6 +257,7 @@ fun RitualScreen(
                     is RitualStep.Breathing -> {
                         StepBreathingContent(
                             secondsRemaining = state.breathingSecondsRemaining,
+                            breathingStyle = state.breathingStyle,
                             onIntent = onIntent
                         )
                     }
@@ -537,21 +535,15 @@ private val BREATH_VISUAL_MIN_SIZE = 200.dp
 @Composable
 private fun StepBreathingContent(
     secondsRemaining: Int,
+    breathingStyle: BreathingStyle,
     onIntent: (RitualIntent) -> Unit
 ) {
-    // 8-second cycle: 4s inhale, 4s exhale
-    val infiniteTransition = rememberInfiniteTransition(label = "breathing_cycle")
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 0.70f,
-        targetValue = 1.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 4000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "circle_scale"
-    )
+    // A linear cycle shaped by `breathCurve` rather than an eased tween played in reverse. The
+    // reversal made the exhale crawl out of the turn and end in a jolt, and it left the phase to
+    // be guessed from the scale instead of read off the turning point itself.
+    val cycle by rememberBreathCycle()
 
-    val isInhale = scale >= 0.85f
+    val isInhale = isInhalePhase(cycle)
     val breathText = stringResource(if (isInhale) R.string.ritual_breathing_inhale else R.string.ritual_breathing_exhale)
     val breathGuidance = stringResource(if (isInhale) R.string.ritual_breathing_inhale_desc else R.string.ritual_breathing_exhale_desc)
 
@@ -583,60 +575,22 @@ private fun StepBreathingContent(
             )
         }
 
-        // Animated Breathing Visual (Frosted Glass .breath-circle gradient style)
-        // The circle is the calm centre of this step, so it keeps its full size on every window
+        // The blob is the calm centre of this step, so it keeps its full size on every window
         // that has room for it. Only once the header, the guidance and the button no longer fit
         // alongside it does it give way, rather than pushing the button below the fold.
         val visualSize = min(BREATH_VISUAL_SIZE, availableHeight - BREATH_VISUAL_RESERVED_HEIGHT)
             .coerceAtLeast(BREATH_VISUAL_MIN_SIZE)
         val visualRatio = visualSize / BREATH_VISUAL_SIZE
 
-        Box(
-            modifier = Modifier.size(visualSize),
-            contentAlignment = Alignment.Center
+        BreathingVisual(
+            style = breathingStyle,
+            cycle = cycle,
+            modifier = Modifier.size(visualSize)
         ) {
-            // Outer atmospheric radial aura
             Box(
                 modifier = Modifier
-                    .size(280.dp * visualRatio)
-                    .scale(scale * 1.05f)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                Color(0x386366F1), // indigo radial glow
-                                Color.Transparent
-                            )
-                        )
-                    )
-            )
-
-            // Middle Frosted ring
-            Box(
-                modifier = Modifier
-                    .size(220.dp * visualRatio)
-                    .scale(scale)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                Color(0x2E6366F1),
-                                Color(0x106366F1)
-                            )
-                        )
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = Color(0x66A5B4FC),
-                        shape = CircleShape
-                    )
-            )
-
-            // Core center frosted glass pill
-            Box(
-                modifier = Modifier
-                    .size(136.dp * visualRatio)
-                    .frostedGlass(isActive = true, cornerRadius = 68.dp * visualRatio),
+                    .size(120.dp * visualRatio)
+                    .frostedGlass(isActive = false, cornerRadius = 60.dp * visualRatio),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {

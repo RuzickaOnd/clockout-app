@@ -1,12 +1,8 @@
 package org.clockout
 
-import android.graphics.Color as AndroidColor
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -16,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.review.ReviewManagerFactory
@@ -26,6 +21,7 @@ import org.clockout.ui.theme.MyApplicationTheme
 import org.clockout.review.InAppReviewController
 import org.clockout.update.AppUpdateBanner
 import org.clockout.update.AppUpdateController
+import org.clockout.util.applyFrostedWindowChrome
 
 class MainActivity : ComponentActivity() {
 
@@ -44,24 +40,9 @@ class MainActivity : ComponentActivity() {
         appUpdateController.checkForUpdate(updateFlowLauncher)
         inAppReviewController = InAppReviewController(ReviewManagerFactory.create(this))
         
-        // Configure edge-to-edge so both status bar and navigation bar are transparent
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT)
-        )
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-        insetsController.isAppearanceLightStatusBars = false
-        insetsController.isAppearanceLightNavigationBars = false
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            window.isNavigationBarContrastEnforced = false
-            window.isStatusBarContrastEnforced = false
-        }
-
-        window.navigationBarColor = AndroidColor.TRANSPARENT
-        window.statusBarColor = AndroidColor.TRANSPARENT
+        // Transparent behind both system bars; shared with BreathingStyleActivity so the two
+        // cannot drift apart.
+        applyFrostedWindowChrome()
 
         setContent {
             MyApplicationTheme {

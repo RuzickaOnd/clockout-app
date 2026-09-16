@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.MoodTag
@@ -44,6 +45,7 @@ class RitualPreferences(private val dataStore: DataStore<Preferences>) : LegacyR
     private val KEY_SOUND_STYLE = stringPreferencesKey("sound_ambient_style")
     private val KEY_CUSTOM_SOUNDS = stringPreferencesKey("custom_sounds_json")
     private val KEY_LANGUAGE = stringPreferencesKey("app_language")
+    private val KEY_BREATHING_STYLE = stringPreferencesKey("breathing_style")
     private val KEY_INCLUDE_WEEKENDS = booleanPreferencesKey("include_weekends")
     private val KEY_COMPLETED_RITUALS = intPreferencesKey("ritual_completed_count")
     private val KEY_REVIEW_PROMPT_SHOWN = booleanPreferencesKey("review_prompt_shown")
@@ -105,6 +107,10 @@ class RitualPreferences(private val dataStore: DataStore<Preferences>) : LegacyR
 
     val customSoundsFlow: Flow<List<CustomSound>> = dataStore.data.map { preferences ->
         deserializeCustomSounds(preferences[KEY_CUSTOM_SOUNDS] ?: "[]")
+    }
+
+    val breathingStyleFlow: Flow<BreathingStyle> = dataStore.data.map { preferences ->
+        BreathingStyle.fromId(preferences[KEY_BREATHING_STYLE])
     }
 
     /**
@@ -183,6 +189,12 @@ class RitualPreferences(private val dataStore: DataStore<Preferences>) : LegacyR
         dataStore.edit { preferences ->
             val current = deserializeCustomSounds(preferences[KEY_CUSTOM_SOUNDS] ?: "[]")
             preferences[KEY_CUSTOM_SOUNDS] = serializeCustomSounds(current.filterNot { it.id == id })
+        }
+    }
+
+    suspend fun setBreathingStyle(style: BreathingStyle) {
+        dataStore.edit { preferences ->
+            preferences[KEY_BREATHING_STYLE] = style.id
         }
     }
 

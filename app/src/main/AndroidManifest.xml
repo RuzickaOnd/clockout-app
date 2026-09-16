@@ -27,6 +27,16 @@
             </intent-filter>
         </activity>
 
+        <!-- Picking the breathing visual. Its own Activity so it gets the system back stack and
+             state restoration without becoming a peer of Home and History in the navigation rail.
+             Not exported: nothing outside the app has any reason to open it. -->
+        <activity
+            android:name=".BreathingStyleActivity"
+            android:exported="false"
+            android:label="@string/breathing_style_screen_title"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.MyApplication" />
+
         <receiver
             android:name=".receiver.NotificationReceiver"
             android:exported="false">

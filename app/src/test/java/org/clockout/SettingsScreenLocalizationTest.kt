@@ -3,6 +3,7 @@ package org.clockout
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import org.clockout.domain.model.AppLanguage
 import org.clockout.presentation.settings.SettingsScreen
@@ -50,6 +51,8 @@ class SettingsScreenLocalizationTest {
     fun `the language section header is translated`() {
         show(AppLanguage.CZECH)
 
-        composeTestRule.onNodeWithText("Jazyk aplikace").assertIsDisplayed()
+        // Scrolled to rather than asserted where it lands: the card sits far enough down the
+        // screen that every section added above it would otherwise break this test.
+        composeTestRule.onNodeWithText("Jazyk aplikace").performScrollTo().assertIsDisplayed()
     }
 }

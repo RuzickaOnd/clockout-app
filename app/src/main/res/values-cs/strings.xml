@@ -356,6 +356,15 @@
     <string name="settings_custom_sound_error_too_large">Soubor je příliš velký. Maximální velikost je 25 MB.</string>
     <string name="settings_custom_sound_error_limit">Můžeš mít uložených nejvýše 10 vlastních zvuků. Nejprve nějaký smaž.</string>
     <string name="settings_custom_sound_error_read">Soubor se nepodařilo načíst. Zkus to prosím znovu.</string>
+    <string name="settings_breathing_style_title">Animace dýchání</string>
+    <string name="settings_breathing_style_desc">Vyber si, na co se při dýchání díváš.</string>
+    <string name="breathing_style_screen_title">Animace dýchání</string>
+    <string name="breathing_style_screen_intro">Klepnutím si styl vyzkoušíš. Rytmus zůstává stejný: čtyři vteřiny nádech, čtyři výdech.</string>
+    <string name="breathing_style_classic_circle_label">Kruh</string>
+    <string name="breathing_style_classic_circle_desc">Soustředné kruhy, které se s každým nádechem rozšiřují</string>
+    <string name="breathing_style_aurora_label">Vlny</string>
+    <string name="breathing_style_aurora_desc">Barevná hladina stoupá a klesá v organickém tvaru</string>
+    <string name="breathing_style_selected">Vybráno</string>
     <string name="settings_rate_title">Ohodnotit aplikaci</string>
     <string name="settings_rate_desc">Pomohla vám Padla zavřít pracovní den? Krátké hodnocení na Google Play zabere minutu a pomůže appku najít dalším lidem, kteří se těžko vypínají.</string>
     <string name="settings_rate_button">Ohodnotit</string>

@@ -352,6 +352,15 @@
     <string name="settings_custom_sound_error_too_large">The file is too large. The maximum size is 25 MB.</string>
     <string name="settings_custom_sound_error_limit">You can keep at most 10 custom sounds. Delete one first.</string>
     <string name="settings_custom_sound_error_read">The file could not be read. Please try again.</string>
+    <string name="settings_breathing_style_title">Breathing animation</string>
+    <string name="settings_breathing_style_desc">Choose what you watch while you breathe.</string>
+    <string name="breathing_style_screen_title">Breathing animation</string>
+    <string name="breathing_style_screen_intro">Tap a style to try it. The rhythm stays the same either way: four seconds in, four seconds out.</string>
+    <string name="breathing_style_classic_circle_label">Circle</string>
+    <string name="breathing_style_classic_circle_desc">Concentric rings widening with every breath</string>
+    <string name="breathing_style_aurora_label">Waves</string>
+    <string name="breathing_style_aurora_desc">A colourful surface rising and falling inside an organic shape</string>
+    <string name="breathing_style_selected">Selected</string>
     <string name="settings_rate_title">Rate the app</string>
     <string name="settings_rate_desc">Has ClockOut helped you close your workday? A short rating on Google Play takes a minute and helps other people who struggle to switch off find the app.</string>
     <string name="settings_rate_button">Rate</string>

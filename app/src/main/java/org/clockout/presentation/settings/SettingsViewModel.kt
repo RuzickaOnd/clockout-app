@@ -9,6 +9,7 @@ import org.clockout.data.local.SoundImportResult
 import org.clockout.data.repository.RitualRepository
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.CustomSound
+import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.SoundChoice
 import org.clockout.notification.NotificationScheduler
@@ -63,8 +64,9 @@ class SettingsViewModel(
             combine(
                 notifAndTestFlow,
                 audioAndLangFlow,
-                repository.getCustomSounds()
-            ) { notif, audioLang, customSounds ->
+                repository.getCustomSounds(),
+                repository.getBreathingStyle()
+            ) { notif, audioLang, customSounds, breathingStyle ->
                 SettingsDataHolder(
                     notifTime = notif.time,
                     notifEnabled = notif.enabled,
@@ -74,7 +76,8 @@ class SettingsViewModel(
                     soundChoice = audioLang.soundChoice,
                     customSounds = customSounds,
                     language = audioLang.language,
-                    languageOption = audioLang.languageOption
+                    languageOption = audioLang.languageOption,
+                    breathingStyle = breathingStyle
                 )
             }.collect { data ->
                 _state.update {
@@ -88,7 +91,8 @@ class SettingsViewModel(
                         soundChoice = data.soundChoice,
                         customSounds = data.customSounds,
                         language = data.language,
-                        selectedLanguageOption = data.languageOption
+                        selectedLanguageOption = data.languageOption,
+                        breathingStyle = data.breathingStyle
                     )
                 }
             }
@@ -282,6 +286,7 @@ class SettingsViewModel(
         val soundChoice: SoundChoice,
         val customSounds: List<CustomSound>,
         val language: AppLanguage,
-        val languageOption: LanguageOption
+        val languageOption: LanguageOption,
+        val breathingStyle: BreathingStyle
     )
 }
