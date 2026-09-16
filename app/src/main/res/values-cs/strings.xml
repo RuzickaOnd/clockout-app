@@ -364,6 +364,8 @@
     <string name="breathing_style_classic_circle_desc">Soustředné kruhy, které se s každým nádechem rozšiřují</string>
     <string name="breathing_style_aurora_label">Vlny</string>
     <string name="breathing_style_aurora_desc">Barevná hladina stoupá a klesá v organickém tvaru</string>
+    <string name="breathing_style_concentric_ripple_label">Vlnění</string>
+    <string name="breathing_style_concentric_ripple_desc">Prstence putují ze středu ven a zase zpátky</string>
     <string name="breathing_style_selected">Vybráno</string>
     <string name="settings_rate_title">Ohodnotit aplikaci</string>
     <string name="settings_rate_desc">Pomohla vám Padla zavřít pracovní den? Krátké hodnocení na Google Play zabere minutu a pomůže appku najít dalším lidem, kteří se těžko vypínají.</string>

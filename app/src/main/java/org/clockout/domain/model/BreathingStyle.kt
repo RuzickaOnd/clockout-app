@@ -9,7 +9,10 @@ enum class BreathingStyle(val id: String) {
     CLASSIC_CIRCLE("classic_circle"),
 
     /** An organic blob filling with layered colour as the user breathes in. */
-    AURORA("aurora");
+    AURORA("aurora"),
+
+    /** Rings leaving the centre as the user breathes in and drawn back into it on the way out. */
+    CONCENTRIC_RIPPLE("concentric_ripple");
 
     companion object {
         /**

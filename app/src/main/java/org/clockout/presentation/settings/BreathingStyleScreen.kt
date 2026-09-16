@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -68,6 +66,9 @@ private val PREVIEW_HEIGHT = 240.dp
 /** Below this a tile stops showing a usable miniature, so the row takes fewer columns instead. */
 private val TILE_MIN_WIDTH = 150.dp
 
+/** Gap between tiles, both ways. Also feeds the column arithmetic, so it lives in one place. */
+private val TILE_SPACING = 14.dp
+
 /** Lines every tile reserves for its description, so none of them is measured against a shorter one. */
 private const val DESCRIPTION_LINES = 3
 
@@ -82,7 +83,7 @@ private const val DESCRIPTION_LINES = 3
  * Tapping a tile applies the choice immediately — there is nothing to confirm, and the preview
  * above is the confirmation.
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BreathingStyleScreen(
     selectedStyle: BreathingStyle,
@@ -174,27 +175,36 @@ fun BreathingStyleScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // FlowRow rather than LazyVerticalGrid: a handful of styles is nothing to
-                // virtualize, and a lazy grid measures its items with unbounded height, which
-                // makes every attempt to give the tiles a common height silently do nothing.
-                // Here the tiles are equal because [DESCRIPTION_LINES] reserves the same text
-                // block in each, which needs no help from the container at all.
+                // Rows laid out by hand rather than by a wrapping container. Tiles have to be the
+                // same width in every row, including a last row that is not full, and neither
+                // ready-made option delivers that: a lazy grid measures its items with unbounded
+                // height so they cannot share a height, and FlowRow either stretches a lone tile
+                // across its row (with a weight) or refuses to seat two tiles whose measured
+                // widths sum to the row exactly (without one). Chunking into rows and padding the
+                // short one with empty weights has neither problem. Their common height comes
+                // from [DESCRIPTION_LINES], which needs no help from the container at all.
                 BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                    val columns = maxOf(1, (maxWidth / TILE_MIN_WIDTH).toInt())
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(14.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp),
-                        maxItemsInEachRow = columns
-                    ) {
-                        BreathingStyle.entries.forEach { style ->
-                            BreathingStyleTile(
-                                style = style,
-                                cycle = cycle,
-                                isSelected = style == selectedStyle,
-                                onClick = { onStyleSelected(style) },
-                                modifier = Modifier.weight(1f)
-                            )
+                    val columns = maxOf(
+                        1,
+                        ((maxWidth + TILE_SPACING) / (TILE_MIN_WIDTH + TILE_SPACING)).toInt()
+                    )
+
+                    Column(verticalArrangement = Arrangement.spacedBy(TILE_SPACING)) {
+                        BreathingStyle.entries.chunked(columns).forEach { rowStyles ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(TILE_SPACING)) {
+                                rowStyles.forEach { style ->
+                                    BreathingStyleTile(
+                                        style = style,
+                                        cycle = cycle,
+                                        isSelected = style == selectedStyle,
+                                        onClick = { onStyleSelected(style) },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                repeat(columns - rowStyles.size) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
                         }
                     }
                 }

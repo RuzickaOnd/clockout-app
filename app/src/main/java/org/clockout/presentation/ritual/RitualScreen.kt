@@ -52,6 +52,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -532,6 +533,9 @@ private val BREATH_VISUAL_RESERVED_HEIGHT = 200.dp
  */
 private val BREATH_VISUAL_MIN_SIZE = 200.dp
 
+/** Inset that keeps the label clear of the pill's curved edge, per side. */
+private val BREATH_LABEL_INSET = 14.dp
+
 @Composable
 private fun StepBreathingContent(
     secondsRemaining: Int,
@@ -590,17 +594,32 @@ private fun StepBreathingContent(
             Box(
                 modifier = Modifier
                     .size(120.dp * visualRatio)
-                    .frostedGlass(isActive = false, cornerRadius = 60.dp * visualRatio),
+                    .frostedGlass(isActive = false, cornerRadius = 60.dp * visualRatio)
+                    .testTag("breath_label_pill"),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    // The pill is round, so its corners are not usable width. Without this inset
+                    // the label runs to the bounding box and the curve cuts its ends off.
+                    modifier = Modifier.padding(horizontal = BREATH_LABEL_INSET * visualRatio)
+                ) {
                     Text(
+                        modifier = Modifier.testTag("breath_label"),
                         text = breathText,
                         style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 17.sp
+                            fontWeight = FontWeight.SemiBold
                         ),
-                        color = TextLight
+                        color = TextLight,
+                        // The pill has a fixed width while this is in sp and grows with the
+                        // system font setting, so at a large one the word wrapped and the round
+                        // edge ate its first letters. It shrinks to fit instead: one line, always
+                        // whole. At the default setting it still renders at 17sp.
+                        maxLines = 1,
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = 9.sp,
+                            maxFontSize = 17.sp
+                        )
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(

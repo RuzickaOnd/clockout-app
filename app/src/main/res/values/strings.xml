@@ -360,6 +360,8 @@
     <string name="breathing_style_classic_circle_desc">Concentric rings widening with every breath</string>
     <string name="breathing_style_aurora_label">Waves</string>
     <string name="breathing_style_aurora_desc">A colourful surface rising and falling inside an organic shape</string>
+    <string name="breathing_style_concentric_ripple_label">Ripples</string>
+    <string name="breathing_style_concentric_ripple_desc">Rings travelling out from the centre and drawn back in</string>
     <string name="breathing_style_selected">Selected</string>
     <string name="settings_rate_title">Rate the app</string>
     <string name="settings_rate_desc">Has ClockOut helped you close your workday? A short rating on Google Play takes a minute and helps other people who struggle to switch off find the app.</string>

@@ -97,6 +97,14 @@ abstract class FormFactorScreenshotTest(private val device: String) {
         )
     }
 
+    @Test fun ritualBreathingRipple() = capture("ritual_breathing_ripple") {
+        RitualScreen(
+            state = ritualState(RitualStep.Breathing).copy(breathingStyle = BreathingStyle.CONCENTRIC_RIPPLE),
+            onIntent = {},
+            onFinish = {}
+        )
+    }
+
     @Test fun breathingStylePicker() = capture("breathing_style_picker") {
         BreathingStyleScreen(
             selectedStyle = BreathingStyle.AURORA,
