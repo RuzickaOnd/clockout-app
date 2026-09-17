@@ -90,6 +90,7 @@ val BreathingStyle.labelRes: Int
         BreathingStyle.CLASSIC_CIRCLE -> R.string.breathing_style_classic_circle_label
         BreathingStyle.AURORA -> R.string.breathing_style_aurora_label
         BreathingStyle.CONCENTRIC_RIPPLE -> R.string.breathing_style_concentric_ripple_label
+        BreathingStyle.LOTUS -> R.string.breathing_style_lotus_label
     }
 
 @get:StringRes
@@ -98,6 +99,7 @@ val BreathingStyle.descriptionRes: Int
         BreathingStyle.CLASSIC_CIRCLE -> R.string.breathing_style_classic_circle_desc
         BreathingStyle.AURORA -> R.string.breathing_style_aurora_desc
         BreathingStyle.CONCENTRIC_RIPPLE -> R.string.breathing_style_concentric_ripple_desc
+        BreathingStyle.LOTUS -> R.string.breathing_style_lotus_desc
     }
 
 /** A custom sound carries the file name the user picked, which is never translated. */

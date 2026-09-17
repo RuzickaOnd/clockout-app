@@ -33,6 +33,6 @@ class BreathingStyleTest {
     fun `ids are distinct and stable`() {
         val ids = BreathingStyle.entries.map { it.id }
         assertEquals(ids.size, ids.toSet().size)
-        assertEquals(listOf("classic_circle", "aurora", "concentric_ripple"), ids)
+        assertEquals(listOf("classic_circle", "aurora", "concentric_ripple", "lotus"), ids)
     }
 }

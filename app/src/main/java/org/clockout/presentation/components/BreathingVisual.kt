@@ -23,5 +23,6 @@ fun BreathingVisual(
         BreathingStyle.CLASSIC_CIRCLE -> BreathingPulse(cycle, modifier, content)
         BreathingStyle.AURORA -> BreathingAurora(cycle, modifier, content)
         BreathingStyle.CONCENTRIC_RIPPLE -> BreathingRipple(cycle, modifier, content)
+        BreathingStyle.LOTUS -> BreathingLotus(cycle, modifier, content)
     }
 }

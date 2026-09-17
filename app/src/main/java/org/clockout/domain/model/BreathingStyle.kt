@@ -12,7 +12,10 @@ enum class BreathingStyle(val id: String) {
     AURORA("aurora"),
 
     /** Rings leaving the centre as the user breathes in and drawn back into it on the way out. */
-    CONCENTRIC_RIPPLE("concentric_ripple");
+    CONCENTRIC_RIPPLE("concentric_ripple"),
+
+    /** A bud opening into a bloom on the inhale and folding shut again on the exhale. */
+    LOTUS("lotus");
 
     companion object {
         /**
