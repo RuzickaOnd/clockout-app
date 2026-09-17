@@ -38,3 +38,10 @@ frames them, so anything wrong in a capture has to be fixed on the device:
    `com.android.systemui.demo` with `command enter`, `clock -e hhmm 1830`,
    `battery -e level 100`, `network -e mobile hide` and `notifications -e visible false`.
 6. Capture with `adb exec-out screencap -p`, one shot per ritual step.
+
+Steps 1–3 only matter for the captures that show a date or a history: the home
+screen and the week overview. A screen that shows neither — the breathing step,
+say — needs nothing but demo mode, so it can be recaptured on any AVD and
+without root. Put the device on a 24-hour clock first
+(`settings put system time_12_24 24`): the demo clock renders in whatever format
+the device is set to, and otherwise reads 6:30 where the other shots read 18:30.
