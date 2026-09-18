@@ -333,7 +333,7 @@ private fun HeroCard(
                     }
                 }
 
-                if (state.isRitualDay) {
+                if (state.canStartRitual) {
                     Spacer(modifier = Modifier.height(20.dp))
 
                     OutlinedButton(
@@ -351,9 +351,12 @@ private fun HeroCard(
                         Text(stringResource(R.string.repeat_ritual))
                     }
                 }
-            } else if (!state.isRitualDay) {
+            } else if (!state.canStartRitual) {
                 Text(
-                    text = stringResource(R.string.home_weekend_rest_title),
+                    text = stringResource(
+                        if (state.isRitualDay) R.string.home_outside_window_title
+                        else R.string.home_weekend_rest_title
+                    ),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Light,
                         fontSize = 26.sp
@@ -362,10 +365,14 @@ private fun HeroCard(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = stringResource(R.string.home_weekend_rest_desc),
+                    text = stringResource(
+                        if (state.isRitualDay) R.string.home_outside_window_desc
+                        else R.string.home_weekend_rest_desc
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSlate,
-                    lineHeight = 22.sp
+                    lineHeight = 22.sp,
+                    modifier = Modifier.testTag("ritual_unavailable_desc")
                 )
             } else {
                 Text(

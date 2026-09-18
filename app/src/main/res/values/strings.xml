@@ -18,6 +18,8 @@
     <string name="home_weekend_slot_badge">WEEKEND</string>
     <string name="home_weekend_rest_title">Today is yours</string>
     <string name="home_weekend_rest_desc">The work week is behind you. The ritual returns on Monday.</string>
+    <string name="home_outside_window_title">The ritual opens at the end of the day</string>
+    <string name="home_outside_window_desc">Come back between 16:00 and 21:00. If your workday ends at another time, switch on “Ritual available anytime” in Settings.</string>
     <string name="home_today_closed_badge">TODAY CLOSED ✓</string>
     <string name="home_workday_done_title">Workday is completed</string>
     <string name="home_workday_done_desc">Mood: %1$s. Enjoy your free evening for yourself and your mind.</string>
@@ -332,7 +334,7 @@
     <string name="settings_include_weekends_title">Include weekends</string>
     <string name="settings_include_weekends_desc">On: the ritual and its reminder run all 7 days. Off: Monday to Friday only.</string>
     <string name="settings_test_mode_title">Ritual available anytime</string>
-    <string name="settings_test_mode_desc">Allows starting the ritual outside the main 16:00–21:00 window for flexible schedules and testing.</string>
+    <string name="settings_test_mode_desc">On: the ritual can be started at any time of day. Off: only inside the 16:00–21:00 window.</string>
     <string name="settings_ambient_sound_title">Sound &amp; guidance during breathing</string>
     <string name="settings_ambient_sound_desc">Relaxing audio accompaniment synchronized with breathing for effortless grounding.</string>
     <string name="settings_sound_style_title">Meditation sound style</string>

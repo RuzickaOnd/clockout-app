@@ -9,12 +9,15 @@ data class HomeState(
     val streakInfo: RitualStreakInfo? = null,
     val todayQuestion: RitualQuestion,
     val isWithinWindow: Boolean = false,
-    val isTestModeEnabled: Boolean = false,
+    /** Mirrors the DataStore default, so the frame before preferences emit does not close the ritual off. */
+    val isTestModeEnabled: Boolean = true,
     val isRitualDay: Boolean = true,
     val isLoading: Boolean = false
 ) {
-    /** A weekend excluded by the settings closes the ritual off even in test mode. */
+    /**
+     * A weekend excluded by the settings closes the ritual off even with the anytime setting on,
+     * and with that setting off the 16-21 window is what decides.
+     */
     val canStartRitual: Boolean
-        get() = isRitualDay &&
-            (isTestModeEnabled || isWithinWindow || (streakInfo?.isTodayCompleted != true))
+        get() = isRitualDay && (isTestModeEnabled || isWithinWindow)
 }

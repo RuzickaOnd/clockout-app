@@ -16,6 +16,7 @@ import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
+import org.clockout.domain.model.WorkdayCloseWindow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
@@ -144,12 +145,7 @@ class RitualRepositoryImpl(
 
     override suspend fun markReviewPromptShown() = preferences.markReviewPromptShown()
 
-    override fun isWithinWorkdayCloseWindow(): Boolean {
-        val calendar = Calendar.getInstance()
-        val hour = calendar.get(Calendar.HOUR_OF_DAY)
-        // Typically 16:00 to 21:59
-        return hour in 16..21
-    }
+    override fun isWithinWorkdayCloseWindow(): Boolean = WorkdayCloseWindow.isOpenNow()
 
     override fun getIncludeWeekends(): Flow<Boolean> = preferences.includeWeekendsFlow
 

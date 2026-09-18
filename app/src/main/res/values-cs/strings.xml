@@ -18,6 +18,8 @@
     <string name="home_weekend_slot_badge">VÍKEND</string>
     <string name="home_weekend_rest_title">Dnes máš volno</string>
     <string name="home_weekend_rest_desc">Pracovní týden je za tebou. Rituál se vrátí v pondělí.</string>
+    <string name="home_outside_window_title">Rituál se otevře na konci dne</string>
+    <string name="home_outside_window_desc">Vrať se mezi 16:00 a 21:00. Pokud ti pracovní den končí jindy, zapni v Nastavení „Rituál dostupný kdykoliv“.</string>
     <string name="home_today_closed_badge">DNES UZAVŘENO ✓</string>
     <string name="home_workday_done_title">Pracovní den je hotov</string>
     <string name="home_workday_done_desc">Nálada: %1$s. Užij si volný večer pro sebe a své tělo.</string>
@@ -336,7 +338,7 @@
     <string name="settings_include_weekends_title">Zahrnout víkendy</string>
     <string name="settings_include_weekends_desc">Zapnuto: rituál i připomínka běží 7 dní v týdnu. Vypnuto: jen pondělí až pátek.</string>
     <string name="settings_test_mode_title">Rituál dostupný kdykoliv</string>
-    <string name="settings_test_mode_desc">Umožní spustit rituál i mimo hlavní okno (16:00–21:00) pro flexibilní pracovní dobu a testování.</string>
+    <string name="settings_test_mode_desc">Zapnuto: rituál lze spustit kdykoliv během dne. Vypnuto: jen v okně 16:00–21:00.</string>
     <string name="settings_ambient_sound_title">Zvuk a doprovod při dýchání</string>
     <string name="settings_ambient_sound_desc">Uvolňující zvukový doprovod sladěný s dechovým cvičením pro snazší zklidnění.</string>
     <string name="settings_sound_style_title">Styl meditačního zvuku</string>

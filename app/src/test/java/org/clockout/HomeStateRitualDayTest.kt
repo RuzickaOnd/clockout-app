@@ -8,7 +8,8 @@ import org.junit.Test
 
 /**
  * A non-ritual day (a weekend while weekends are excluded) closes the ritual off entirely,
- * including the "anytime" test mode that otherwise bypasses the 16-21 window.
+ * including the "anytime" setting that otherwise bypasses the 16-21 window. With that setting
+ * off the window itself decides.
  */
 class HomeStateRitualDayTest {
 
@@ -38,6 +39,20 @@ class HomeStateRitualDayTest {
     @Test
     fun `test mode unlocks the ritual outside the window on a ritual day`() {
         val state = state(isRitualDay = true, isTestModeEnabled = true, isWithinWindow = false)
+
+        assertTrue(state.canStartRitual)
+    }
+
+    @Test
+    fun `without test mode the ritual stays closed outside the window`() {
+        val state = state(isRitualDay = true, isTestModeEnabled = false, isWithinWindow = false)
+
+        assertFalse(state.canStartRitual)
+    }
+
+    @Test
+    fun `without test mode the ritual opens inside the window`() {
+        val state = state(isRitualDay = true, isTestModeEnabled = false, isWithinWindow = true)
 
         assertTrue(state.canStartRitual)
     }
