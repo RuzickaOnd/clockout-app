@@ -12,6 +12,7 @@ import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.SoundChoice
+import org.clockout.domain.model.TelemetryConsent
 import org.clockout.notification.NotificationScheduler
 import org.clockout.sound.AmbientAudioPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +40,21 @@ class SettingsViewModel(
 
     init {
         observeSettings()
+        // Its own collector rather than a fifth flow in observeSettings: that combine already takes
+        // four and adding another would mean restructuring the holder for one unrelated value.
+        viewModelScope.launch {
+            repository.getTelemetryConsent().collect { consent ->
+                _state.update { it.copy(telemetryConsent = consent) }
+            }
+        }
+    }
+
+    fun setTelemetryConsent(granted: Boolean) {
+        viewModelScope.launch {
+            repository.setTelemetryConsent(
+                if (granted) TelemetryConsent.GRANTED else TelemetryConsent.DENIED
+            )
+        }
     }
 
     private fun observeSettings() {

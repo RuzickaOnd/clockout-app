@@ -371,6 +371,14 @@
     <string name="breathing_style_lotus_label">Lotos</string>
     <string name="breathing_style_lotus_desc">Poupě se rozevírá do plného květu a zase zavírá</string>
     <string name="breathing_style_selected">Vybráno</string>
+    <string name="telemetry_consent_title">Pomůžeš Padle se zlepšit?</string>
+    <string name="telemetry_consent_body">Padla může odesílat anonymní hlášení o pádech a statistiky používání — ke kterému kroku rituálu se dostaneš, jaký styl dýchání používáš. Nikdy tvoje odpovědi, poznámky ani cokoliv, co napíšeš. Kdykoliv to změníš v nastavení.</string>
+    <string name="telemetry_consent_allow">Povolit</string>
+    <string name="telemetry_consent_deny">Nechci</string>
+    <string name="telemetry_consent_policy_link">Zásady ochrany osobních údajů</string>
+    <string name="settings_diagnostics_title">Anonymní diagnostika</string>
+    <string name="settings_diagnostics_desc">Odesílá hlášení o pádech a anonymní statistiky používání, aby šlo problémy najít a opravit. Nikdy tvoje odpovědi ani poznámky.</string>
+    <string name="settings_privacy_policy_button">Zásady ochrany osobních údajů</string>
     <string name="settings_rate_title">Ohodnotit aplikaci</string>
     <string name="settings_rate_desc">Pomohla vám Padla zavřít pracovní den? Krátké hodnocení na Google Play zabere minutu a pomůže appku najít dalším lidem, kteří se těžko vypínají.</string>
     <string name="settings_rate_button">Ohodnotit</string>

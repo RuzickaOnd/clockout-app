@@ -49,7 +49,7 @@ Released on Google Play as <https://play.google.com/store/apps/details?id=org.cl
 
 Version 1.0.3 (`versionCode` 1000301). `minSdk` 26, `targetSdk` 37, `compileSdk` 37.1. AGP 9.4.0, Kotlin 2.4.20, Compose BOM 2026.08.00, Robolectric 4.16.1, Roborazzi 1.74.0, Play App Update 2.1.0, Play Review 2.0.2.
 
-All data stays on the device — Room for ritual logs, DataStore for preferences. No accounts, no cloud sync, no ads. The app ships **without the `INTERNET` permission**; Play In-App Update and Play In-App Review both reach the Play Store over IPC, not over the network, and the "Rate the app" button hands a `market://` intent to the Play app (or a browser) rather than fetching anything itself.
+Ritual logs and preferences stay on the device — Room for the logs, DataStore for the preferences. No accounts, no cloud sync, no ads. The app does carry the `INTERNET` permission, for Firebase Crashlytics and Analytics, but **both start disabled and stay disabled until the user opts in** — see *Telemetry*. Play In-App Update and Play In-App Review still reach the Play Store over IPC rather than over the network, and the "Rate the app" button hands a `market://` intent to the Play app (or a browser) rather than fetching anything itself.
 
 ## Module layout
 
@@ -176,9 +176,29 @@ A restored cloud backup consequently holds sound metadata whose file is gone. `R
 
 Auto Backup is best effort: it needs backup enabled and a Google account, and runs roughly daily while charging on Wi-Fi. An update loses nothing; a reinstall restores only what a backup managed to capture.
 
+## Telemetry
+
+Crashes go to Firebase Crashlytics, ritual completion to Firebase Analytics, and neither collects anything until the user says yes.
+
+`TelemetryConsent` (`domain/model`) has three states, not two: `UNKNOWN`, `GRANTED`, `DENIED`. A boolean cannot separate "not asked yet" from "said no", and the opt-in dialog would then either reappear forever or never appear. It is stored in DataStore under `telemetry_consent` by its id string, and it deliberately **survives "Clear data and history"** — clearing the history is not a withdrawal of consent. The Settings switch is the way back from a "no".
+
+Both SDKs are switched off in `AndroidManifest.xml` through `firebase_analytics_collection_enabled` and `firebase_crashlytics_collection_enabled`. This is load-bearing: `FirebaseInitProvider` starts collecting during application startup, long before the dialog can be shown, so without those two entries the first session of every install would be uploaded and the opt-in would be decoration. `ConsentGatedTracker` then turns collection on only once consent is `GRANTED`.
+
+The layering is `AnalyticsTracker` (a pure-Kotlin interface in `domain/telemetry`) → `ConsentGatedTracker` (the gate, also pure Kotlin, so it is testable without Firebase) → `FirebaseAnalyticsTracker` (`telemetry/`, the only class that knows Firebase exists). ViewModels take the interface with `NoOpAnalyticsTracker` as the default, which is why no existing test signature had to change. The gate stops the app's own events; `setCollectionEnabled` is passed through to the SDK as well, because its automatic events never travel through the interface.
+
+`rememberAnalyticsTracker` (`presentation/TelemetryDependencies.kt`) falls back to `NoOpAnalyticsTracker` when `FirebaseApp.getApps()` is empty. `FirebaseCrashlytics.getInstance()` throws rather than returning a dormant instance, and `FirebaseInitProvider` does not run under Robolectric, so without that fallback every test rendering the real app dies on a reporting concern it has nothing to do with. It is also the honest outcome for a build assembled without `google-services.json`.
+
+`AnalyticsEvent` is the whole catalog: `ritual_started`, `ritual_step_completed`, `ritual_completed`, `ritual_abandoned`. Nothing carries ritual content — not the question, not the answer, not the note; `RitualTelemetryTest` pins that. Settings are reported as **user properties** rather than events, so every metric can be broken down by them. Firebase's name limits differ per kind — 40 characters for an event or a parameter, **24 for a user property** — and a name that breaks one is dropped silently at runtime, so `AnalyticsEventTest` asserts them.
+
+Abandonment is gated on `RitualState.selectedMood` rather than on `isCompletedAndSaved`: the latter is written from a coroutine, and a user leaving in the moment between tapping a mood and the write landing would otherwise be reported as having both finished and abandoned the same ritual.
+
+Two test classes deal with the process-wide DataStore by hand. `PhoneNavigationTest` and `TabletNavigationTest` seed `telemetry_consent` in `@Before`, because they render the real `PadlaApp` against the real store and a fresh install would put the opt-in dialog over the screen they exist to photograph. `TelemetryConsentDialogTest` does the opposite and writes `UNKNOWN` before each test, because its subject *is* the unanswered state and the answer written by whichever of its tests ran first would otherwise leave the rest with no dialog to find.
+
+The diagnostics card sits below the fold on the settings screen, so the settings screenshot baseline does not contain it; `SettingsDiagnosticsCardTest` pins it instead.
+
 ## Dependency management
 
-All versions go through the version catalog at `gradle/libs.versions.toml` — never hardcode a version in a build file. Several dependencies are deliberately commented out in `app/build.gradle.kts` (Retrofit, OkHttp, Moshi, Firebase AI, App Check); leave them that way unless a feature genuinely needs them. Re-enabling any of them would also mean adding the `INTERNET` permission the app currently does without. The Firebase BOM and the `google-services` plugin are applied, but no Firebase library is actually enabled.
+All versions go through the version catalog at `gradle/libs.versions.toml` — never hardcode a version in a build file. Several dependencies are deliberately commented out in `app/build.gradle.kts` (Retrofit, OkHttp, Moshi, Firebase AI, App Check); leave them that way unless a feature genuinely needs them. The argument against them is no longer the `INTERNET` permission — the app now has it — but that nothing in the app needs what they do. Of Firebase, only `firebase-analytics` and `firebase-crashlytics` are enabled, alongside the BOM, the `google-services` plugin and the Crashlytics plugin.
 
 ## Release signing
 
@@ -187,6 +207,11 @@ All versions go through the version catalog at `gradle/libs.versions.toml` — n
 ## What NOT to do
 
 - Do not commit, stage, or push without explicit approval in the same turn.
+- Do not remove the two `firebase_*_collection_enabled` meta-data entries from the manifest — the SDKs would then collect the first session of every install before the user has been asked.
+- Do not clear `telemetry_consent` when clearing data and history — a wipe is not a withdrawal of consent, and the dialog would return on every wipe.
+- Do not call Firebase from a ViewModel — go through `AnalyticsTracker`, or the Robolectric tests behind it need an initialized Firebase.
+- Do not put ritual content into an analytics parameter — not the question, not the answer, not the note.
+- Do not give `TelemetryConsent` a boolean representation — "not asked" and "said no" have to stay distinguishable.
 - Do not add `custom_sounds/` to the cloud backup — the 25 MB quota would drop the whole backup, ritual history included.
 - Do not persist `CustomSound.isAvailable` — it is resolved against the file system on every read.
 - Do not reset the ritual counter or the review flag when clearing data — that would hand out a second review request on every wipe.

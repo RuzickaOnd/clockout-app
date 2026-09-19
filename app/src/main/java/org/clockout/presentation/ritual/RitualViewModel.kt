@@ -13,6 +13,10 @@ import org.clockout.domain.model.RitualStep
 import org.clockout.domain.usecase.GetTodayRitualUseCase
 import org.clockout.domain.usecase.LogMoodUseCase
 import org.clockout.domain.usecase.ShouldRequestReviewUseCase
+import org.clockout.domain.telemetry.AnalyticsEvent
+import org.clockout.domain.telemetry.AnalyticsTracker
+import org.clockout.domain.telemetry.NoOpAnalyticsTracker
+import org.clockout.domain.telemetry.analyticsId
 import org.clockout.sound.AmbientAudioPlayer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -20,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -30,7 +35,8 @@ class RitualViewModel(
     private val logMoodUseCase: LogMoodUseCase,
     private val shouldRequestReviewUseCase: ShouldRequestReviewUseCase,
     private val ritualRepository: RitualRepository,
-    private val audioPlayer: AmbientAudioPlayer = AmbientAudioPlayer()
+    private val audioPlayer: AmbientAudioPlayer = AmbientAudioPlayer(),
+    private val analyticsTracker: AnalyticsTracker = NoOpAnalyticsTracker
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -71,10 +77,20 @@ class RitualViewModel(
                 breathingStyle = current.breathingStyle
             )
         }
+        analyticsTracker.track(AnalyticsEvent.RitualStarted)
     }
 
     /** Leaves the ritual: the countdown stops and the ambient sound does not follow the user out. */
     fun stopSession() {
+        // A finished ritual reaches this too, on the way home from the completion card. Only a
+        // ritual left before the mood was chosen is an abandonment - gated on selectedMood rather
+        // than on isCompletedAndSaved, because the latter is set from a coroutine and leaving in
+        // the moment between the tap and the write would otherwise report both endings.
+        if (_state.value.selectedMood == null) {
+            analyticsTracker.track(
+                AnalyticsEvent.RitualAbandoned(_state.value.currentStep.analyticsId())
+            )
+        }
         timerJob?.cancel()
         timerJob = null
         audioPlayer.stopAmbient()
@@ -128,6 +144,9 @@ class RitualViewModel(
                         isBreathingRunning = true
                     )
                 }
+                analyticsTracker.track(
+                    AnalyticsEvent.RitualStepCompleted(RitualStep.Question.analyticsId())
+                )
                 startBreathingTimer()
                 if (!_state.value.isSoundMuted) {
                     audioPlayer.startAmbient(appContext, _state.value.soundChoice, true)
@@ -154,6 +173,9 @@ class RitualViewModel(
                         isClosureTriggered = false
                     )
                 }
+                analyticsTracker.track(
+                    AnalyticsEvent.RitualStepCompleted(RitualStep.Breathing.analyticsId())
+                )
             }
             is RitualIntent.TriggerClosure -> {
                 _state.update { it.copy(isClosureTriggered = true) }
@@ -162,6 +184,9 @@ class RitualViewModel(
                 _state.update {
                     it.copy(currentStep = RitualStep.Log)
                 }
+                analyticsTracker.track(
+                    AnalyticsEvent.RitualStepCompleted(RitualStep.Closing.analyticsId())
+                )
             }
             is RitualIntent.MoodSelected -> {
                 handleMoodSelected(intent.mood)
@@ -220,6 +245,17 @@ class RitualViewModel(
                     shouldRequestReview = moodWasChosen && shouldRequestReviewUseCase(mood)
                 )
             }
+            // Read after the log is written, so the count includes today.
+            val daysClosedThisWeek = ritualRepository.getStreakInfo().first().completedThisWeekCount
+            analyticsTracker.track(
+                AnalyticsEvent.RitualStepCompleted(RitualStep.Log.analyticsId())
+            )
+            analyticsTracker.track(
+                AnalyticsEvent.RitualCompleted(
+                    mood = mood.id,
+                    daysClosedThisWeek = daysClosedThisWeek
+                )
+            )
         }
     }
 

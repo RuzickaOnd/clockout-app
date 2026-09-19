@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -41,6 +42,8 @@ import android.content.Intent
 import org.clockout.BreathingStyleActivity
 import org.clockout.R
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.TelemetryConsent
+import org.clockout.domain.telemetry.UserProperty
 import org.clockout.domain.usecase.GetStreakUseCase
 import org.clockout.domain.usecase.GetTodayRitualUseCase
 import org.clockout.domain.usecase.LogMoodUseCase
@@ -53,9 +56,13 @@ import org.clockout.presentation.ritual.RitualScreen
 import org.clockout.presentation.ritual.RitualViewModel
 import org.clockout.presentation.settings.SettingsScreen
 import org.clockout.presentation.settings.SettingsViewModel
+import org.clockout.presentation.components.TelemetryConsentDialog
 import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.TextSlate
+import org.clockout.util.PRIVACY_POLICY_URL
+import org.clockout.util.openUrl
+import kotlinx.coroutines.launch
 
 sealed interface Screen {
     data object Home : Screen
@@ -101,6 +108,17 @@ fun PadlaApp(
 ) {
     val context = LocalContext.current
     val repository = rememberRitualRepository(context)
+    val analyticsTracker = rememberAnalyticsTracker(context)
+    val scope = rememberCoroutineScope()
+
+    // Null until DataStore has actually emitted. Starting at UNKNOWN instead would flash the opt-in
+    // dialog on every launch for users who answered it long ago, the same trap
+    // HomeState.isTestModeEnabled documents.
+    val consent by repository.getTelemetryConsent().collectAsState(initial = null)
+
+    LaunchedEffect(consent) {
+        analyticsTracker.setCollectionEnabled(consent == TelemetryConsent.GRANTED)
+    }
     val getTodayRitualUseCase = remember { GetTodayRitualUseCase(repository) }
     val logMoodUseCase = remember { LogMoodUseCase(repository) }
     val shouldRequestReviewUseCase = remember { ShouldRequestReviewUseCase(repository) }
@@ -120,6 +138,24 @@ fun PadlaApp(
     }
 
     val language by repository.getLanguage().collectAsState(initial = AppLanguage.ENGLISH)
+
+    // Reported from here rather than from the Application class: consent may arrive long after
+    // startup, and these have to be sent when it does, not only when a setting next changes.
+    val breathingStyle by repository.getBreathingStyle().collectAsState(initial = null)
+    val soundEnabled by repository.getSoundEnabled().collectAsState(initial = null)
+    val includeWeekends by repository.getIncludeWeekends().collectAsState(initial = null)
+
+    LaunchedEffect(consent, breathingStyle, soundEnabled, includeWeekends, language) {
+        if (consent != TelemetryConsent.GRANTED) return@LaunchedEffect
+        breathingStyle?.let { analyticsTracker.setUserProperty(UserProperty.BREATHING_STYLE, it.id) }
+        soundEnabled?.let {
+            analyticsTracker.setUserProperty(UserProperty.SOUND_ENABLED, it.toString())
+        }
+        includeWeekends?.let {
+            analyticsTracker.setUserProperty(UserProperty.INCLUDE_WEEKENDS, it.toString())
+        }
+        analyticsTracker.setUserProperty(UserProperty.APP_LANGUAGE, language.code)
+    }
 
     AppLocalization(language) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -200,7 +236,8 @@ fun PadlaApp(
                                     getTodayRitualUseCase,
                                     logMoodUseCase,
                                     shouldRequestReviewUseCase,
-                                    repository
+                                    repository,
+                                    analyticsTracker = analyticsTracker
                                 )
                             }
                             // Resets the ritual only when the user actually started it again.
@@ -266,12 +303,25 @@ fun PadlaApp(
                                 onOpenBreathingStyle = {
                                     context.startActivity(Intent(context, BreathingStyleActivity::class.java))
                                 },
+                                onTelemetryConsentToggled = { settingsViewModel.setTelemetryConsent(it) },
+                                onOpenPrivacyPolicy = { context.openUrl(PRIVACY_POLICY_URL) },
                                 onClearData = { settingsViewModel.clearAllData() },
                                 showBackButton = !showRail
                             )
                         }
                     }
                 }
+            }
+            if (consent == TelemetryConsent.UNKNOWN) {
+                TelemetryConsentDialog(
+                    onGrant = {
+                        scope.launch { repository.setTelemetryConsent(TelemetryConsent.GRANTED) }
+                    },
+                    onDeny = {
+                        scope.launch { repository.setTelemetryConsent(TelemetryConsent.DENIED) }
+                    },
+                    onOpenPrivacyPolicy = { context.openUrl(PRIVACY_POLICY_URL) }
+                )
             }
             overlay()
         }

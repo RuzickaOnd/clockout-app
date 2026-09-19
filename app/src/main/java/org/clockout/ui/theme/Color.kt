@@ -13,6 +13,14 @@ val FrostedGlassBorder = Color(0x1AFFFFFF) // ~10% white
 val FrostedGlassBorderActive = Color(0x806366F1) // 50% indigo
 val FrostedGlassSurfaceLight = Color(0x14FFFFFF) // ~8% white
 
+/**
+ * The surface a dialog sits on. Opaque on purpose: Material 3 takes a dialog's container from
+ * `surfaceContainerHigh`, which in this theme is [FrostedGlassSurfaceLight] - 8% white, so a dialog
+ * left on the default is all but transparent, and the ambient glows behind it show straight through
+ * the text.
+ */
+val DialogSurface = Color(0xFF141526)
+
 val IndigoPrimary = Color(0xFF4F46E5)
 val IndigoPrimaryLight = Color(0xFF6366F1)
 val IndigoAccent = Color(0xFFA5B4FC)

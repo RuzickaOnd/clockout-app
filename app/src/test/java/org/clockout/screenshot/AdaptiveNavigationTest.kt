@@ -5,10 +5,15 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.test.core.app.ApplicationProvider
 import com.github.takahirom.roborazzi.captureRoboImage
 import androidx.compose.ui.test.onRoot
+import kotlinx.coroutines.runBlocking
+import org.clockout.data.local.RitualPreferences
+import org.clockout.domain.model.TelemetryConsent
 import org.clockout.presentation.PadlaApp
 import org.clockout.ui.theme.MyApplicationTheme
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,6 +32,17 @@ import org.robolectric.annotation.GraphicsMode
 class PhoneNavigationTest {
 
     @get:Rule val composeTestRule = createComposeRule()
+
+    /**
+     * These two render the real PadlaApp against the real DataStore, so a fresh install would put
+     * the telemetry opt-in dialog over the screen they are here to photograph. Answering it up
+     * front keeps the captures about navigation.
+     */
+    @Before
+    fun answerTelemetryConsent() = runBlocking {
+        RitualPreferences(ApplicationProvider.getApplicationContext<android.content.Context>())
+            .setTelemetryConsent(TelemetryConsent.DENIED)
+    }
 
     @Test
     fun `a phone keeps the history and settings icons in the top bar and shows no rail`() {
@@ -48,6 +64,17 @@ class PhoneNavigationTest {
 class TabletNavigationTest {
 
     @get:Rule val composeTestRule = createComposeRule()
+
+    /**
+     * These two render the real PadlaApp against the real DataStore, so a fresh install would put
+     * the telemetry opt-in dialog over the screen they are here to photograph. Answering it up
+     * front keeps the captures about navigation.
+     */
+    @Before
+    fun answerTelemetryConsent() = runBlocking {
+        RitualPreferences(ApplicationProvider.getApplicationContext<android.content.Context>())
+            .setTelemetryConsent(TelemetryConsent.DENIED)
+    }
 
     @Test
     fun `a tablet moves the destinations onto a rail and drops them from the top bar`() {
