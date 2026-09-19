@@ -14,6 +14,7 @@ import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualLogEntry
+import org.clockout.domain.model.TelemetryConsent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -49,6 +50,7 @@ class RitualPreferences(private val dataStore: DataStore<Preferences>) : LegacyR
     private val KEY_INCLUDE_WEEKENDS = booleanPreferencesKey("include_weekends")
     private val KEY_COMPLETED_RITUALS = intPreferencesKey("ritual_completed_count")
     private val KEY_REVIEW_PROMPT_SHOWN = booleanPreferencesKey("review_prompt_shown")
+    private val KEY_TELEMETRY_CONSENT = stringPreferencesKey("telemetry_consent")
 
     val notificationEnabledFlow: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[KEY_NOTIF_ENABLED] ?: false
@@ -111,6 +113,21 @@ class RitualPreferences(private val dataStore: DataStore<Preferences>) : LegacyR
 
     val breathingStyleFlow: Flow<BreathingStyle> = dataStore.data.map { preferences ->
         BreathingStyle.fromId(preferences[KEY_BREATHING_STYLE])
+    }
+
+    /**
+     * Whether anonymous diagnostics may be collected. Deliberately outlives "Clear data and
+     * history", the same way the review flag does: a wipe clears the history, not the answer to a
+     * question the user has already been asked.
+     */
+    val telemetryConsentFlow: Flow<TelemetryConsent> = dataStore.data.map { preferences ->
+        TelemetryConsent.fromId(preferences[KEY_TELEMETRY_CONSENT])
+    }
+
+    suspend fun setTelemetryConsent(consent: TelemetryConsent) {
+        dataStore.edit { preferences ->
+            preferences[KEY_TELEMETRY_CONSENT] = consent.id
+        }
     }
 
     /**

@@ -6,6 +6,7 @@ import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.SoundChoice
+import org.clockout.domain.model.TelemetryConsent
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
@@ -42,6 +43,8 @@ interface RitualRepository {
     suspend fun setLanguageOption(option: LanguageOption)
     fun getBreathingStyle(): Flow<BreathingStyle>
     suspend fun setBreathingStyle(style: BreathingStyle)
+    fun getTelemetryConsent(): Flow<TelemetryConsent>
+    suspend fun setTelemetryConsent(consent: TelemetryConsent)
     suspend fun clearLogs()
     fun getTodayDateString(): String
 }

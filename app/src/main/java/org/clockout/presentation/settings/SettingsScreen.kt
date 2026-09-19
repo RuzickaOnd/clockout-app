@@ -105,11 +105,13 @@ import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.labelRes
 import org.clockout.presentation.util.localizedDescription
 import org.clockout.presentation.util.localizedLabel
+import org.clockout.ui.theme.DialogSurface
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.IndigoPrimary
 import org.clockout.ui.theme.TextLight
 import org.clockout.ui.theme.TextMuted
 import org.clockout.ui.theme.TextSlate
+import org.clockout.domain.model.TelemetryConsent
 import org.clockout.util.openPlayStoreListing
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -131,6 +133,8 @@ fun SettingsScreen(
     onDeleteCustomSound: (CustomSound) -> Unit = {},
     onDismissSoundImportError: () -> Unit = {},
     onOpenBreathingStyle: () -> Unit = {},
+    onTelemetryConsentToggled: (Boolean) -> Unit = {},
+    onOpenPrivacyPolicy: () -> Unit = {},
     onClearData: () -> Unit,
     modifier: Modifier = Modifier,
     /**
@@ -181,7 +185,7 @@ fun SettingsScreen(
     if (showResetDialog) {
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
-            containerColor = Color(0xFF141526),
+            containerColor = DialogSurface,
             titleContentColor = TextLight,
             textContentColor = TextSlate,
             title = { Text(stringResource(R.string.settings_clear_data_dialog_title)) },
@@ -208,7 +212,7 @@ fun SettingsScreen(
     if (pendingDeletion != null) {
         AlertDialog(
             onDismissRequest = { soundPendingDeletion = null },
-            containerColor = Color(0xFF141526),
+            containerColor = DialogSurface,
             titleContentColor = TextLight,
             textContentColor = TextSlate,
             title = { Text(stringResource(R.string.settings_delete_custom_sound_title)) },
@@ -235,7 +239,7 @@ fun SettingsScreen(
     if (showPermissionDialog) {
         AlertDialog(
             onDismissRequest = { showPermissionDialog = false },
-            containerColor = Color(0xFF141526),
+            containerColor = DialogSurface,
             titleContentColor = TextLight,
             textContentColor = TextSlate,
             title = { Text(stringResource(R.string.settings_permission_dialog_title)) },
@@ -1074,6 +1078,74 @@ fun SettingsScreen(
                                     )
                                 }
                             }
+                        }
+                    }
+                }
+
+                // Anonymous diagnostics: the way back from a "no" in the opt-in dialog, and the
+                // only place the privacy policy is reachable once that dialog is gone.
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .frostedGlass(cornerRadius = 22.dp)
+                        .padding(20.dp)
+                        .testTag("diagnostics_card")
+                ) {
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.settings_diagnostics_title),
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 16.sp
+                                    ),
+                                    color = TextLight
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = stringResource(R.string.settings_diagnostics_desc),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextSlate,
+                                    lineHeight = 20.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Switch(
+                                checked = state.telemetryConsent == TelemetryConsent.GRANTED,
+                                onCheckedChange = onTelemetryConsentToggled,
+                                modifier = Modifier.testTag("telemetry_consent_switch"),
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = IndigoPrimary,
+                                    uncheckedThumbColor = TextSlate,
+                                    uncheckedTrackColor = Color.White.copy(alpha = 0.08f),
+                                    uncheckedBorderColor = Color.White.copy(alpha = 0.2f)
+                                )
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = onOpenPrivacyPolicy,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .testTag("privacy_policy_button"),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = IndigoPrimary,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(
+                                text = stringResource(R.string.settings_privacy_policy_button),
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
                         }
                     }
                 }

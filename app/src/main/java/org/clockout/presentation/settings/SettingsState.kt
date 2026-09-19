@@ -6,6 +6,7 @@ import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.SoundChoice
+import org.clockout.domain.model.TelemetryConsent
 
 data class SettingsState(
     val language: AppLanguage = AppLanguage.ENGLISH,
@@ -21,7 +22,8 @@ data class SettingsState(
     val customSounds: List<CustomSound> = emptyList(),
     val isImportingSound: Boolean = false,
     val soundImportError: SoundImportError? = null,
-    val isPreviewPlaying: Boolean = false
+    val isPreviewPlaying: Boolean = false,
+    val telemetryConsent: TelemetryConsent = TelemetryConsent.UNKNOWN
 ) {
     val formattedTime: String
         get() = String.format("%02d:%02d", notificationHour, notificationMinute)

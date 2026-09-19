@@ -63,6 +63,7 @@ import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.labelRes
 import org.clockout.presentation.util.localizedAnswer
 import org.clockout.presentation.util.localizedQuestionText
+import org.clockout.ui.theme.DialogSurface
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.TextLight
 import org.clockout.ui.theme.TextMuted
@@ -93,7 +94,7 @@ fun HistoryScreen(
     if (showClearDialog) {
         AlertDialog(
             onDismissRequest = { showClearDialog = false },
-            containerColor = Color(0xFF141526),
+            containerColor = DialogSurface,
             titleContentColor = TextLight,
             textContentColor = TextSlate,
             title = { Text(stringResource(R.string.history_clear_dialog_title)) },

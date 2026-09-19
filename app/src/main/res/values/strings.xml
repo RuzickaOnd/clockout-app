@@ -367,6 +367,14 @@
     <string name="breathing_style_lotus_label">Lotus</string>
     <string name="breathing_style_lotus_desc">A bud opening into full bloom and folding shut again</string>
     <string name="breathing_style_selected">Selected</string>
+    <string name="telemetry_consent_title">Help improve ClockOut?</string>
+    <string name="telemetry_consent_body">ClockOut can send anonymous crash reports and usage statistics — which step of the ritual you reach, which breathing style you use. Never your answers, your notes or anything you write. You can change this any time in Settings.</string>
+    <string name="telemetry_consent_allow">Allow</string>
+    <string name="telemetry_consent_deny">No thanks</string>
+    <string name="telemetry_consent_policy_link">Privacy policy</string>
+    <string name="settings_diagnostics_title">Anonymous diagnostics</string>
+    <string name="settings_diagnostics_desc">Sends crash reports and anonymous usage statistics so problems can be found and fixed. Never your answers or your notes.</string>
+    <string name="settings_privacy_policy_button">Privacy policy</string>
     <string name="settings_rate_title">Rate the app</string>
     <string name="settings_rate_desc">Has ClockOut helped you close your workday? A short rating on Google Play takes a minute and helps other people who struggle to switch off find the app.</string>
     <string name="settings_rate_button">Rate</string>

@@ -11,6 +11,7 @@ import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.SoundChoice
+import org.clockout.domain.model.TelemetryConsent
 import org.clockout.domain.model.DayStatus
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualLogEntry
@@ -206,6 +207,12 @@ class RitualRepositoryImpl(
     override fun getBreathingStyle(): Flow<BreathingStyle> = preferences.breathingStyleFlow
 
     override suspend fun setBreathingStyle(style: BreathingStyle) = preferences.setBreathingStyle(style)
+
+    override fun getTelemetryConsent(): Flow<TelemetryConsent> = preferences.telemetryConsentFlow
+
+    override suspend fun setTelemetryConsent(consent: TelemetryConsent) {
+        preferences.setTelemetryConsent(consent)
+    }
 
     override suspend fun clearLogs() {
         // Migrate first so the legacy blob is dropped too, otherwise it would reappear later.
