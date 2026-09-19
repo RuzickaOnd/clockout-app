@@ -6,6 +6,15 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Firebase Analytics merges the advertising-ID permission in through
+         play-services-measurement-api. The app shows no ads and never reads the identifier, so it
+         is removed again here to match the "does not use advertising ID" declaration in Play
+         Console; Play rejects an artifact whose manifest contradicts that declaration. Analytics
+         keeps working without it — what is given up is ad-ID attribution and Google Ads linking. -->
+    <uses-permission
+        android:name="com.google.android.gms.permission.AD_ID"
+        tools:node="remove" />
+
     <application
         android:name=".ClockoutApplication"
         android:allowBackup="true"

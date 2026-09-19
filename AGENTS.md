@@ -182,6 +182,10 @@ Crashes go to Firebase Crashlytics, ritual completion to Firebase Analytics, and
 
 Both SDKs are switched off in `AndroidManifest.xml` through `firebase_analytics_collection_enabled` and `firebase_crashlytics_collection_enabled`. This is load-bearing: `FirebaseInitProvider` starts collecting during application startup, long before the dialog can be shown, so without those two entries the first session of every install would be uploaded and the opt-in would be decoration. `ConsentGatedTracker` then turns collection on only once consent is `GRANTED`.
 
+Firebase Analytics merges `com.google.android.gms.permission.AD_ID` into the manifest through `play-services-measurement-api`, and the manifest removes it again with `tools:node="remove"`. The app carries no ads and never reads the identifier, so the Play Console declaration says the app does **not** use an advertising ID — and Play checks that in both directions: a declaration of "no" against an artifact whose manifest holds the permission is an error, exactly as "yes" against one without it is. The two stay in step or the release is rejected. Analytics itself is unaffected; what is given up is ad-ID attribution and Google Ads linking, neither of which the app uses. `ACCESS_ADSERVICES_AD_ID` and `ACCESS_ADSERVICES_ATTRIBUTION` are left merged in — the declaration does not cover them.
+
+Releases up to 1.0.3 (`versionCode` 1000302 and below) predate Firebase entirely and so never carried the permission. While any of them is still an active artifact, a Play Console declaration of "yes" reports an error against them rather than against the current build.
+
 The layering is `AnalyticsTracker` (a pure-Kotlin interface in `domain/telemetry`) → `ConsentGatedTracker` (the gate, also pure Kotlin, so it is testable without Firebase) → `FirebaseAnalyticsTracker` (`telemetry/`, the only class that knows Firebase exists). ViewModels take the interface with `NoOpAnalyticsTracker` as the default, which is why no existing test signature had to change. The gate stops the app's own events; `setCollectionEnabled` is passed through to the SDK as well, because its automatic events never travel through the interface.
 
 `rememberAnalyticsTracker` (`presentation/TelemetryDependencies.kt`) falls back to `NoOpAnalyticsTracker` when `FirebaseApp.getApps()` is empty. `FirebaseCrashlytics.getInstance()` throws rather than returning a dormant instance, and `FirebaseInitProvider` does not run under Robolectric, so without that fallback every test rendering the real app dies on a reporting concern it has nothing to do with. It is also the honest outcome for a build assembled without `google-services.json`.
@@ -206,6 +210,7 @@ All versions go through the version catalog at `gradle/libs.versions.toml` — n
 
 - Do not commit, stage, or push without explicit approval in the same turn.
 - Do not remove the two `firebase_*_collection_enabled` meta-data entries from the manifest — the SDKs would then collect the first session of every install before the user has been asked.
+- Do not let `com.google.android.gms.permission.AD_ID` back into the manifest without flipping the Play Console advertising-ID declaration with it — Play rejects an artifact that contradicts the declaration either way round.
 - Do not clear `telemetry_consent` when clearing data and history — a wipe is not a withdrawal of consent, and the dialog would return on every wipe.
 - Do not call Firebase from a ViewModel — go through `AnalyticsTracker`, or the Robolectric tests behind it need an initialized Firebase.
 - Do not put ritual content into an analytics parameter — not the question, not the answer, not the note.
