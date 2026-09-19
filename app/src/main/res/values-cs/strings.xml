@@ -371,7 +371,7 @@
     <string name="breathing_style_lotus_label">Lotos</string>
     <string name="breathing_style_lotus_desc">Poupě se rozevírá do plného květu a zase zavírá</string>
     <string name="breathing_style_selected">Vybráno</string>
-    <string name="telemetry_consent_title">Pomůžeš Padle se zlepšit?</string>
+    <string name="telemetry_consent_title">Pomůžeš Padla se zlepšit?</string>
     <string name="telemetry_consent_body">Padla může odesílat anonymní hlášení o pádech a statistiky používání — ke kterému kroku rituálu se dostaneš, jaký styl dýchání používáš. Nikdy tvoje odpovědi, poznámky ani cokoliv, co napíšeš. Kdykoliv to změníš v nastavení.</string>
     <string name="telemetry_consent_allow">Povolit</string>
     <string name="telemetry_consent_deny">Nechci</string>
