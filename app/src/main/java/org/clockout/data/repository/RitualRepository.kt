@@ -28,6 +28,9 @@ interface RitualRepository {
     suspend fun setTestMode(enabled: Boolean)
     fun getNotificationTime(): Flow<Pair<Int, Int>>
     suspend fun setNotificationTime(hour: Int, minute: Int)
+    fun getCustomNotificationTime(): Flow<Pair<Int, Int>?>
+    /** Sets the active time from the picker; see [org.clockout.data.local.RitualPreferences.setCustomNotificationTime]. */
+    suspend fun setCustomNotificationTime(hour: Int, minute: Int)
     fun getNotificationEnabled(): Flow<Boolean>
     suspend fun setNotificationEnabled(enabled: Boolean)
     fun getSoundEnabled(): Flow<Boolean>

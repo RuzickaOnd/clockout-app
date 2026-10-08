@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Vibration
@@ -70,23 +71,35 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.TimePickerDialog
+import androidx.compose.material3.TimePickerDialogDefaults
+import androidx.compose.material3.TimePickerDisplayMode
+import androidx.compose.material3.TimePickerLayoutType
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.clockout.BuildConfig
@@ -96,6 +109,8 @@ import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.MeditationSoundStyle
+import org.clockout.domain.model.ReminderTimePresets
+import org.clockout.domain.model.WorkdayCloseWindow
 import org.clockout.domain.model.SoundChoice
 import org.clockout.notification.NotificationScheduler
 import org.clockout.presentation.components.FrostedBackgroundContainer
@@ -123,6 +138,7 @@ fun SettingsScreen(
     onLanguageOptionSelected: (LanguageOption) -> Unit = {},
     onNotificationToggled: (Boolean) -> Unit = {},
     onTimeSelected: (hour: Int, minute: Int) -> Unit,
+    onCustomTimeSelected: (hour: Int, minute: Int) -> Unit = { _, _ -> },
     onTestModeToggled: (Boolean) -> Unit,
     onIncludeWeekendsToggled: (Boolean) -> Unit = {},
     onSoundToggled: (Boolean) -> Unit,
@@ -147,6 +163,8 @@ fun SettingsScreen(
     val scrollState = rememberScrollState()
     var showResetDialog by remember { mutableStateOf(false) }
     var showPermissionDialog by remember { mutableStateOf(false) }
+    var showCustomTimePicker by rememberSaveable { mutableStateOf(false) }
+    var showRestrictWindowDialog by rememberSaveable { mutableStateOf(false) }
     var soundPendingDeletion by remember { mutableStateOf<CustomSound?>(null) }
     // Set when the picker was opened from a sound whose file is gone, so the file that comes
     // back replaces that entry instead of arriving as an eleventh sound.
@@ -172,15 +190,62 @@ fun SettingsScreen(
         }
     }
 
-    val presetTimes = listOf(
-        Pair(16, 0),
-        Pair(16, 30),
-        Pair(17, 0),
-        Pair(17, 30),
-        Pair(18, 0),
-        Pair(18, 30),
-        Pair(19, 0)
-    )
+    if (showRestrictWindowDialog) {
+        val defaultTime = SettingsState.formatTime(ReminderTimePresets.DEFAULT_HOUR, ReminderTimePresets.DEFAULT_MINUTE)
+        AlertDialog(
+            onDismissRequest = { showRestrictWindowDialog = false },
+            containerColor = DialogSurface,
+            titleContentColor = TextLight,
+            textContentColor = TextSlate,
+            title = { Text(stringResource(R.string.settings_restrict_window_dialog_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.settings_restrict_window_dialog_text,
+                        state.formattedTime,
+                        SettingsState.formatTime(WorkdayCloseWindow.START_HOUR, 0),
+                        SettingsState.formatTime(WorkdayCloseWindow.END_HOUR - 1, 59),
+                        defaultTime
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showRestrictWindowDialog = false
+                        onTimeSelected(ReminderTimePresets.DEFAULT_HOUR, ReminderTimePresets.DEFAULT_MINUTE)
+                        onTestModeToggled(false)
+                    },
+                    modifier = Modifier.testTag("restrict_window_confirm")
+                ) {
+                    Text(stringResource(R.string.settings_restrict_window_dialog_confirm, defaultTime), color = IndigoAccent)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRestrictWindowDialog = false }) {
+                    Text(stringResource(R.string.common_cancel), color = TextSlate)
+                }
+            },
+            modifier = Modifier.testTag("restrict_window_dialog")
+        )
+    }
+
+    if (showCustomTimePicker) {
+        val restrictToWindow = !state.isTestModeEnabled
+        val startTime = state.displayedCustomTime ?: (state.notificationHour to state.notificationMinute)
+        val (initialHour, initialMinute) =
+            if (restrictToWindow) WorkdayCloseWindow.coerce(startTime.first, startTime.second) else startTime
+        CustomTimePickerDialog(
+            initialHour = initialHour,
+            initialMinute = initialMinute,
+            restrictToWindow = restrictToWindow,
+            onConfirm = { hour, minute ->
+                showCustomTimePicker = false
+                onCustomTimeSelected(hour, minute)
+            },
+            onDismiss = { showCustomTimePicker = false }
+        )
+    }
 
     if (showResetDialog) {
         AlertDialog(
@@ -390,28 +455,32 @@ fun SettingsScreen(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    presetTimes.forEach { (h, m) ->
-                                        val isSelected = state.notificationHour == h && state.notificationMinute == m
-                                        FilterChip(
-                                            selected = isSelected,
+                                    ReminderTimePresets.ALL.forEach { (h, m) ->
+                                        ReminderTimeChip(
+                                            selected = state.notificationHour == h && state.notificationMinute == m,
                                             onClick = { onTimeSelected(h, m) },
-                                            label = {
-                                                Text(String.format("%02d:%02d", h, m))
-                                            },
-                                            colors = FilterChipDefaults.filterChipColors(
-                                                containerColor = Color.White.copy(alpha = 0.04f),
-                                                labelColor = TextSlate,
-                                                selectedContainerColor = Color(0x3B6366F1),
-                                                selectedLabelColor = IndigoAccent
-                                            ),
-                                            border = androidx.compose.foundation.BorderStroke(
-                                                1.dp,
-                                                if (isSelected) Color(0x806366F1) else Color.White.copy(alpha = 0.10f)
-                                            ),
-                                            shape = RoundedCornerShape(12.dp),
+                                            label = SettingsState.formatTime(h, m),
                                             modifier = Modifier.testTag("preset_time_${h}_${m}")
                                         )
                                     }
+                                    val customTime = state.displayedCustomTime
+                                    val customTimeDescription = stringResource(R.string.settings_custom_time_description)
+                                    ReminderTimeChip(
+                                        selected = state.isCustomTimeSelected,
+                                        onClick = { showCustomTimePicker = true },
+                                        label = customTime?.let { (h, m) -> SettingsState.formatTime(h, m) }
+                                            ?: stringResource(R.string.settings_custom_time_chip),
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Filled.Schedule,
+                                                // Once the chip shows a bare time, the icon is what
+                                                // tells a screen reader this is the custom one.
+                                                contentDescription = if (customTime != null) customTimeDescription else null,
+                                                modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                            )
+                                        },
+                                        modifier = Modifier.testTag("custom_time_chip")
+                                    )
                                 }
                             }
                         }
@@ -493,7 +562,15 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.width(16.dp))
                         Switch(
                             checked = state.isTestModeEnabled,
-                            onCheckedChange = onTestModeToggled,
+                            onCheckedChange = { enabled ->
+                                // Closing the window on a reminder that sits outside it would ring
+                                // at a time the ritual refuses, so the user has to agree to a move.
+                                if (!enabled && state.isTimeOutsideRitualWindow) {
+                                    showRestrictWindowDialog = true
+                                } else {
+                                    onTestModeToggled(enabled)
+                                }
+                            },
                             modifier = Modifier.testTag("test_mode_switch"),
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
@@ -1314,5 +1391,175 @@ private fun SoundChoiceMenuText(title: String, description: String, isSelected: 
             fontSize = 12.sp,
             lineHeight = 16.sp
         )
+    }
+}
+
+/** One chip in the workday end time row; the presets and the custom time share its look. */
+@Composable
+private fun ReminderTimeChip(
+    selected: Boolean,
+    onClick: () -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    leadingIcon: (@Composable () -> Unit)? = null
+) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { Text(label) },
+        leadingIcon = leadingIcon,
+        colors = FilterChipDefaults.filterChipColors(
+            containerColor = Color.White.copy(alpha = 0.04f),
+            labelColor = TextSlate,
+            iconColor = TextSlate,
+            selectedContainerColor = Color(0x3B6366F1),
+            selectedLabelColor = IndigoAccent,
+            selectedLeadingIconColor = IndigoAccent
+        ),
+        border = BorderStroke(
+            1.dp,
+            if (selected) Color(0x806366F1) else Color.White.copy(alpha = 0.10f)
+        ),
+        shape = RoundedCornerShape(12.dp),
+        modifier = modifier
+    )
+}
+
+/**
+ * Lets the user pick a workday end time outside the presets. Always 24-hour, because every other
+ * time on the screen is written that way and the chip shows the result in the same form.
+ *
+ * With [restrictToWindow] only a time the ritual can be started at may be confirmed. The picker
+ * itself has no bounds to set, so the confirm button is what refuses, with the range spelled out
+ * underneath rather than leaving a greyed-out button to explain itself.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CustomTimePickerDialog(
+    initialHour: Int,
+    initialMinute: Int,
+    restrictToWindow: Boolean,
+    onConfirm: (hour: Int, minute: Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val pickerState = rememberTimePickerState(
+        initialHour = initialHour,
+        initialMinute = initialMinute,
+        is24Hour = true
+    )
+    var displayMode by rememberSaveable(stateSaver = TimePickerDisplayModeSaver) {
+        mutableStateOf(TimePickerDisplayMode.Picker)
+    }
+    val isAllowed = !restrictToWindow || WorkdayCloseWindow.contains(pickerState.hour)
+    TimePickerDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            // Centred over a stacked picker. Side by side, the dial reaches the top of the dialog
+            // and a centred title would run into it, so the title keeps to the time fields there.
+            val isStacked = TimePickerDefaults.layoutType() == TimePickerLayoutType.Vertical
+            Text(
+                text = stringResource(R.string.settings_custom_time_dialog_title),
+                style = MaterialTheme.typography.labelLarge,
+                color = TextSlate,
+                textAlign = if (isStacked) TextAlign.Center else TextAlign.Start,
+                modifier = if (isStacked) Modifier.fillMaxWidth() else Modifier
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(pickerState.hour, pickerState.minute) },
+                enabled = isAllowed,
+                modifier = Modifier.testTag("custom_time_confirm")
+            ) {
+                Text(
+                    stringResource(R.string.settings_custom_time_confirm),
+                    color = if (isAllowed) IndigoAccent else TextMuted
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.common_cancel), color = TextSlate)
+            }
+        },
+        modeToggleButton = {
+            TimePickerDialogDefaults.DisplayModeToggle(
+                onDisplayModeChange = {
+                    displayMode = if (displayMode == TimePickerDisplayMode.Picker) {
+                        TimePickerDisplayMode.Input
+                    } else {
+                        TimePickerDisplayMode.Picker
+                    }
+                },
+                displayMode = displayMode,
+                modifier = Modifier.testTag("custom_time_mode_toggle")
+            )
+        },
+        containerColor = DialogSurface,
+        modifier = Modifier.testTag("custom_time_dialog")
+    ) {
+        val colors = TimePickerDefaults.colors(
+            clockDialColor = Color.White.copy(alpha = 0.06f),
+            clockDialSelectedContentColor = Color.White,
+            clockDialUnselectedContentColor = TextLight,
+            selectorColor = IndigoPrimary,
+            containerColor = DialogSurface,
+            timeSelectorSelectedContainerColor = Color(0x3B6366F1),
+            timeSelectorUnselectedContainerColor = Color.White.copy(alpha = 0.06f),
+            timeSelectorSelectedContentColor = IndigoAccent,
+            timeSelectorUnselectedContentColor = TextLight
+        )
+        PickerWidthColumn(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            if (displayMode == TimePickerDisplayMode.Picker) {
+                TimePicker(state = pickerState, colors = colors)
+            } else {
+                TimeInput(state = pickerState, colors = colors)
+            }
+            if (restrictToWindow) {
+                Text(
+                    text = stringResource(
+                        R.string.settings_custom_time_window_hint,
+                        SettingsState.formatTime(WorkdayCloseWindow.START_HOUR, 0),
+                        // The end hour is exclusive, so the last minute that can be picked is :59.
+                        SettingsState.formatTime(WorkdayCloseWindow.END_HOUR - 1, 59)
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (isAllowed) TextSlate else MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .testTag("custom_time_window_hint")
+                )
+            }
+        }
+    }
+}
+
+/** [TimePickerDisplayMode] is a value class over a private int, so it is saved by what it is. */
+private val TimePickerDisplayModeSaver = Saver<TimePickerDisplayMode, Boolean>(
+    save = { it == TimePickerDisplayMode.Input },
+    restore = { isInput -> if (isInput) TimePickerDisplayMode.Input else TimePickerDisplayMode.Picker }
+)
+
+/**
+ * Stacks its children centred, as wide as the first one and no wider. The time picker has a fixed
+ * size, but text measured against the dialog's constraints takes the full width offered and
+ * stretches the dialog edge to edge with the picker left behind at the start.
+ */
+@Composable
+private fun PickerWidthColumn(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Layout(content = content, modifier = modifier) { measurables, constraints ->
+        val first = measurables.first().measure(constraints.copy(minWidth = 0))
+        val rest = measurables.drop(1).map {
+            it.measure(Constraints(maxWidth = first.width))
+        }
+        val placeables = listOf(first) + rest
+        layout(first.width, placeables.sumOf { it.height }) {
+            var y = 0
+            placeables.forEach { placeable ->
+                placeable.placeRelative((first.width - placeable.width) / 2, y)
+                y += placeable.height
+            }
+        }
     }
 }

@@ -13,5 +13,12 @@ object WorkdayCloseWindow {
 
     fun contains(hour: Int): Boolean = hour in START_HOUR until END_HOUR
 
+    /**
+     * Moves a time into the window by its hour alone, keeping the minute: 10:15 becomes 16:15 and
+     * 22:30 becomes 20:30. Used to open the reminder picker somewhere it can be confirmed.
+     */
+    fun coerce(hour: Int, minute: Int): Pair<Int, Int> =
+        hour.coerceIn(START_HOUR, END_HOUR - 1) to minute
+
     fun isOpenNow(): Boolean = contains(Calendar.getInstance().get(Calendar.HOUR_OF_DAY))
 }
