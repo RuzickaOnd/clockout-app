@@ -291,6 +291,7 @@ fun PadlaApp(
                                 onLanguageOptionSelected = { settingsViewModel.setLanguageOption(it) },
                                 onNotificationToggled = { enabled -> settingsViewModel.setNotificationEnabled(enabled, context) },
                                 onTimeSelected = { h, m -> settingsViewModel.setNotificationTime(h, m, context) },
+                                onCustomTimeSelected = { h, m -> settingsViewModel.setCustomNotificationTime(h, m, context) },
                                 onTestModeToggled = { settingsViewModel.setTestMode(it) },
                                 onIncludeWeekendsToggled = { settingsViewModel.setIncludeWeekends(it) },
                                 onSoundToggled = { settingsViewModel.setSoundEnabled(it) },

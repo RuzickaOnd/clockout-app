@@ -91,7 +91,14 @@ android {
     compose = true
     buildConfig = true
   }
-  testOptions { unitTests { isIncludeAndroidResources = true } }
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
+      // Robolectric 4.17 reaches into jdk.internal.access to fake file descriptors; on the JDK 25
+      // the build runs on, every Robolectric test fails during setup without this export.
+      all { it.jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED") }
+    }
+  }
   sourceSets["androidTest"].assets.srcDir("$projectDir/schemas")
   // Aplikace přepíná jazyk v appce nezávisle na systémovém locale, takže musí mít všechny
   // jazykové zdroje v základním APK - jinak by Play instaloval jen jazykový split odpovídající

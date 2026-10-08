@@ -13,9 +13,11 @@ import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.ReminderTimePresets
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.domain.model.TelemetryConsent
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.json.JSONArray
@@ -41,6 +43,7 @@ class RitualPreferences(private val dataStore: DataStore<Preferences>) : LegacyR
     private val KEY_NOTIF_HOUR = intPreferencesKey("notification_hour")
     private val KEY_NOTIF_MINUTE = intPreferencesKey("notification_minute")
     private val KEY_NOTIF_ENABLED = booleanPreferencesKey("notification_enabled")
+    private val KEY_CUSTOM_NOTIF_TIME = intPreferencesKey("custom_notification_time")
     private val KEY_TEST_MODE = booleanPreferencesKey("test_mode_override")
     private val KEY_SOUND_ENABLED = booleanPreferencesKey("sound_ambient_enabled")
     private val KEY_SOUND_STYLE = stringPreferencesKey("sound_ambient_style")
@@ -82,11 +85,28 @@ class RitualPreferences(private val dataStore: DataStore<Preferences>) : LegacyR
     }
 
     val notificationHourFlow: Flow<Int> = dataStore.data.map { preferences ->
-        preferences[KEY_NOTIF_HOUR] ?: 17
+        preferences[KEY_NOTIF_HOUR] ?: ReminderTimePresets.DEFAULT_HOUR
     }
 
     val notificationMinuteFlow: Flow<Int> = dataStore.data.map { preferences ->
-        preferences[KEY_NOTIF_MINUTE] ?: 30
+        preferences[KEY_NOTIF_MINUTE] ?: ReminderTimePresets.DEFAULT_MINUTE
+    }
+
+    /**
+     * Hour and minute read from one snapshot. Combining the two flows above instead lets a change
+     * from 20:15 to 16:30 pass through 16:15 on the way, which is a time nobody chose.
+     */
+    val notificationTimeFlow: Flow<Pair<Int, Int>> = dataStore.data.map { preferences ->
+        (preferences[KEY_NOTIF_HOUR] ?: ReminderTimePresets.DEFAULT_HOUR) to (preferences[KEY_NOTIF_MINUTE] ?: ReminderTimePresets.DEFAULT_MINUTE)
+    }.distinctUntilChanged()
+
+    /**
+     * The last reminder time picked by hand rather than from a preset, as hour and minute, or null
+     * if the user has never picked one. Kept apart from the active time so the custom chip still
+     * shows it after a preset has taken over.
+     */
+    val customNotificationTimeFlow: Flow<Pair<Int, Int>?> = dataStore.data.map { preferences ->
+        preferences[KEY_CUSTOM_NOTIF_TIME]?.let { minuteOfDay -> minuteOfDay / 60 to minuteOfDay % 60 }
     }
 
     /** Whether Saturday and Sunday offer the ritual too; off means Monday to Friday only. */
@@ -160,6 +180,21 @@ class RitualPreferences(private val dataStore: DataStore<Preferences>) : LegacyR
         dataStore.edit { preferences ->
             preferences[KEY_NOTIF_HOUR] = hour
             preferences[KEY_NOTIF_MINUTE] = minute
+        }
+    }
+
+    /**
+     * Makes a hand-picked time the active one and, in the same edit, remembers it for the custom
+     * chip. A time that matches a preset is left to that preset's chip, so the custom chip keeps
+     * the earlier hand-picked time rather than duplicating a preset.
+     */
+    suspend fun setCustomNotificationTime(hour: Int, minute: Int) {
+        dataStore.edit { preferences ->
+            preferences[KEY_NOTIF_HOUR] = hour
+            preferences[KEY_NOTIF_MINUTE] = minute
+            if (!ReminderTimePresets.contains(hour, minute)) {
+                preferences[KEY_CUSTOM_NOTIF_TIME] = hour * 60 + minute
+            }
         }
     }
 

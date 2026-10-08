@@ -156,15 +156,16 @@ class RitualRepositoryImpl(
 
     override suspend fun setTestMode(enabled: Boolean) = preferences.setTestMode(enabled)
 
-    override fun getNotificationTime(): Flow<Pair<Int, Int>> {
-        return preferences.notificationHourFlow.combine(preferences.notificationMinuteFlow) { h, m ->
-            Pair(h, m)
-        }
-    }
+    override fun getNotificationTime(): Flow<Pair<Int, Int>> = preferences.notificationTimeFlow
 
     override suspend fun setNotificationTime(hour: Int, minute: Int) {
         preferences.setNotificationTime(hour, minute)
     }
+
+    override fun getCustomNotificationTime(): Flow<Pair<Int, Int>?> = preferences.customNotificationTimeFlow
+
+    override suspend fun setCustomNotificationTime(hour: Int, minute: Int) =
+        preferences.setCustomNotificationTime(hour, minute)
 
     override fun getNotificationEnabled(): Flow<Boolean> = preferences.notificationEnabledFlow
 
