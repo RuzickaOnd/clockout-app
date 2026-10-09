@@ -5,8 +5,11 @@ Datum: 2026-10-09 · Stav: návrh ke schválení
 ## Záměr
 
 Dát Padla pocit postupu a osobní tváře bez výkonového tlaku, který by šel proti smyslu aplikace (uzavřít práci, ne
-plnit další metriku). Uživatel prochází deseti stupni zenové **Cesty** podle *Deseti obrazů pasení býka* (十牛図)
-a sleduje svůj **týdenní rytmus**.
+plnit další metriku). Uživatel prochází deseti stupni **Cesty domů** a sleduje svůj **týdenní rytmus**.
+
+Motiv vychází přímo z poslání aplikace: práce z domova vzala lidem cestu z práce, která den oddělovala (viz karta
+„Proč rituál" na Home). Každý stupeň je jeden kus té cesty — od zaklapnutého notebooku po práh domova — a uživatel
+si ji den po dni staví znovu. Motiv je vlastní, nepřebírá žádnou existující sérii.
 
 Tři zásady, kterými se řídí každé rozhodnutí níže:
 
@@ -64,17 +67,17 @@ Pravidla záloh se nemění; `BackupRulesTest` zůstává beze změny.
 
 ```kotlin
 enum class PathStage(val id: String, val minDays: Int) {
-    BEGINNING("BEGINNING", 0),            // nováček, výchozí znak
-    SEEKING("SEEKING", 1),
-    TRACKS("TRACKS", 5),
-    GLIMPSING("GLIMPSING", 10),
-    CATCHING("CATCHING", 20),
-    TAMING("TAMING", 35),
-    RIDING_HOME("RIDING_HOME", 50),
-    OX_FORGOTTEN("OX_FORGOTTEN", 75),
-    EMPTY_CIRCLE("EMPTY_CIRCLE", 100),
-    SOURCE("SOURCE", 150),
-    MARKETPLACE("MARKETPLACE", 250);
+    AT_DESK("AT_DESK", 0),                    // nováček, výchozí znak
+    LAPTOP_CLOSED("LAPTOP_CLOSED", 1),
+    COAT_ON("COAT_ON", 5),
+    KEY_IN_LOCK("KEY_IN_LOCK", 10),
+    DOWN_THE_STAIRS("DOWN_THE_STAIRS", 20),
+    STREET_AT_DUSK("STREET_AT_DUSK", 35),
+    THROUGH_THE_PARK("THROUGH_THE_PARK", 50),
+    OVER_THE_BRIDGE("OVER_THE_BRIDGE", 75),
+    GARDEN_GATE("GARDEN_GATE", 100),
+    THRESHOLD("THRESHOLD", 150),
+    HOME("HOME", 250);
 }
 ```
 
@@ -83,17 +86,19 @@ stupeň nebo `null` za posledním.
 
 | # | Dní | Česky | English | Znak |
 |---|---|---|---|---|
-| 0 | 0 | Na začátku cesty | At the Start of the Path | prázdný štětcový tah |
-| 1 | 1 | Hledání býka | Seeking the Ox | cesta |
-| 2 | 5 | Nalezení stop | Finding the Tracks | stopy kopyt |
-| 3 | 10 | Spatření býka | Glimpsing the Ox | ocas za keřem |
-| 4 | 20 | Chycení býka | Catching the Ox | provaz |
-| 5 | 35 | Krocení býka | Taming the Ox | býk s provazem |
-| 6 | 50 | Návrat domů na hřbetě býka | Riding the Ox Home | flétna |
-| 7 | 75 | Býk zapomenut | The Ox Forgotten | měsíc |
-| 8 | 100 | Prázdný kruh | The Empty Circle | ensō |
-| 9 | 150 | Návrat ke zdroji | Returning to the Source | strom u řeky |
-| 10 | 250 | S otevřenýma rukama do světa | Entering the Market with Open Hands | otevřené dlaně |
+| 0 | 0 | Ještě u stolu | Still at the Desk | stůl s monitorem |
+| 1 | 1 | Zaklapnutý notebook | Laptop Closed | zavřený notebook |
+| 2 | 5 | Kabát na ramenou | Coat On | kabát na ramínku |
+| 3 | 10 | Klíč v zámku | Key in the Lock | klíč |
+| 4 | 20 | Schody dolů | Down the Stairs | schody |
+| 5 | 35 | Ulice za soumraku | The Street at Dusk | pouliční lampa |
+| 6 | 50 | Parkem | Through the Park | strom |
+| 7 | 75 | Přes most | Over the Bridge | most nad řekou |
+| 8 | 100 | Branka | The Garden Gate | branka |
+| 9 | 150 | Práh | The Threshold | dveře |
+| 10 | 250 | Doma | Home | dům s rozsvíceným oknem |
+
+Most v polovině cesty nese i význam: překročení hranice mezi prací a vlastním časem.
 
 ### Týdenní rytmus — `PathRhythm`
 
@@ -137,11 +142,11 @@ emisi.
 Nová `PathCard` pod `WeeklyStreakCard` (v jednosloupcovém i dvousloupcovém rozložení — ve dvou sloupcích ve
 stejném sloupci jako týdenní karta, nad `WhyRitualCard`). Frosted glass jako ostatní karty.
 
-- Znak aktuálního stupně, název stupně a postup: „Ještě 3 dny do *Spatření býka*" (plurál) + tenký progress bar
-  mezi prahy. Na posledním stupni místo toho „Cesta je u konce — a pokračuje dál".
+- Znak aktuálního stupně, název stupně a postup: „Ještě 3 dny do dalšího stupně" + „Další: Klíč v zámku" (plurál) + tenký progress bar
+  mezi prahy. Na posledním stupni místo toho „Jsi doma. Cestu teď znáš nazpaměť."
 - Řádek rytmu: „Rytmus: 3 týdny · nejdelší 7" (plurály). Při nulovém rytmu jen „nejdelší N", případně nic, pokud
   rytmus ještě nevznikl.
-- Nováček (`BEGINNING`): výchozí znak a „Cesta začíná prvním uzavřeným dnem".
+- Nováček (`AT_DESK`): výchozí znak a „Cesta začíná prvním uzavřeným dnem".
 - Klepnutí otevře `PathActivity`.
 - `HomeState` dostane `pathProgress: PathProgress? = null`; `HomeViewModel` ho plní z repozitáře.
 
@@ -165,8 +170,8 @@ volané nad `AppLocalization`, záznam v manifestu s `parentActivityName=".MainA
 Obsah, shora:
 
 1. Hlavička se znakem a názvem aktuálního stupně, počtem uzavřených dní a rytmem.
-2. **Odkud cesta pochází**: Deset obrazů pasení býka, čínský mistr Kuo-an Š'-jüan (jap. Kakuan), 12. století;
-   býk jako obraz vlastní mysli; poslední obraz se vrací do běžného světa — proto se hodí k uzavírání pracovního dne.
+2. **O čem je cesta**: dřív den uzavírala cesta z práce; při práci z domova chybí a práce přetéká do večera.
+   Každý uzavřený den posune uživatele o kus dál po cestě, kterou si tak staví znovu; na konci je doma.
 3. **Deset stupňů**: řádek se znakem, prahem dní, názvem, veršem a krátkým výkladem. Dosažené stupně plnou barvou,
    aktuální zvýrazněný, nedosažené ztlumené, ale čitelné.
 4. **Jak funguje rytmus**: práh týdne, tolerance jednoho slabšího týdne, víkendy, a že stupně i rytmus přežijí
@@ -175,11 +180,11 @@ Obsah, shora:
 Na širokém okně je obsah omezen maximální šířkou a vycentrován (`currentWindowAdaptiveInfo()`), seznam stupňů
 může přejít do dvou sloupců.
 
-Vstupy: karta na Home a nové tlačítko „Cesta k býkovi" v kartě „O aplikaci" v Nastavení.
+Vstupy: karta na Home a nové tlačítko „Cesta domů" v kartě „O aplikaci" v Nastavení.
 
 ### Znaky stupňů
 
-11 vektorových drawables `ic_path_stage_0.xml` … `ic_path_stage_10.xml`, jednobarevné v „tušovém" stylu, kreslené
+11 vektorových drawables `ic_path_stage_0.xml` … `ic_path_stage_10.xml`, jednobarevné linkové piktogramy, kreslené
 pro tónování přes `Icon(tint = …)`, takže fungují ve světlém i tmavém motivu. Mapování `PathStage → @DrawableRes`
 a `PathStage → @StringRes` (název, verš, výklad) žije v `presentation/util/Localization.kt` vedle ostatních enumů —
 statické `R.*` reference kvůli `isShrinkResources`. Soubory jsou připravené na pozdější výměnu za ilustrace.
@@ -188,8 +193,7 @@ statické `R.*` reference kvůli `isShrinkResources`. Soubory jsou připravené 
 
 Všechny texty v `values/strings.xml` i `values-cs/strings.xml` se stejnou sadou klíčů:
 `path_stage_<n>_title`, `path_stage_<n>_verse`, `path_stage_<n>_desc`, texty karty, obrazovky a dokončovací karty.
-Počty dní a týdnů jako `plurals` (česky `one`/`few`/`many`/`other`). Verše a výklady jsou **vlastní texty** —
-originál z 12. století je volné dílo, známé překlady (např. Reps & Senzaki) ne.
+Počty dní a týdnů jako `plurals` (česky `one`/`few`/`many`/`other`). Verše a výklady jsou vlastní texty.
 
 ## Testy
 
@@ -205,7 +209,7 @@ originál z 12. století je volné dílo, známé překlady (např. Reps & Senza
 - `RitualViewModel` — `reachedStage` při překročení prahu, `null` při opakovaném rituálu téhož dne;
   `rhythmWeekReached`.
 - Home — `PathCard` pro nováčka, střední stupeň a poslední stupeň, v obou jazycích; nejdelší český název
-  („S otevřenýma rukama do světa") se vejde — `@GraphicsMode(NATIVE)`, aserce na `lineCount`.
+  („Zaklapnutý notebook") se vejde — `@GraphicsMode(NATIVE)`, aserce na `lineCount`.
 - `PathScreen` — lokalizace přes `AppLocalization`, screenshot ve stylu `FormFactorScreenshotTest` (telefon a tablet).
   Baseline jsou git-ignored, nahrají se lokálně.
 - `PhoneNavigationTest` / `TabletNavigationTest` — baseline Home se změní (nová karta), re-record jako záměrná
@@ -220,3 +224,9 @@ originál z 12. století je volné dílo, známé překlady (např. Reps & Senza
 - Nemazat `practice_days` v `clearLogs`.
 - Neukládat do `practice_days` nic osobního (náladu, otázku, odpověď).
 - Nepočítat rytmus z `ritual_logs` — ten smazání nepřežije.
+
+## Odložená alternativa
+
+Původně zvolený motiv *Deset obrazů pasení býka* (十牛図, Kuo-an Š'-jüan, 12. stol.) zůstává jako alternativa:
+stejné prahy, jiné názvy (Hledání býka → … → S otevřenýma rukama do světa). Byl odložen, protože je méně
+srozumitelný a přebírá existující sérii. Záměna motivu se dotýká jen `PathStage`, textů a znaků.
