@@ -3,6 +3,8 @@ package org.clockout.screenshot
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.DayStatus
 import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.PathProgress
+import org.clockout.domain.model.PathStage
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
@@ -15,6 +17,11 @@ import org.clockout.presentation.settings.SettingsState
  * ever shows a layout difference and never a difference in the data being rendered.
  */
 object Fixtures {
+
+    val pathProgress = PathProgress(
+        closedDays = 22, stage = PathStage.DOWN_THE_STAIRS, nextStage = PathStage.STREET_AT_DUSK,
+        daysToNextStage = 13, rhythmWeeks = 3, longestRhythmWeeks = 4, isCurrentWeekInRhythm = true
+    )
 
     val question = RitualQuestion(
         id = "q1",
@@ -54,6 +61,7 @@ object Fixtures {
         language = AppLanguage.ENGLISH,
         todayQuestion = question,
         isTestModeEnabled = true,
+        pathProgress = pathProgress,
         streakInfo = streak(todayCompleted = false, todayLog = null)
     )
 
@@ -61,6 +69,7 @@ object Fixtures {
         language = AppLanguage.ENGLISH,
         todayQuestion = question,
         isTestModeEnabled = true,
+        pathProgress = pathProgress,
         streakInfo = streak(
             todayCompleted = true,
             todayLog = RitualLogEntry(

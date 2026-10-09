@@ -952,9 +952,7 @@ Expected: FAIL při kompilaci — `Unresolved reference: titleRes`.
     <string name="path_screen_title">The Way Home</string>
     <string name="path_current_badge">Your stage</string>
     <string name="path_origin_title">What the path is about</string>
-    <string name="path_origin_text">The way home from work used to close the day by itself: shut the laptop, put on a coat, lock up, take the stairs and walk home. Working from home, that way is missing, and work easily spills into the evening.
-
-Every day you close moves you a little further along a way you rebuild one day at a time. At the end of it you are home, which is where the evening belongs.</string>
+    <string name="path_origin_text">The way home from work used to close the day by itself: shut the laptop, put on a coat, lock up, take the stairs and walk home. Working from home, that way is missing, and work easily spills into the evening.\n\nEvery day you close moves you a little further along a way you rebuild one day at a time. At the end of it you are home, which is where the evening belongs.</string>
     <string name="path_stages_title">Ten stages</string>
     <string name="path_rhythm_title">How the rhythm works</string>
     <string name="path_rhythm_text">A week is in rhythm when you close all but one of the days the ritual is offered on: four of five, or six of seven with weekends on. One weaker week will not break the rhythm, it just does not count; only two in a row do. The week you are in counts once it reaches the threshold.\n\nYour stage and your rhythm stay even when you clear the history. They remember only the dates you closed the day, nothing of what you wrote.</string>
@@ -1034,9 +1032,7 @@ Every day you close moves you a little further along a way you rebuild one day a
     <string name="path_screen_title">Cesta domů</string>
     <string name="path_current_badge">Tvůj stupeň</string>
     <string name="path_origin_title">O čem je cesta</string>
-    <string name="path_origin_text">Dřív den uzavírala cesta z práce sama: zaklapnout počítač, obléct kabát, zamknout, sejít schody a jít domů. Při práci z domova tahle cesta chybí a práce pak snadno přeteče do večera.
-
-Každý uzavřený den tě posune o kus dál po cestě, kterou si tak den po dni stavíš znovu. Na konci jsi doma, a právě tam má večer patřit.</string>
+    <string name="path_origin_text">Dřív den uzavírala cesta z práce sama: zaklapnout počítač, obléct kabát, zamknout, sejít schody a jít domů. Při práci z domova tahle cesta chybí a práce pak snadno přeteče do večera.\n\nKaždý uzavřený den tě posune o kus dál po cestě, kterou si tak den po dni stavíš znovu. Na konci jsi doma, a právě tam má večer patřit.</string>
     <string name="path_stages_title">Deset stupňů</string>
     <string name="path_rhythm_title">Jak funguje rytmus</string>
     <string name="path_rhythm_text">Týden je v rytmu, když uzavřeš všechny dny, kdy se rituál nabízí, až na jeden: čtyři z pěti, se zapnutými víkendy šest ze sedmi. Jeden slabší týden rytmus nepřeruší, jen se nezapočítá; přeruší ho až dva po sobě. Aktuální týden se započítá, jakmile dosáhne prahu.\n\nStupeň i rytmus zůstanou, i když smažeš historii. Pamatují si jen data uzavřených dní, nic z toho, co jsi napsal(a).</string>
@@ -1669,7 +1665,7 @@ class PathScreenTest {
 
         composeTestRule.onNodeWithText("Cesta domů").assertIsDisplayed()
         composeTestRule.onNodeWithText("22 uzavřených dní", substring = true).assertIsDisplayed()
-        composeTestRule.onNodeWithText("Odkud cesta pochází").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText("O čem je cesta").performScrollTo().assertIsDisplayed()
         PathStage.entries.drop(1).forEach { stage ->
             composeTestRule.onNodeWithTag("path_stage_row_${stage.id}").performScrollTo().assertIsDisplayed()
         }

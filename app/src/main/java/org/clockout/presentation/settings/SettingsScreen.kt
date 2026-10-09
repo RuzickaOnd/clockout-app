@@ -149,6 +149,7 @@ fun SettingsScreen(
     onDeleteCustomSound: (CustomSound) -> Unit = {},
     onDismissSoundImportError: () -> Unit = {},
     onOpenBreathingStyle: () -> Unit = {},
+    onOpenPath: () -> Unit = {},
     onTelemetryConsentToggled: (Boolean) -> Unit = {},
     onOpenPrivacyPolicy: () -> Unit = {},
     onClearData: () -> Unit,
@@ -1308,6 +1309,13 @@ fun SettingsScreen(
                             color = TextSlate,
                             lineHeight = 20.sp
                         )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        OutlinedButton(
+                            onClick = onOpenPath,
+                            modifier = Modifier.testTag("about_path_button")
+                        ) {
+                            Text(stringResource(R.string.settings_about_path_button))
+                        }
                     }
                 }
 

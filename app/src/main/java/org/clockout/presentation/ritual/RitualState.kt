@@ -4,6 +4,7 @@ import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.PathStage
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStep
 
@@ -22,5 +23,9 @@ data class RitualState(
     val isClosureTriggered: Boolean = false,
     val isCompletedAndSaved: Boolean = false,
     /** Set for one frame once a finished ritual earns a Play Store review request. */
-    val shouldRequestReview: Boolean = false
+    val shouldRequestReview: Boolean = false,
+    /** The stage this ritual has just reached, or null when it reached none. */
+    val reachedStage: PathStage? = null,
+    /** Whether this ritual has just brought the current week up to the rhythm threshold. */
+    val rhythmWeekReached: Boolean = false
 )

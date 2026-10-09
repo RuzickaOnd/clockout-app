@@ -12,11 +12,17 @@ import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.MeditationSoundStyle
 import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.PathStage
 import org.clockout.domain.model.SoundChoice
 import org.clockout.presentation.util.AppLocalization
+import org.clockout.presentation.util.descriptionRes
+import org.clockout.presentation.util.iconRes
+import org.clockout.presentation.util.titleRes
+import org.clockout.presentation.util.verseRes
 import org.clockout.presentation.util.labelRes
 import org.clockout.presentation.util.localizedDescription
 import org.clockout.presentation.util.localizedLabel
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -100,5 +106,21 @@ class DomainLocalizationTest {
         show(AppLanguage.ENGLISH) { Text(LanguageOption.SYSTEM.localizedLabel()) }
 
         composeTestRule.onNodeWithText("System default").assertIsDisplayed()
+    }
+
+    @Test
+    fun `a path stage is named in the app language`() {
+        show(AppLanguage.CZECH) { Text(stringResource(PathStage.LAPTOP_CLOSED.titleRes)) }
+
+        composeTestRule.onNodeWithText("Zaklapnutý notebook").assertIsDisplayed()
+    }
+
+    @Test
+    fun `every path stage has its own title, verse, description and icon`() {
+        val stages = PathStage.entries
+        assertEquals(stages.size, stages.map { it.titleRes }.toSet().size)
+        assertEquals(stages.size, stages.map { it.verseRes }.toSet().size)
+        assertEquals(stages.size, stages.map { it.descriptionRes }.toSet().size)
+        assertEquals(stages.size, stages.map { it.iconRes }.toSet().size)
     }
 }

@@ -109,13 +109,13 @@ Vstup: množina dnů z `practice_days` (`Set<LocalDate>`), `includeWeekends`, `t
   vypnutých víkendech) se do rytmu nepočítají.
 - **Týden prvního uzavřeného dne** nabízí jen dny od tohoto dne dál — kdo začne ve středu, není potrestán za
   pondělí a úterý, kdy aplikaci ještě neměl.
-- **Práh týdne** = `max(1, nabízené − 1)` → 4 z 5, 6 ze 7.
+- **Práh týdne** = `max(1, pracovní dny − 1)` → 4 z 5. Se zapnutými víkendy se uzavřená sobota či neděle započítá navíc a může nahradit vynechaný pracovní den, ale práh nezvyšuje (rozhodnutí z review: zapnutí víkendů tak rytmus nikdy nesníží).
 - **Aktuální týden** se započítá, jakmile dosáhne prahu; dokud ne, rytmus neláme ani neprodlužuje.
 - **Ukončené týdny** se procházejí od nejnovějšího: splněný týden přičte 1 a vynuluje počítadlo chyb, nesplněný
   přičte 1 k chybám; **dva nesplněné týdny po sobě rytmus ukončí** („nikdy nevynechej dvakrát"). Procházení končí
   nejpozději týdnem prvního uzavřeného dne.
 - **Nejdelší rytmus**: stejné pravidlo aplikované na celou historii, maximum ze všech sérií.
-- Mění-li se nastavení víkendů, rytmus se přepočítá podle aktuálního nastavení (záměrně jednoduché).
+- Mění-li se nastavení víkendů, rytmus se přepočítá podle aktuálního nastavení; díky víkendům „navíc“ může jen vzrůst.
 
 Výstup:
 

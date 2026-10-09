@@ -3,8 +3,11 @@ package org.clockout
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.PathStage
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStep
 import org.clockout.presentation.ritual.RitualScreen
@@ -51,5 +54,29 @@ class RitualScreenLocalizationTest {
 
         composeTestRule.onNodeWithText("Vědomý dech 4s / 4s").assertIsDisplayed()
         composeTestRule.onNodeWithText("Krok 2 ze 4").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the completion card names a newly reached stage`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                MyApplicationTheme {
+                    RitualScreen(
+                        state = RitualState(
+                            question = question,
+                            currentStep = RitualStep.Log,
+                            selectedMood = MoodTag.CALM,
+                            isCompletedAndSaved = true,
+                            reachedStage = PathStage.DOWN_THE_STAIRS
+                        ),
+                        onIntent = {},
+                        onFinish = {}
+                    )
+                }
+            }
+        }
+
+        composeTestRule.onNodeWithText("Nový stupeň cesty").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Schody dolů").assertIsDisplayed()
     }
 }

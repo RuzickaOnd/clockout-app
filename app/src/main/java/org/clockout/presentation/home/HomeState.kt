@@ -1,12 +1,14 @@
 package org.clockout.presentation.home
 
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.PathProgress
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
 
 data class HomeState(
     val language: AppLanguage = AppLanguage.ENGLISH,
     val streakInfo: RitualStreakInfo? = null,
+    val pathProgress: PathProgress? = null,
     val todayQuestion: RitualQuestion,
     val isWithinWindow: Boolean = false,
     /** Mirrors the DataStore default, so the frame before preferences emit does not close the ritual off. */

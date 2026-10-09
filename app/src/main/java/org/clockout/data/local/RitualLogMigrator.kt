@@ -1,5 +1,7 @@
 package org.clockout.data.local
 
+import org.clockout.data.local.db.PracticeDayDao
+import org.clockout.data.local.db.PracticeDayEntity
 import org.clockout.data.local.db.RitualLogDao
 import org.clockout.data.local.db.toEntity
 import kotlinx.coroutines.sync.Mutex
@@ -13,7 +15,8 @@ import kotlinx.coroutines.sync.withLock
  */
 class RitualLogMigrator(
     private val legacySource: LegacyRitualLogSource,
-    private val dao: RitualLogDao
+    private val dao: RitualLogDao,
+    private val practiceDayDao: PracticeDayDao
 ) {
 
     private val mutex = Mutex()
@@ -29,6 +32,9 @@ class RitualLogMigrator(
                 val legacyLogs = legacySource.readLegacyLogs()
                 if (legacyLogs.isNotEmpty()) {
                     dao.upsertAll(legacyLogs.map { it.toEntity() })
+                    // The Room migration that seeds the path ran before this import, so the days
+                    // that only now reach ritual_logs have to be written to the path here.
+                    practiceDayDao.insertAll(legacyLogs.map { PracticeDayEntity(it.date) })
                 }
                 legacySource.markLogsMigratedToRoom()
             }

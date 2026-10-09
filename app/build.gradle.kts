@@ -100,6 +100,10 @@ android {
     }
   }
   sourceSets["androidTest"].assets.srcDir("$projectDir/schemas")
+  // MigrationTestHelper reads the exported schemas from assets, and the migration test runs on
+  // Robolectric, which only sees the assets merged for the variant under test - a test source
+  // set's own assets never reach it. Debug-only, so the release APK carries no schemas.
+  sourceSets["debug"].assets.srcDir("$projectDir/schemas")
   // Aplikace přepíná jazyk v appce nezávisle na systémovém locale, takže musí mít všechny
   // jazykové zdroje v základním APK - jinak by Play instaloval jen jazykový split odpovídající
   // systémovým locale zařízení a přepnutí na jazyk bez nainstalovaného splitu by potichu spadlo
@@ -204,6 +208,7 @@ dependencies {
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)
+  testImplementation(libs.androidx.room.testing)
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.robolectric)

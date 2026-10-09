@@ -67,6 +67,11 @@ class HomeViewModel(
                 }
             }
         }
+        viewModelScope.launch {
+            ritualRepository.getPathProgress().collect { progress ->
+                _state.update { it.copy(pathProgress = progress) }
+            }
+        }
     }
 
     /**

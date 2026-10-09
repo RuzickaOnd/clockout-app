@@ -234,15 +234,19 @@ class RitualViewModel(
             val finalAnswer = currentState.customAnswerText.trim().ifEmpty {
                 currentState.selectedAnswer
             }
+            val pathBefore = ritualRepository.getPathProgress().first()
             logMoodUseCase(
                 selectedAnswer = finalAnswer,
                 mood = mood,
                 questionText = currentState.question.text(currentState.language)
             )
+            val pathAfter = ritualRepository.getPathProgress().first()
             _state.update {
                 it.copy(
                     isCompletedAndSaved = true,
-                    shouldRequestReview = moodWasChosen && shouldRequestReviewUseCase(mood)
+                    shouldRequestReview = moodWasChosen && shouldRequestReviewUseCase(mood),
+                    reachedStage = pathAfter.stage.takeIf { stage -> stage != pathBefore.stage },
+                    rhythmWeekReached = pathAfter.isCurrentWeekInRhythm && !pathBefore.isCurrentWeekInRhythm
                 )
             }
             // Read after the log is written, so the count includes today.

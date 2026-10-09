@@ -59,6 +59,14 @@
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.MyApplication" />
 
+        <!-- The path explained. Its own Activity for the same reasons as the breathing picker. -->
+        <activity
+            android:name=".PathActivity"
+            android:exported="false"
+            android:label="@string/path_screen_title"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.MyApplication" />
+
         <receiver
             android:name=".receiver.NotificationReceiver"
             android:exported="false">

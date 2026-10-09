@@ -3,6 +3,8 @@ package org.clockout.data.repository
 import org.clockout.data.local.QuestionsData
 import org.clockout.data.local.RitualLogMigrator
 import org.clockout.data.local.RitualPreferences
+import org.clockout.data.local.db.PracticeDayDao
+import org.clockout.data.local.db.PracticeDayEntity
 import org.clockout.data.local.db.RitualLogDao
 import org.clockout.data.local.db.toDomain
 import org.clockout.data.local.db.toEntity
@@ -14,6 +16,8 @@ import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.TelemetryConsent
 import org.clockout.domain.model.DayStatus
 import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.PathPolicy
+import org.clockout.domain.model.PathProgress
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
@@ -24,6 +28,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -31,7 +36,8 @@ import java.util.Locale
 class RitualRepositoryImpl(
     private val preferences: RitualPreferences,
     private val ritualLogDao: RitualLogDao,
-    private val logMigrator: RitualLogMigrator = RitualLogMigrator(preferences, ritualLogDao),
+    private val practiceDayDao: PracticeDayDao,
+    private val logMigrator: RitualLogMigrator = RitualLogMigrator(preferences, ritualLogDao, practiceDayDao),
     /**
      * Whether the audio file behind a custom sound is still on disk. Injected because the check
      * needs a Context the repository has no other use for, and because it lets a test reproduce
@@ -70,6 +76,30 @@ class RitualRepositoryImpl(
         return logsFlow.combine(preferences.includeWeekendsFlow) { entries, includeWeekends ->
             calculateStreakInfo(entries, includeWeekends)
         }
+    }
+
+    override fun getPathProgress(): Flow<PathProgress> = flow {
+        logMigrator.ensureMigrated()
+        emitAll(
+            practiceDayDao.observeAll().combine(preferences.includeWeekendsFlow) { dates, includeWeekends ->
+                PathPolicy.progress(
+                    days = dates.mapNotNull(::parsePracticeDay).toSet(),
+                    includeWeekends = includeWeekends,
+                    today = LocalDate.now()
+                )
+            }
+        )
+    }
+
+    /**
+     * Rows seeded from ritual_logs carry whatever digits the system locale wrote them in - Persian
+     * or Arabic-Indic ones included - which ISO parsing rejects, so they are read back as ASCII.
+     * A row that still does not parse is skipped rather than taking the home screen down with it.
+     */
+    private fun parsePracticeDay(date: String): LocalDate? {
+        val ascii = date.map { char -> Character.digit(char, 10).takeIf { it >= 0 }?.digitToChar() ?: char }
+            .joinToString("")
+        return runCatching { LocalDate.parse(ascii) }.getOrNull()
     }
 
     private fun calculateStreakInfo(
@@ -137,6 +167,8 @@ class RitualRepositoryImpl(
         )
         logMigrator.ensureMigrated()
         ritualLogDao.upsert(entry.toEntity())
+        // LocalDate always prints ASCII ISO digits; entry.date follows the system locale's digits.
+        practiceDayDao.insert(PracticeDayEntity(LocalDate.now().toString()))
         preferences.incrementCompletedRitualCount()
     }
 

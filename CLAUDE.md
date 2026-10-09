@@ -47,7 +47,7 @@ Padla (Czech) / ClockOut (English) — an Android app for closing the workday wi
 
 Released on Google Play as <https://play.google.com/store/apps/details?id=org.clockout>.
 
-Version 1.2.0 (`versionCode` 1020001). `minSdk` 26, `targetSdk` 37, `compileSdk` 37.1. AGP 9.4.1, Kotlin 2.4.21, Compose BOM 2026.09.00, Robolectric 4.17, Roborazzi 1.76.0, Play App Update 2.1.0, Play Review 2.0.2, Firebase BOM 34.19.0, Crashlytics plugin 3.0.8.
+Version 1.2.0 (`versionCode` 1020001). `minSdk` 26, `targetSdk` 37, `compileSdk` 37.1. AGP 9.4.1, Kotlin 2.4.21, Compose BOM 2026.09.00, Room 2.8.5 (with `room-testing` for migration tests), Robolectric 4.17, Roborazzi 1.76.0, Play App Update 2.1.0, Play Review 2.0.2, Firebase BOM 34.19.0, Crashlytics plugin 3.0.8.
 
 Ritual logs and preferences stay on the device — Room for the logs, DataStore for the preferences. No accounts, no cloud sync, no ads. The app does carry the `INTERNET` permission, for Firebase Crashlytics and Analytics, but **both start disabled and stay disabled until the user opts in** — see *Telemetry*. Play In-App Update and Play In-App Review still reach the Play Store over IPC rather than over the network, and the "Rate the app" button hands a `market://` intent to the Play app (or a browser) rather than fetching anything itself.
 
@@ -59,7 +59,7 @@ Single Gradle module, `:app` (root project name `Padla`), package `org.clockout`
 |---|---|
 | `data/local`, `data/local/db`, `data/repository` | DataStore preferences, Room database, DAO and entity mappers, repository implementations, question catalog, custom-sound storage, legacy-log migration |
 | `domain/model`, `domain/usecase` | Pure Kotlin models and use cases. **No `R` references, no androidx imports.** |
-| `presentation/{home,history,ritual,settings}` | Compose screens with their state holders |
+| `presentation/{home,history,ritual,settings,path}` | Compose screens with their state holders |
 | `presentation/components`, `presentation/util` | Shared composables, including the two breathing visuals and the closure bulb; localization provider and enum → resource mapping |
 | `notification`, `receiver` | Reminder scheduling and the broadcast receiver that fires it |
 | `sound`, `update`, `review`, `ui/theme`, `util` | Ambient sound playback, in-app update flow, Play in-app review flow, Material 3 theme, context and window-chrome helpers |
@@ -101,9 +101,11 @@ runs once. That also means a stale baseline there is a local condition, never so
 
 `PhoneNavigationTest` and `TabletNavigationTest` render the whole `PadlaApp` against real DataStore and Room, so their captures contain today's question, which rotates by day-of-year. A baseline recorded on one day drifts on the next — re-record those two when the date rolls over rather than reading it as a regression.
 
-Both also fail outright **at the weekend**: `TabletNavigationTest."the ritual keeps the whole window and hides the rail"` clicks `start_ritual_button`, which the home screen does not offer on a Saturday or Sunday while `includeWeekends` is off, and the thrown assertion then perturbs the shared process enough that the sibling `PhoneNavigationTest` capture can catch the week overview before its flow has emitted ("0 of 0 days closed" instead of "0 of 5"). Run either class on its own and both pass. Check the day of the week before treating either as a regression. The same "0 of 0 days closed" capture has also turned up on a weekday in a full `verifyRoborazziDebug` run — and once in a full `recordRoborazziDebug` run, which writes it into the baseline — so re-record `PhoneNavigationTest` on its own when it shows. Every other capture renders a single screen from a fixed fixture and is deterministic; `ClosureStepScreenshotTest` and the four `FormFactorScreenshotTest` subclasses are the gate worth trusting.
+Both also fail outright **at the weekend**: `TabletNavigationTest."the ritual keeps the whole window and hides the rail"` clicks `start_ritual_button`, which the home screen does not offer on a Saturday or Sunday while `includeWeekends` is off, and the thrown assertion then perturbs the shared process enough that the sibling `PhoneNavigationTest` capture can catch the week overview before its flow has emitted ("0 of 0 days closed" instead of "0 of 5"). Run either class on its own and both pass. Check the day of the week before treating either as a regression. Both captures now wait (`awaitHomeData`) until the path card and the week strip are on screen: Room answers on its own executor, which the Compose test clock does not wait for, and without the wait a capture used to catch the home screen before its flows emitted ("0 of 0 days closed", no path card) — in a full run on some days and in an isolated one on others. Every other capture renders a single screen from a fixed fixture and is deterministic; `ClosureStepScreenshotTest` and the four `FormFactorScreenshotTest` subclasses are the gate worth trusting.
 
 Robolectric 4.17 reads file descriptors through `jdk.internal.access`, which JDK 25 — the version the build runs on — does not export. `app/build.gradle.kts` therefore passes `--add-exports=java.base/jdk.internal.access=ALL-UNNAMED` to every unit-test JVM; without it every Robolectric test fails during setup with "Failed to interact with raw FileDescriptor internals".
+
+`ClockoutDatabaseMigrationTest` uses Room's `MigrationTestHelper` under Robolectric, which reads the exported schemas from the **merged assets of the variant**, not from the test source set's own assets. `app/build.gradle.kts` therefore adds `schemas/` to `sourceSets["debug"].assets` — debug builds carry the JSON, release builds do not. The home captures (`home_open`, `home_closed`, and the two navigation tests) include the path card, and `FormFactorScreenshotTest.path` captures `PathScreen`.
 
 A test that renders a screen directly must wrap it in `AppLocalization(language)`, otherwise strings resolve against the test's default locale instead of the app's chosen language. `FormFactorScreenshotTest.captureScreen` does this for every capture it takes and accepts the language as a parameter.
 
@@ -154,6 +156,8 @@ Whether the home screen offers the ritual at all is `HomeState.canStartRitual`. 
 
 Asking for a Play Store review is governed by `ReviewPromptPolicy` (`domain/model`): at least ten finished rituals behind the user, a mood of `SATISFIED` or `CALM` on the ritual just logged, and never more than once. A bad day only postpones the question — the next good one picks it up. `ShouldRequestReviewUseCase` applies the policy and marks the question asked; `RitualViewModel` raises a one-shot `shouldRequestReview` flag, `PadlaApp` turns it into its `onRequestReview` callback, and `MainActivity` supplies `InAppReviewController`, which needs an Activity. The request goes out on the completion card, not on the way home. Settings also carries a plain "Rate the app" card, which opens the Play listing through `Context.openPlayStoreListing()` — Play exposes no public deep link straight to the review form.
 
+The **path** ("Cesta domů" / "The Way Home") is the app's progression: ten stages of the commute home that working from home took away — `LAPTOP_CLOSED` at 1 closed day through `HOME` at 250, with `AT_DESK` before the first. `PathStage`, `PathRhythm` and `PathPolicy` (`domain/model`, `java.time`) turn a set of closed dates into `PathProgress`; names, verses, descriptions and the eleven line-drawn `ic_path_stage_<n>` emblems are mapped in `presentation/util/Localization.kt`. Three rules govern it: nothing can be lost (a stage never drops, the longest rhythm is kept), only offered days count, and mood never enters it. The rhythm is counted in weeks: a week is in rhythm at `max(1, weekdays − 1)` closed days — with weekends on, a closed Saturday or Sunday counts towards that and can stand in for a missed weekday, but never raises the threshold, so switching weekends on cannot re-score past weeks below it — only two weak weeks in a row end a rhythm, the week in progress is counted once it reaches the threshold and never breaks anything before, and the week of the very first closed day offers only the days from that day on. `RitualRepository.getPathProgress()` feeds `PathCard` on Home, `RitualViewModel` reads it before and after logging to set the one-off `reachedStage` / `rhythmWeekReached` shown on the completion card (a second ritual on the same day celebrates nothing), and `PathActivity` — built like `BreathingStyleActivity` — explains every stage, reached from the home card and from the About card in Settings.
+
 Wide windows switch to a navigation rail and multi-column layouts via `currentWindowAdaptiveInfo()`, which is a further reason `LocalContext` must stay the Activity.
 
 ## Persistence and backup
@@ -166,11 +170,13 @@ The hand-picked reminder time (`custom_notification_time`) and the chosen breath
 
 The ritual counter (`ritual_completed_count`) and the review flag (`review_prompt_shown`) are bumped inside `RitualRepositoryImpl.logRitual`, which is also why the counter is immune to Room collapsing several rituals logged on one day into a single row. Both deliberately survive "Clear data and history": that clears the history, not the fact that the app has already had its one chance to ask for a review.
 
+The path reads from its own Room table, `practice_days`, which holds **the date alone** and which `clearLogs()` leaves untouched — so the stage and the rhythm survive "Clear data and history" like the counter does, while everything personal (mood, question, answer) goes. `logRitual` writes both tables. Database version 2's `MIGRATION_1_2` seeds `practice_days` from `ritual_logs`, so an update keeps its stage; `RitualLogMigrator`, which imports the pre-Room DataStore blob only after that migration has run, writes the imported dates into `practice_days` as well. Both confirmation dialogs say the path stays. A path day is written as `LocalDate.toString()`, always ASCII ISO, while `ritual_logs` dates follow the system locale's digits (a Persian or Arabic-Indic locale writes its own), so seeded and imported rows are read back through `parsePracticeDay`, which maps any Unicode digit to ASCII first — plain `LocalDate.parse` would skip them and the path would silently never move.
+
 Surviving a *reinstall* is Android Auto Backup's job, and the two rule files split on purpose:
 
 | Data | Cloud backup | Device transfer |
 |---|---|---|
-| `clockout.db` — ritual logs | yes | yes |
+| `clockout.db` — ritual logs and path days | yes | yes |
 | `datastore/` — every Settings value | yes | yes |
 | `custom_sounds/` — imported audio | **no** | yes |
 
@@ -224,6 +230,10 @@ All versions go through the version catalog at `gradle/libs.versions.toml` — n
 - Do not add `custom_sounds/` to the cloud backup — the 25 MB quota would drop the whole backup, ritual history included.
 - Do not persist `CustomSound.isAvailable` — it is resolved against the file system on every read.
 - Do not reset the ritual counter or the review flag when clearing data — that would hand out a second review request on every wipe.
+- Do not delete `practice_days` in `clearLogs` — the path is meant to survive clearing the history.
+- Do not store anything but the date in `practice_days` — clearing the history has to remove everything personal.
+- Do not compute the path or the rhythm from `ritual_logs` — that table does not survive a wipe.
+- Do not drop the `practiceDayDao.insertAll` from `RitualLogMigrator` — it runs after the Room migration, so pre-Room users would lose those days from their path.
 - Do not override `LocalContext` to localize strings.
 - Do not resolve resources by name at runtime.
 - Do not remove `enableSplit = false` from the bundle config.

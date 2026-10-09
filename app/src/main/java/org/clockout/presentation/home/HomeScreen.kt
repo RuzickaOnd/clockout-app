@@ -77,6 +77,7 @@ fun HomeScreen(
     onNavigateToHistory: () -> Unit,
     onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenPath: () -> Unit = {},
     /**
      * False once a navigation rail is carrying History and Settings, so a wide window does not
      * offer the same two destinations twice.
@@ -172,6 +173,7 @@ fun HomeScreen(
                         isCompleted = isCompleted,
                         todayLog = todayLog,
                         onStartRitual = onStartRitual,
+                        onOpenPath = onOpenPath,
                         isTwoPane = isTwoPane
                     )
                 }
@@ -197,6 +199,7 @@ private fun HomeContent(
     isCompleted: Boolean,
     todayLog: RitualLogEntry?,
     onStartRitual: () -> Unit,
+    onOpenPath: () -> Unit,
     isTwoPane: Boolean
 ) {
     Spacer(modifier = Modifier.height(6.dp))
@@ -213,6 +216,7 @@ private fun HomeContent(
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
                 WeeklyStreakCard(state)
+                state.pathProgress?.let { PathCard(it, onOpenPath) }
                 WhyRitualCard()
             }
         }
@@ -220,6 +224,10 @@ private fun HomeContent(
         HeroCard(state, isCompleted, todayLog, onStartRitual)
         Spacer(modifier = Modifier.height(18.dp))
         WeeklyStreakCard(state)
+        state.pathProgress?.let {
+            Spacer(modifier = Modifier.height(18.dp))
+            PathCard(it, onOpenPath)
+        }
         Spacer(modifier = Modifier.height(18.dp))
         WhyRitualCard()
     }

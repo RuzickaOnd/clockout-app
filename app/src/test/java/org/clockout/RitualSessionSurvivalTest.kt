@@ -46,7 +46,8 @@ class RitualSessionSurvivalTest {
     private fun viewModel(): RitualViewModel {
         val repository = RitualRepositoryImpl(
             preferences = RitualPreferences(context),
-            ritualLogDao = database.ritualLogDao()
+            ritualLogDao = database.ritualLogDao(),
+            practiceDayDao = database.practiceDayDao()
         )
         return RitualViewModel(
             appContext = context,
