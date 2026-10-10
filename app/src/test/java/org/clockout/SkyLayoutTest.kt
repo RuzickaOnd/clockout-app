@@ -59,4 +59,29 @@ class SkyLayoutTest {
         assertEquals("b", SkyLayout.nearest(stars, SkyPoint(0.24f, 0.2f), maxDistance = 0.05f))
         assertNull(SkyLayout.nearest(stars, SkyPoint(0.8f, 0.8f), maxDistance = 0.05f))
     }
+
+    @Test
+    fun `a label centred under its figure stays inside the canvas`() {
+        // A long name at a large font, under a figure near the left edge and near the bottom.
+        val origin = SkyLayout.labelOrigin(anchorX = 80f, anchorY = 980f, labelWidth = 300f, labelHeight = 40f,
+            canvasWidth = 750f, canvasHeight = 1000f)
+        assertEquals(0f, origin.x, 1e-3f)
+        assertEquals(960f, origin.y, 1e-3f)
+    }
+
+    @Test
+    fun `a label with room to spare is centred under its anchor`() {
+        val origin = SkyLayout.labelOrigin(anchorX = 375f, anchorY = 400f, labelWidth = 100f, labelHeight = 20f,
+            canvasWidth = 750f, canvasHeight = 1000f)
+        assertEquals(325f, origin.x, 1e-3f)
+        assertEquals(400f, origin.y, 1e-3f)
+    }
+
+    @Test
+    fun `a tap is measured on the canvas, where y is stretched by the aspect`() {
+        // Equal distances in the unit square are not equal on the canvas: 0.06 of the height is
+        // 0.08 of the width, so the star that is nearer on the canvas wins.
+        val stars = listOf("above" to SkyPoint(0.5f, 0.44f), "beside" to SkyPoint(0.57f, 0.5f))
+        assertEquals("beside", SkyLayout.nearest(stars, SkyPoint(0.5f, 0.5f), maxDistance = 0.2f))
+    }
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,8 +24,10 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -190,38 +194,49 @@ fun HistoryScreen(
             )
 
             if (state.logs.isEmpty()) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    state.sky?.takeIf { it.days.isNotEmpty() }?.let { sky ->
-                        Box(modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
-                            SkyPreviewCard(sky, onOpenSky)
-                        }
-                    }
-                    Box(
+                // Scrolls because the preview and the empty state together outgrow a phone held
+                // sideways. The content is at least as tall as the window, so wherever there is
+                // room the empty state still sits centred below the preview.
+                BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                    val windowHeight = maxHeight
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f)
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
+                            .verticalScroll(rememberScrollState())
+                            .heightIn(min = windowHeight)
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = "🌙", fontSize = 48.sp)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = stringResource(R.string.history_empty_title),
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 18.sp
-                                ),
-                                color = TextLight
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = stringResource(R.string.history_empty_desc),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = TextSlate,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                lineHeight = 22.sp
-                            )
+                        state.sky?.takeIf { it.days.isNotEmpty() }?.let { sky ->
+                            Box(modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+                                SkyPreviewCard(sky, onOpenSky)
+                            }
+                        }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(text = "🌙", fontSize = 48.sp)
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = stringResource(R.string.history_empty_title),
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 18.sp
+                                    ),
+                                    color = TextLight
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = stringResource(R.string.history_empty_desc),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextSlate,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    lineHeight = 22.sp
+                                )
+                            }
                         }
                     }
                 }

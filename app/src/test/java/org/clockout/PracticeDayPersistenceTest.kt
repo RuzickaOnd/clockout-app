@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.clockout.data.local.RitualPreferences
@@ -143,5 +144,26 @@ class PracticeDayPersistenceTest {
         val sky = repository.getSky().first()
         assertEquals(setOf(LocalDate.now()), sky.days)
         assertTrue(sky.logs.isEmpty())
+    }
+
+    @Test
+    fun `the sky and the path move on at midnight without a new ritual`() = runTest {
+        val today = MutableStateFlow(LocalDate.of(2026, 10, 9))
+        val clocked = RitualRepositoryImpl(
+            preferences = RitualPreferences(
+                PreferenceDataStoreFactory.create {
+                    preferencesFolder.newFile("padla_clock.preferences_pb").apply { delete() }
+                }
+            ),
+            ritualLogDao = database.ritualLogDao(),
+            practiceDayDao = database.practiceDayDao(),
+            todayFlow = today
+        )
+        database.practiceDayDao().insert(PracticeDayEntity("2026-10-09"))
+        assertEquals(LocalDate.of(2026, 10, 9), clocked.getSky().first().today)
+
+        today.value = LocalDate.of(2026, 10, 10)
+
+        assertEquals(LocalDate.of(2026, 10, 10), clocked.getSky().first().today)
     }
 }

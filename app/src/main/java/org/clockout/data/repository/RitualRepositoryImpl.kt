@@ -24,13 +24,16 @@ import org.clockout.domain.model.RitualLogEntry
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
 import org.clockout.domain.model.WorkdayCloseWindow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
+import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -46,7 +49,12 @@ class RitualRepositoryImpl(
      * a restored cloud backup without touching the file system. Defaults to "everything is
      * there", which is what a test that does not care about sounds wants.
      */
-    private val soundFileExists: (fileName: String) -> Boolean = { true }
+    private val soundFileExists: (fileName: String) -> Boolean = { true },
+    /**
+     * Today's date, emitted again at every midnight. The path's rhythm and the sky's current month
+     * depend on the date, and nothing else would emit when it changes under an open screen.
+     */
+    private val todayFlow: Flow<LocalDate> = midnightTicker()
 ) : RitualRepository {
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -86,11 +94,10 @@ class RitualRepositoryImpl(
     }
 
     override fun getPathProgress(): Flow<PathProgress> =
-        practiceDaysFlow.map { days -> PathPolicy.progress(days = days, today = LocalDate.now()) }
+        practiceDaysFlow.combine(todayFlow) { days, today -> PathPolicy.progress(days = days, today = today) }
 
     override fun getSky(): Flow<SkyData> =
-        practiceDaysFlow.combine(logsFlow) { days, logs ->
-            val today = LocalDate.now()
+        combine(practiceDaysFlow, logsFlow, todayFlow) { days, logs, today ->
             SkyData(
                 days = days,
                 logs = logs.mapNotNull { entry -> parsePracticeDay(entry.date)?.let { it to entry } }.toMap(),
@@ -259,5 +266,13 @@ class RitualRepositoryImpl(
         // Migrate first so the legacy blob is dropped too, otherwise it would reappear later.
         logMigrator.ensureMigrated()
         ritualLogDao.deleteAll()
+    }
+}
+
+private fun midnightTicker(): Flow<LocalDate> = flow {
+    while (true) {
+        val now = LocalDateTime.now()
+        emit(now.toLocalDate())
+        delay(Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).toMillis() + 1)
     }
 }

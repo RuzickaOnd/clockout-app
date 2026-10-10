@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -46,7 +47,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringArrayResource
@@ -62,6 +65,7 @@ import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.ConstellationCatalog
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.domain.model.SkyData
+import org.clockout.domain.model.SkyLayout
 import org.clockout.domain.model.SkySummary
 import org.clockout.presentation.components.ContentMaxWidth
 import org.clockout.presentation.components.FrostedBackgroundContainer
@@ -76,10 +80,6 @@ import org.clockout.ui.theme.TextSlate
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
-import org.clockout.domain.model.SkyLayout
 
 /** How much of the window height the sky may take, so it can be seen whole without scrolling. */
 private const val MAX_SKY_HEIGHT_FRACTION = 0.7f

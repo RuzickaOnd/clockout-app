@@ -26,9 +26,11 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.clockout.R
@@ -58,7 +60,9 @@ fun SkyCanvas(
 ) {
     val names = stringArrayResource(R.array.constellation_names)
     val measurer = rememberTextMeasurer()
-    val labelStyle = TextStyle(color = SkyLine.copy(alpha = 0.9f), fontSize = 11.sp)
+    val labelStyle = remember { TextStyle(color = SkyLine.copy(alpha = 0.9f), fontSize = 11.sp) }
+    // Measured once per name and canvas width, not on every twinkle frame.
+    val labels = remember(month) { mutableMapOf<Pair<Int, Int>, TextLayoutResult>() }
     val timeState: State<Float> = if (twinkle) {
         rememberInfiniteTransition(label = "twinkle").animateFloat(
             initialValue = 0f,
@@ -128,9 +132,18 @@ fun SkyCanvas(
                 )
             }
             if (!showNames) return@forEach
-            val label = measurer.measure(names[week.constellationNumber - 1], labelStyle)
+            val label = labels.getOrPut(week.constellationNumber to size.width.toInt()) {
+                measurer.measure(
+                    names[week.constellationNumber - 1],
+                    labelStyle,
+                    constraints = Constraints(maxWidth = size.width.toInt())
+                )
+            }
             val anchor = at(SkyPoint(slot.centerX, slot.centerY + slot.size * SkyLayout.ASPECT * 0.55f))
-            drawText(label, topLeft = Offset(anchor.x - label.size.width / 2f, anchor.y))
+            val origin = SkyLayout.labelOrigin(
+                anchor.x, anchor.y, label.size.width.toFloat(), label.size.height.toFloat(), size.width, size.height
+            )
+            drawText(label, topLeft = Offset(origin.x, origin.y))
         }
         placed.forEach { (star, p) ->
             val phase = (star.date.toEpochDay() % 97) / 97f

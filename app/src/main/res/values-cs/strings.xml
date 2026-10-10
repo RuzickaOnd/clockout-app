@@ -566,5 +566,5 @@
         <item quantity="many">%2$s: %1$d hvězdy</item>
         <item quantity="other">%2$s: %1$d hvězd</item>
     </plurals>
-    <string name="sky_canvas_constellations">souhvězdí %s</string>
+    <string name="sky_canvas_constellations">souhvězdí: %s</string>
 </resources>

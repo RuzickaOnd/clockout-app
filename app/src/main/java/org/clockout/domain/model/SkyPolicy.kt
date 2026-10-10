@@ -39,8 +39,9 @@ data class SkyData(
     val rhythmWeeks: Map<LocalDate, Boolean>,
     val today: LocalDate
 ) {
-    val months: List<YearMonth> get() = SkyPolicy.months(days, today)
-    val summary: SkySummary get() = SkyPolicy.summary(days, rhythmWeeks, today)
+    // Computed once per emission rather than on every read: the screen reads both on each recomposition.
+    val months: List<YearMonth> by lazy { SkyPolicy.months(days, today) }
+    val summary: SkySummary by lazy { SkyPolicy.summary(days, rhythmWeeks, today) }
     fun month(yearMonth: YearMonth): SkyMonth = SkyPolicy.month(yearMonth, days, logs, rhythmWeeks)
 
     companion object {

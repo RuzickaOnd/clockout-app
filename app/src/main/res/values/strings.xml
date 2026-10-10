@@ -548,5 +548,5 @@
         <item quantity="one">%2$s: %1$d star</item>
         <item quantity="other">%2$s: %1$d stars</item>
     </plurals>
-    <string name="sky_canvas_constellations">constellations %s</string>
+    <string name="sky_canvas_constellations">constellations: %s</string>
 </resources>

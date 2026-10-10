@@ -10,6 +10,7 @@ import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.RitualStep
+import org.clockout.domain.model.SkyPolicy
 import org.clockout.domain.usecase.GetTodayRitualUseCase
 import org.clockout.domain.usecase.LogMoodUseCase
 import org.clockout.domain.usecase.ShouldRequestReviewUseCase
@@ -28,7 +29,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.clockout.domain.model.SkyPolicy
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters

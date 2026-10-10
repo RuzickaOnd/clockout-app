@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.MoodTag
@@ -69,5 +70,31 @@ class HistorySkyPreviewTest {
         show(HistoryState(sky = sky), onOpenSky = { opened = true })
         composeTestRule.onNodeWithTag("sky_preview_card").performClick()
         assertTrue(opened)
+    }
+
+}
+
+/** A phone turned sideways has room for the top bar and the preview, but not for the empty state too. */
+@RunWith(RobolectricTestRunner::class)
+@Config(qualifiers = "w891dp-h411dp-mdpi", sdk = [36])
+class HistorySkyPreviewLandscapeTest {
+
+    @get:Rule val composeTestRule = createComposeRule()
+
+    @Test
+    fun `the empty state under the preview can be scrolled to`() {
+        val day = LocalDate.of(2026, 10, 5)
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.ENGLISH) {
+                MyApplicationTheme {
+                    HistoryScreen(
+                        state = HistoryState(sky = SkyData(setOf(day), emptyMap(), mapOf(day to false), LocalDate.of(2026, 10, 9))),
+                        onBack = {},
+                        onClearHistory = {}
+                    )
+                }
+            }
+        }
+        composeTestRule.onNodeWithText("No records yet").performScrollTo().assertIsDisplayed()
     }
 }

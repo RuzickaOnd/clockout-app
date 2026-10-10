@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.clockout.domain.model.AppLanguage
@@ -34,7 +35,9 @@ class SkyActivity : ComponentActivity() {
                     val language by repository.getLanguage()
                         .collectAsStateWithLifecycle(initialValue = AppLanguage.ENGLISH)
                     // Null until Room answers: drawing an empty sky first would flash the newcomer state.
-                    val sky by repository.getSky().collectAsStateWithLifecycle(initialValue = null as SkyData?)
+                    // Remembered, so a change of language does not restart the collection.
+                    val skyFlow = remember(repository) { repository.getSky() }
+                    val sky by skyFlow.collectAsStateWithLifecycle(initialValue = null as SkyData?)
 
                     AppLocalization(language) {
                         sky?.let { SkyScreen(data = it, language = language, onBack = { finish() }) }

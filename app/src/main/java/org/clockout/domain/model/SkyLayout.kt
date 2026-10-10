@@ -50,6 +50,22 @@ object SkyLayout {
         }
     }
 
+    /**
+     * Where a constellation's name goes: centred under its figure, but pushed back inside the
+     * canvas - a long name at a large font would otherwise be cut off at the edge.
+     */
+    fun labelOrigin(
+        anchorX: Float,
+        anchorY: Float,
+        labelWidth: Float,
+        labelHeight: Float,
+        canvasWidth: Float,
+        canvasHeight: Float
+    ): SkyPoint = SkyPoint(
+        x = (anchorX - labelWidth / 2f).coerceIn(0f, maxOf(0f, canvasWidth - labelWidth)),
+        y = anchorY.coerceIn(0f, maxOf(0f, canvasHeight - labelHeight))
+    )
+
     /** Distances are measured on the canvas, where a unit of y is 1 / ASPECT units of x. */
     fun <T> nearest(candidates: List<Pair<T, SkyPoint>>, tap: SkyPoint, maxDistance: Float): T? =
         candidates
