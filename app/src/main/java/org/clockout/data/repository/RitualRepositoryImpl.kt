@@ -18,6 +18,8 @@ import org.clockout.domain.model.DayStatus
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathPolicy
 import org.clockout.domain.model.PathProgress
+import org.clockout.domain.model.PathRhythm
+import org.clockout.domain.model.SkyData
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
@@ -78,18 +80,24 @@ class RitualRepositoryImpl(
         }
     }
 
-    override fun getPathProgress(): Flow<PathProgress> = flow {
+    private val practiceDaysFlow: Flow<Set<LocalDate>> = flow {
         logMigrator.ensureMigrated()
-        emitAll(
-            practiceDayDao.observeAll().combine(preferences.includeWeekendsFlow) { dates, includeWeekends ->
-                PathPolicy.progress(
-                    days = dates.mapNotNull(::parsePracticeDay).toSet(),
-                    includeWeekends = includeWeekends,
-                    today = LocalDate.now()
-                )
-            }
-        )
+        emitAll(practiceDayDao.observeAll().map { dates -> dates.mapNotNull(::parsePracticeDay).toSet() })
     }
+
+    override fun getPathProgress(): Flow<PathProgress> =
+        practiceDaysFlow.map { days -> PathPolicy.progress(days = days, today = LocalDate.now()) }
+
+    override fun getSky(): Flow<SkyData> =
+        practiceDaysFlow.combine(logsFlow) { days, logs ->
+            val today = LocalDate.now()
+            SkyData(
+                days = days,
+                logs = logs.mapNotNull { entry -> parsePracticeDay(entry.date)?.let { it to entry } }.toMap(),
+                rhythmWeeks = PathRhythm.evaluate(days, today).weeks,
+                today = today
+            )
+        }
 
     /**
      * Rows seeded from ritual_logs carry whatever digits the system locale wrote them in - Persian

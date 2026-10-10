@@ -47,14 +47,16 @@ Platí tytéž zásady jako u Cesty:
 - **Týden patří měsíci, ve kterém leží jeho čtvrtek** (stejné pravidlo jako ISO pro roky). Týden přes přelom měsíce
   se tedy nikdy nerozdělí a každý měsíc má 4 nebo 5 týdnů.
 - **Týden v rytmu** (výsledek `PathRhythm` pro tento týden, včetně víkendového bonusu) propojí čarami ty hrany figury,
-  jejichž **obě** hvězdy svítí, a ukáže jméno souhvězdí. Rozpracovaný aktuální týden se propojí, jakmile dosáhne prahu.
+  jejichž **obě** hvězdy svítí, a ukáže jméno souhvězdí — ale jen pokud taková hrana existuje aspoň jedna. Týden
+  v rytmu s jedinou hvězdou (první, částečný týden) souhvězdí nerozsvítí. Rozpracovaný aktuální týden se propojí,
+  jakmile dosáhne prahu. Dokončovací karta hlásí souhvězdí u rituálu, který ho poprvé rozsvítí.
 - Týden mimo rytmus ukáže jen své hvězdy, bez čar a bez jména.
 
 ### Měsíc na obloze
 
 - Obloha má poměr stran 3 : 4. Pro 4 i 5 týdnů jsou předem dané sloty (střed a velikost); figura týdne se do slotu
-  vepíše s mírným pootočením (±12°) a posunem, odvozenými deterministicky z `(rok, týden)`, aby obloha nepůsobila
-  jako mřížka.
+  vepíše s mírným pootočením (±12°), odvozeným deterministicky z `(rok, týden)`, aby obloha nepůsobila jako
+  mřížka. Posun by rozbil zaručené nepřekrývání slotů, proto se figury jen otáčejí.
 - Doplňková hvězdná pole: 60 drobných hvězd pevně odvozených ze `(rok, měsíc)`. Vše je funkce dat — žádná
   náhodnost za běhu, takže screenshot test vidí vždy totéž.
 - Jemné blikání hvězd je funkcí času (fáze odvozená z data hvězdy), stejně jako dech u `BreathingAurora`;

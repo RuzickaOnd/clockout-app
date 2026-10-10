@@ -41,6 +41,7 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import android.content.Intent
 import org.clockout.BreathingStyleActivity
 import org.clockout.PathActivity
+import org.clockout.SkyActivity
 import org.clockout.R
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.TelemetryConsent
@@ -280,6 +281,7 @@ fun PadlaApp(
                                 state = historyState,
                                 onBack = { currentScreen = Screen.Home },
                                 onClearHistory = { historyViewModel.clearAllHistory() },
+                                onOpenSky = { context.startActivity(Intent(context, SkyActivity::class.java)) },
                                 showBackButton = !showRail
                             )
                         }

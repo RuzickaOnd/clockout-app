@@ -13,16 +13,16 @@ data class PathProgress(
     val isCurrentWeekInRhythm: Boolean
 ) {
     companion object {
-        val EMPTY = PathPolicy.progress(emptySet(), includeWeekends = false, today = LocalDate.MIN)
+        val EMPTY = PathPolicy.progress(emptySet(), today = LocalDate.MIN)
     }
 }
 
 object PathPolicy {
 
-    fun progress(days: Set<LocalDate>, includeWeekends: Boolean, today: LocalDate): PathProgress {
+    fun progress(days: Set<LocalDate>, today: LocalDate): PathProgress {
         val stage = PathStage.forDays(days.size)
         val next = stage.next
-        val rhythm = PathRhythm.evaluate(days, includeWeekends, today)
+        val rhythm = PathRhythm.evaluate(days, today)
         return PathProgress(
             closedDays = days.size,
             stage = stage,

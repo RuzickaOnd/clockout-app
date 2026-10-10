@@ -11,6 +11,7 @@ import org.clockout.domain.model.RitualStep
 import org.clockout.presentation.history.HistoryScreen
 import org.clockout.presentation.home.HomeScreen
 import org.clockout.presentation.path.PathScreen
+import org.clockout.presentation.sky.SkyScreen
 import org.clockout.presentation.ritual.RitualScreen
 import org.clockout.presentation.ritual.RitualState
 import org.clockout.presentation.settings.BreathingStyleScreen
@@ -124,6 +125,10 @@ abstract class FormFactorScreenshotTest(private val device: String) {
 
     @Test fun path() = capture("path") {
         PathScreen(progress = Fixtures.pathProgress, onBack = {})
+    }
+
+    @Test fun sky() = capture("sky") {
+        SkyScreen(data = Fixtures.sky, language = AppLanguage.ENGLISH, onBack = {})
     }
 
     private fun ritualState(step: RitualStep) = RitualState(

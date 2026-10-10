@@ -474,8 +474,97 @@
     <string name="path_origin_text">Dřív den uzavírala cesta z práce sama: zaklapnout počítač, obléct kabát, zamknout, sejít schody a jít domů. Při práci z domova tahle cesta chybí a práce pak snadno přeteče do večera.\n\nKaždý uzavřený den tě posune o kus dál po cestě, kterou si tak den po dni stavíš znovu. Na konci jsi doma, a právě tam má večer patřit.</string>
     <string name="path_stages_title">Deset stupňů</string>
     <string name="path_rhythm_title">Jak funguje rytmus</string>
-    <string name="path_rhythm_text">Týden je v rytmu, když uzavřeš všechny pracovní dny až na jeden, tedy čtyři z pěti. Se zapnutými víkendy se počítá i uzavřená sobota nebo neděle a může nahradit vynechaný pracovní den. Jeden slabší týden rytmus nepřeruší, jen se nezapočítá; přeruší ho až dva po sobě. Aktuální týden se započítá, jakmile dosáhne prahu.\n\nStupeň i rytmus zůstanou, i když smažeš historii. Pamatují si jen data uzavřených dní, nic z toho, co jsi napsal(a).</string>
+    <string name="path_rhythm_text">Týden je v rytmu, když uzavřeš všechny pracovní dny až na jeden, tedy čtyři z pěti. Uzavřená sobota nebo neděle se počítá také a může nahradit vynechaný pracovní den. Jeden slabší týden rytmus nepřeruší, jen se nezapočítá; přeruší ho až dva po sobě. Aktuální týden se započítá, jakmile dosáhne prahu.\n\nStupeň i rytmus zůstanou, i když smažeš historii. Pamatují si jen data uzavřených dní, nic z toho, co jsi napsal(a).</string>
     <string name="settings_about_path_button">Cesta domů</string>
     <string name="ritual_path_stage_reached">Nový stupeň cesty</string>
-    <string name="ritual_path_rhythm_week">Tento týden jsi v rytmu</string>
+    <string name="ritual_path_rhythm_constellation">Tento týden jsi v rytmu. Na obloze se rozsvítilo souhvězdí: %s.</string>
+
+    <!-- Noční obloha: jedno souhvězdí na ISO týden, index = týden - 1 -->
+    <string-array name="constellation_names">
+        <item>Hrnek čaje</item>
+        <item>Vlněné ponožky</item>
+        <item>Krb</item>
+        <item>Teplá deka</item>
+        <item>Sáňky</item>
+        <item>Rukavice na topení</item>
+        <item>Kniha na nočním stolku</item>
+        <item>Hrnec polévky</item>
+        <item>Svíčka</item>
+        <item>Konvice</item>
+        <item>Deštník u dveří</item>
+        <item>Sněženka</item>
+        <item>Holínky</item>
+        <item>Kolo</item>
+        <item>Konev</item>
+        <item>Otevřené okno</item>
+        <item>Ptačí budka</item>
+        <item>Houpačka</item>
+        <item>Pampeliška</item>
+        <item>Kočka na parapetu</item>
+        <item>Zahradní lavička</item>
+        <item>Košík jahod</item>
+        <item>Lampion</item>
+        <item>Síťka na motýly</item>
+        <item>Houpací síť</item>
+        <item>Kornout zmrzliny</item>
+        <item>Slamák</item>
+        <item>Táborák</item>
+        <item>Stan</item>
+        <item>Loďka</item>
+        <item>Rybářský prut</item>
+        <item>Meloun</item>
+        <item>Padající hvězda</item>
+        <item>Kytara</item>
+        <item>Sklenice marmelády</item>
+        <item>Jablko</item>
+        <item>Drak</item>
+        <item>Košík hub</item>
+        <item>Kaštany</item>
+        <item>Dýně</item>
+        <item>Pletení</item>
+        <item>Padající list</item>
+        <item>Petrolejka</item>
+        <item>Šála</item>
+        <item>Deskovka</item>
+        <item>Papuče</item>
+        <item>Křeslo</item>
+        <item>Čerstvý chleba</item>
+        <item>Adventní věnec</item>
+        <item>Perníček</item>
+        <item>Sněhulák</item>
+        <item>Jedlička</item>
+        <item>Modrý měsíc</item>
+    </string-array>
+
+    <!-- Night sky -->
+    <string name="sky_screen_title">Noční obloha</string>
+    <plurals name="sky_summary_stars">
+        <item quantity="one">%d hvězda</item>
+        <item quantity="few">%d hvězdy</item>
+        <item quantity="many">%d hvězdy</item>
+        <item quantity="other">%d hvězd</item>
+    </plurals>
+    <plurals name="sky_summary_constellations">
+        <item quantity="one">%d souhvězdí</item>
+        <item quantity="few">%d souhvězdí</item>
+        <item quantity="many">%d souhvězdí</item>
+        <item quantity="other">%d souhvězdí</item>
+    </plurals>
+    <string name="sky_summary_this_year">letos %1$d z %2$d</string>
+    <string name="sky_previous_month">Předchozí měsíc</string>
+    <string name="sky_next_month">Další měsíc</string>
+    <string name="sky_month_empty">Tento měsíc zatím bez hvězd</string>
+    <string name="sky_empty">První hvězda se rozsvítí po prvním uzavřeném dni.</string>
+    <string name="sky_record_deleted">Záznam byl smazán, hvězda zůstává.</string>
+    <string name="sky_atlas_title">Atlas souhvězdí</string>
+    <string name="sky_atlas_times">%d×</string>
+    <string name="sky_atlas_rises">vychází v týdnu %d</string>
+    <string name="sky_atlas_rare">jen v letech s 53. týdnem</string>
+    <plurals name="sky_canvas_description">
+        <item quantity="one">%2$s: %1$d hvězda</item>
+        <item quantity="few">%2$s: %1$d hvězdy</item>
+        <item quantity="many">%2$s: %1$d hvězdy</item>
+        <item quantity="other">%2$s: %1$d hvězd</item>
+    </plurals>
+    <string name="sky_canvas_constellations">souhvězdí %s</string>
 </resources>

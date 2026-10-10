@@ -67,6 +67,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -278,7 +279,7 @@ fun RitualScreen(
                             isSaved = state.isCompletedAndSaved,
                             selectedMood = state.selectedMood,
                             reachedStage = state.reachedStage,
-                            rhythmWeekReached = state.rhythmWeekReached,
+                            rhythmConstellationNumber = state.rhythmConstellationNumber,
                             language = state.language,
                             onIntent = onIntent,
                             onFinish = onFinish
@@ -872,7 +873,7 @@ private fun StepLogContent(
     isSaved: Boolean,
     selectedMood: MoodTag?,
     reachedStage: PathStage?,
-    rhythmWeekReached: Boolean,
+    rhythmConstellationNumber: Int?,
     language: AppLanguage,
     onIntent: (RitualIntent) -> Unit,
     onFinish: () -> Unit
@@ -973,10 +974,14 @@ private fun StepLogContent(
                             color = TextSlate,
                             textAlign = TextAlign.Center
                         )
-                    } else if (rhythmWeekReached) {
+                    } else if (rhythmConstellationNumber != null) {
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            text = stringResource(R.string.ritual_path_rhythm_week),
+                            text = stringResource(
+                                R.string.ritual_path_rhythm_constellation,
+                                stringArrayResource(R.array.constellation_names)[rhythmConstellationNumber - 1]
+                            ),
+                            textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodySmall,
                             color = IndigoAccent,
                             modifier = Modifier.testTag("ritual_path_rhythm_week")

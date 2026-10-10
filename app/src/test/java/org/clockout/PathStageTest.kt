@@ -39,7 +39,7 @@ class PathStageTest {
         val monday = LocalDate.of(2026, 10, 5)
         val days = (0L..2L).map { monday.plusDays(it) }.toSet()
 
-        val progress = PathPolicy.progress(days, includeWeekends = false, today = monday.plusDays(2))
+        val progress = PathPolicy.progress(days, today = monday.plusDays(2))
 
         assertEquals(3, progress.closedDays)
         assertEquals(PathStage.LAPTOP_CLOSED, progress.stage)
@@ -52,7 +52,7 @@ class PathStageTest {
         val start = LocalDate.of(2025, 1, 1)
         val days = (0L until 250L).map { start.plusDays(it) }.toSet()
 
-        val progress = PathPolicy.progress(days, includeWeekends = true, today = start.plusDays(249))
+        val progress = PathPolicy.progress(days, today = start.plusDays(249))
 
         assertEquals(PathStage.HOME, progress.stage)
         assertNull(progress.nextStage)

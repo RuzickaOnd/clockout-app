@@ -8,15 +8,34 @@ import org.clockout.domain.model.PathStage
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
+import org.clockout.domain.model.SkyData
 import org.clockout.presentation.history.HistoryState
 import org.clockout.presentation.home.HomeState
 import org.clockout.presentation.settings.SettingsState
+import java.time.LocalDate
 
 /**
  * One fixed set of states for every form-factor screenshot, so a diff between two devices only
  * ever shows a layout difference and never a difference in the data being rendered.
  */
 object Fixtures {
+
+    private val skyDays = (0L..11L).map { LocalDate.of(2026, 9, 28).plusDays(it) }
+        .filter { it.dayOfWeek.value <= 5 && it != LocalDate.of(2026, 10, 7) }
+
+    /** Two weeks in rhythm in October 2026, some days still carrying their mood. */
+    val sky = SkyData(
+        days = skyDays.toSet(),
+        logs = listOf(
+            LocalDate.of(2026, 9, 28) to MoodTag.CALM,
+            LocalDate.of(2026, 9, 30) to MoodTag.SATISFIED,
+            LocalDate.of(2026, 10, 2) to MoodTag.TIRED,
+            LocalDate.of(2026, 10, 6) to MoodTag.TENSE,
+            LocalDate.of(2026, 10, 9) to MoodTag.SATISFIED
+        ).associate { (date, mood) -> date to RitualLogEntry(date.toString(), "What went well today?", null, mood, 0L) },
+        rhythmWeeks = mapOf(LocalDate.of(2026, 9, 28) to true, LocalDate.of(2026, 10, 5) to true),
+        today = LocalDate.of(2026, 10, 9)
+    )
 
     val pathProgress = PathProgress(
         closedDays = 22, stage = PathStage.DOWN_THE_STAIRS, nextStage = PathStage.STREET_AT_DUSK,
@@ -94,6 +113,7 @@ object Fixtures {
 
     val history = HistoryState(
         language = AppLanguage.ENGLISH,
+        sky = sky,
         logs = logs,
         totalCount = logs.size,
         moodCounts = MoodTag.entries.associateWith { mood -> logs.count { it.moodTag == mood } }

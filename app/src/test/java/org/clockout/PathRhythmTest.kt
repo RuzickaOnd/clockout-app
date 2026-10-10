@@ -21,9 +21,8 @@ class PathRhythmTest {
 
     private fun eval(
         days: Collection<LocalDate>,
-        includeWeekends: Boolean = false,
         today: LocalDate = this.today
-    ) = PathRhythm.evaluate(days.toSet(), includeWeekends, today)
+    ) = PathRhythm.evaluate(days.toSet(), today)
 
     @Test
     fun `no days means no rhythm`() {
@@ -75,28 +74,21 @@ class PathRhythmTest {
     }
 
     @Test
-    fun `turning weekends on never lowers the rhythm`() {
-        val history = workweek(w1) + workweek(w2) + workweek(w3)
-        assertEquals(eval(history, includeWeekends = false), eval(history, includeWeekends = true))
+    fun `a closed weekend day stands in for a missed weekday`() {
+        assertEquals(1, eval(days(w3, 0, 1, 2, 5)).current)
     }
 
     @Test
-    fun `with weekends on a closed weekend day stands in for a missed weekday`() {
-        val threeWeekdaysAndSaturday = days(w3, 0, 1, 2, 5)
-        assertEquals(1, eval(threeWeekdaysAndSaturday, includeWeekends = true).current)
-        assertEquals(0, eval(threeWeekdaysAndSaturday, includeWeekends = false).current)
+    fun `a closed weekend day counts whatever the setting is now`() {
+        // Closed while weekends were on; switching them off must not un-light the week.
+        val result = eval(workweek(w2) + days(w3, 0, 1, 2, 5, 6))
+        assertEquals(2, result.current)
+        assertEquals(true, result.weeks[w3])
     }
 
     @Test
     fun `a first ritual on a weekend starts a week of its own`() {
-        assertEquals(1, eval(days(w3, 5), includeWeekends = true).current)
-    }
-
-    @Test
-    fun `weekend days do not count while weekends are off`() {
-        val result = eval(workweek(w2) + days(w3, 0, 1, 2, 5, 6))
-        assertEquals(1, result.current)
-        assertEquals(1, result.longest)
+        assertEquals(1, eval(days(w3, 5)).current)
     }
 
     @Test
@@ -106,5 +98,29 @@ class PathRhythmTest {
         val result = eval(history)
         assertEquals(1, result.current)
         assertEquals(3, result.longest)
+    }
+
+    @Test
+    fun `weeks lists every week from the first one with its result`() {
+        val result = eval(workweek(w1) + days(w2, 0, 1, 2) + workweek(w3))
+        assertEquals(mapOf(w1 to true, w2 to false, w3 to true, w4 to false), result.weeks)
+    }
+
+    @Test
+    fun `the week in progress appears in weeks once it is met`() {
+        val result = eval(workweek(w3) + days(w4, 0, 1, 2, 3), today = w4.plusDays(3))
+        assertEquals(true, result.weeks[w4])
+    }
+
+    @Test
+    fun `a week before the first ritual is not in weeks`() {
+        assertEquals(setOf(w3, w4), eval(days(w3, 4)).weeks.keys)
+    }
+
+    @Test
+    fun `current and longest agree with weeks`() {
+        val result = eval(workweek(w1) + days(w2, 0, 1, 2) + workweek(w3))
+        assertEquals(2, result.weeks.values.count { it })
+        assertEquals(2, result.current)
     }
 }

@@ -79,4 +79,23 @@ class RitualScreenLocalizationTest {
         composeTestRule.onNodeWithText("Nový stupeň cesty").performScrollTo().assertIsDisplayed()
         composeTestRule.onNodeWithText("Schody dolů").assertIsDisplayed()
     }
+
+    @Test
+    fun `the completion card names the constellation a full week lit`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                MyApplicationTheme {
+                    RitualScreen(
+                        state = RitualState(
+                            question = question, currentStep = RitualStep.Log, selectedMood = MoodTag.CALM,
+                            isCompletedAndSaved = true, rhythmConstellationNumber = 10
+                        ),
+                        onIntent = {}, onFinish = {}
+                    )
+                }
+            }
+        }
+        composeTestRule.onNodeWithText("Tento týden jsi v rytmu. Na obloze se rozsvítilo souhvězdí: Konvice.")
+            .performScrollTo().assertIsDisplayed()
+    }
 }

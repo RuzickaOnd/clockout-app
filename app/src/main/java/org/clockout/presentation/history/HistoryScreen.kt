@@ -58,6 +58,7 @@ import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.frostedGlass
+import org.clockout.presentation.sky.SkyPreviewCard
 import org.clockout.presentation.components.WideContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.labelRes
@@ -83,6 +84,7 @@ fun HistoryScreen(
     onBack: () -> Unit,
     onClearHistory: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenSky: () -> Unit = {},
     /**
      * False once a navigation rail is showing, because then this screen is a destination the user
      * picks rather than a detour they came into and have to step back out of.
@@ -188,31 +190,39 @@ fun HistoryScreen(
             )
 
             if (state.logs.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "🌙", fontSize = 48.sp)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = stringResource(R.string.history_empty_title),
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 18.sp
-                            ),
-                            color = TextLight
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = stringResource(R.string.history_empty_desc),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = TextSlate,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            lineHeight = 22.sp
-                        )
+                Column(modifier = Modifier.fillMaxSize()) {
+                    state.sky?.takeIf { it.days.isNotEmpty() }?.let { sky ->
+                        Box(modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+                            SkyPreviewCard(sky, onOpenSky)
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = "🌙", fontSize = 48.sp)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = stringResource(R.string.history_empty_title),
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 18.sp
+                                ),
+                                color = TextLight
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.history_empty_desc),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextSlate,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                lineHeight = 22.sp
+                            )
+                        }
                     }
                 }
             } else {
@@ -273,6 +283,10 @@ fun HistoryScreen(
                                         }
                                     }
                                 }
+                            }
+                            state.sky?.takeIf { it.days.isNotEmpty() }?.let { sky ->
+                                Spacer(modifier = Modifier.height(14.dp))
+                                SkyPreviewCard(sky, onOpenSky)
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                         }

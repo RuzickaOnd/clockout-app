@@ -26,6 +26,6 @@ data class RitualState(
     val shouldRequestReview: Boolean = false,
     /** The stage this ritual has just reached, or null when it reached none. */
     val reachedStage: PathStage? = null,
-    /** Whether this ritual has just brought the current week up to the rhythm threshold. */
-    val rhythmWeekReached: Boolean = false
+    /** This week's constellation when this ritual has just brought the week into rhythm. */
+    val rhythmConstellationNumber: Int? = null
 )

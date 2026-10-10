@@ -28,6 +28,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.clockout.domain.model.SkyPolicy
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 
 class RitualViewModel(
     private val appContext: Context,
@@ -235,18 +239,26 @@ class RitualViewModel(
                 currentState.selectedAnswer
             }
             val pathBefore = ritualRepository.getPathProgress().first()
+            val skyBefore = ritualRepository.getSky().first()
             logMoodUseCase(
                 selectedAnswer = finalAnswer,
                 mood = mood,
                 questionText = currentState.question.text(currentState.language)
             )
             val pathAfter = ritualRepository.getPathProgress().first()
+            val skyAfter = ritualRepository.getSky().first()
+            val thisMonday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
             _state.update {
                 it.copy(
                     isCompletedAndSaved = true,
                     shouldRequestReview = moodWasChosen && shouldRequestReviewUseCase(mood),
                     reachedStage = pathAfter.stage.takeIf { stage -> stage != pathBefore.stage },
-                    rhythmWeekReached = pathAfter.isCurrentWeekInRhythm && !pathBefore.isCurrentWeekInRhythm
+                    // Announced when this week's figure first gets a line, not merely when the week
+                    // reaches its rhythm: a first, partial week can be in rhythm on a lone star.
+                    rhythmConstellationNumber = SkyPolicy.constellationNumber(thisMonday).takeIf {
+                        SkyPolicy.isLit(thisMonday, skyAfter.days, skyAfter.rhythmWeeks) &&
+                            !SkyPolicy.isLit(thisMonday, skyBefore.days, skyBefore.rhythmWeeks)
+                    }
                 )
             }
             // Read after the log is written, so the count includes today.

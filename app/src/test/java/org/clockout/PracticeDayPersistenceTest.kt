@@ -14,6 +14,7 @@ import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathStage
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -122,5 +123,25 @@ class PracticeDayPersistenceTest {
         }
 
         assertEquals(listOf(LocalDate.now().toString()), database.practiceDayDao().observeAll().first())
+    }
+
+    @Test
+    fun `the sky holds a logged day with its mood`() = runTest {
+        repository.logRitual(null, MoodTag.SATISFIED, "Q")
+
+        val sky = repository.getSky().first()
+        assertEquals(1, sky.days.size)
+        assertEquals(MoodTag.SATISFIED, sky.logs[LocalDate.now()]?.moodTag)
+    }
+
+    @Test
+    fun `clearLogs keeps the sky but drops the moods`() = runTest {
+        repository.logRitual(null, MoodTag.SATISFIED, "Q")
+
+        repository.clearLogs()
+
+        val sky = repository.getSky().first()
+        assertEquals(setOf(LocalDate.now()), sky.days)
+        assertTrue(sky.logs.isEmpty())
     }
 }

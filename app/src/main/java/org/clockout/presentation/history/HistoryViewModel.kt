@@ -47,6 +47,9 @@ class HistoryViewModel(
                 }
             }
         }
+        viewModelScope.launch {
+            repository.getSky().collect { sky -> _state.update { it.copy(sky = sky) } }
+        }
     }
 
     fun clearAllHistory() {

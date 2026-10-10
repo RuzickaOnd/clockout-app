@@ -7,35 +7,49 @@ import java.time.temporal.TemporalAdjusters
 /**
  * Counts rhythm in weeks rather than days, so a single missed day never breaks anything.
  *
- * A week is in rhythm when all but one of its weekdays were closed. With weekends on, a closed
- * Saturday or Sunday counts too and can stand in for a missed weekday, but the threshold stays the
- * weekdays' - so switching weekends on can only add to a rhythm, never re-score past weeks below it. Only two weak weeks in a
- * row end a rhythm - one week of illness or holiday is tolerated, it just does not count. The week
- * in progress is counted once it reaches the threshold and otherwise left out, so the rhythm
- * cannot drop on a Monday morning. The week of the very first closed day offers only the days from
- * that day on: whoever starts on a Wednesday was not absent on Monday, the app was.
+ * A week is in rhythm when all but one of its weekdays were closed. A closed Saturday or Sunday
+ * counts as well and can stand in for a missed weekday, but never raises the threshold - and it
+ * counts whatever the weekend setting says now, because a weekend day can only have been closed
+ * while weekends were on. Switching weekends either way can therefore never re-score a past week
+ * below its threshold. Only two weak weeks in a row end a rhythm - one week of illness or holiday
+ * is tolerated, it just does not count. The week in progress is counted once it reaches the
+ * threshold and otherwise left out, so the rhythm cannot drop on a Monday morning. The week of the
+ * very first closed day offers only the days from that day on: whoever starts on a Wednesday was
+ * not absent on Monday, the app was.
  */
 object PathRhythm {
 
-    data class Result(val current: Int, val longest: Int, val isCurrentWeekInRhythm: Boolean)
+    data class Result(
+        val current: Int,
+        val longest: Int,
+        val isCurrentWeekInRhythm: Boolean,
+        /**
+         * Monday of every week since the first closed day that offered a day at all, mapped to
+         * whether it was in rhythm. The night sky draws its constellations from this map, so the
+         * path and the sky can never disagree about a week.
+         */
+        val weeks: Map<LocalDate, Boolean> = emptyMap()
+    )
 
     private const val WEAK_WEEKS_THAT_END_A_RHYTHM = 2
 
-    fun evaluate(days: Set<LocalDate>, includeWeekends: Boolean, today: LocalDate): Result {
+    fun evaluate(days: Set<LocalDate>, today: LocalDate): Result {
         if (days.isEmpty()) return Result(0, 0, false)
         val firstDay = days.min()
         val currentWeek = today.mondayOfWeek()
 
-        val pastWeeks = generateSequence(firstDay.mondayOfWeek()) { it.plusWeeks(1) }
-            .takeWhile { it.isBefore(currentWeek) }
-            .mapNotNull { isWeekMet(it, days, includeWeekends, firstDay) }
-            .toList()
-        val isCurrentWeekInRhythm = isWeekMet(currentWeek, days, includeWeekends, firstDay) == true
+        val weeks = generateSequence(firstDay.mondayOfWeek()) { it.plusWeeks(1) }
+            .takeWhile { !it.isAfter(currentWeek) }
+            .mapNotNull { monday -> isWeekMet(monday, days, firstDay)?.let { monday to it } }
+            .toMap()
+        val isCurrentWeekInRhythm = weeks[currentWeek] == true
 
         var run = 0
         var longest = 0
         var weakInARow = 0
-        for (met in pastWeeks + listOfNotNull(true.takeIf { isCurrentWeekInRhythm })) {
+        // The week in progress only ever adds: until it is met it is left out rather than weak.
+        for ((monday, met) in weeks) {
+            if (monday == currentWeek && !met) continue
             if (met) {
                 run++
                 weakInARow = 0
@@ -45,22 +59,20 @@ object PathRhythm {
                 if (weakInARow >= WEAK_WEEKS_THAT_END_A_RHYTHM) run = 0
             }
         }
-        return Result(current = run, longest = longest, isCurrentWeekInRhythm = isCurrentWeekInRhythm)
+        return Result(run, longest, isCurrentWeekInRhythm, weeks)
     }
 
     /** Null for a week that offered no day at all, which neither counts nor breaks anything. */
     private fun isWeekMet(
         monday: LocalDate,
         days: Set<LocalDate>,
-        includeWeekends: Boolean,
         firstDay: LocalDate
     ): Boolean? {
         val week = (0L until 7L).map { monday.plusDays(it) }.filterNot { it.isBefore(firstDay) }
         val weekdays = week.filter { it.dayOfWeek < DayOfWeek.SATURDAY }
-        val counted = if (includeWeekends) week else weekdays
-        if (counted.isEmpty()) return null
+        if (week.isEmpty()) return null
         val threshold = maxOf(1, weekdays.size - 1)
-        return counted.count { it in days } >= threshold
+        return week.count { it in days } >= threshold
     }
 
     private fun LocalDate.mondayOfWeek(): LocalDate =

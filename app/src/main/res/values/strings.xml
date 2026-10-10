@@ -462,8 +462,91 @@
     <string name="path_origin_text">The way home from work used to close the day by itself: shut the laptop, put on a coat, lock up, take the stairs and walk home. Working from home, that way is missing, and work easily spills into the evening.\n\nEvery day you close moves you a little further along a way you rebuild one day at a time. At the end of it you are home, which is where the evening belongs.</string>
     <string name="path_stages_title">Ten stages</string>
     <string name="path_rhythm_title">How the rhythm works</string>
-    <string name="path_rhythm_text">A week is in rhythm when you close all but one of its weekdays: four of five. With weekends on, a closed Saturday or Sunday counts as well and can stand in for a missed weekday. One weaker week will not break the rhythm, it just does not count; only two in a row do. The week you are in counts once it reaches the threshold.\n\nYour stage and your rhythm stay even when you clear the history. They remember only the dates you closed the day, nothing of what you wrote.</string>
+    <string name="path_rhythm_text">A week is in rhythm when you close all but one of its weekdays: four of five. A Saturday or Sunday you close counts as well and can stand in for a missed weekday. One weaker week will not break the rhythm, it just does not count; only two in a row do. The week you are in counts once it reaches the threshold.\n\nYour stage and your rhythm stay even when you clear the history. They remember only the dates you closed the day, nothing of what you wrote.</string>
     <string name="settings_about_path_button">The Way Home</string>
     <string name="ritual_path_stage_reached">A new stage on the path</string>
-    <string name="ritual_path_rhythm_week">You\'re in rhythm this week</string>
+    <string name="ritual_path_rhythm_constellation">You\'re in rhythm this week. A constellation lit up in the sky: %s.</string>
+
+    <!-- Night sky: one constellation per ISO week, index = week - 1 -->
+    <string-array name="constellation_names">
+        <item>Cup of Tea</item>
+        <item>Wool Socks</item>
+        <item>Fireplace</item>
+        <item>Warm Blanket</item>
+        <item>Sled</item>
+        <item>Mittens on the Radiator</item>
+        <item>Bedside Book</item>
+        <item>Pot of Soup</item>
+        <item>Candle</item>
+        <item>Kettle</item>
+        <item>Umbrella by the Door</item>
+        <item>Snowdrop</item>
+        <item>Rain Boots</item>
+        <item>Bicycle</item>
+        <item>Watering Can</item>
+        <item>Open Window</item>
+        <item>Birdhouse</item>
+        <item>Swing</item>
+        <item>Dandelion</item>
+        <item>Cat on the Sill</item>
+        <item>Garden Bench</item>
+        <item>Basket of Strawberries</item>
+        <item>Paper Lantern</item>
+        <item>Butterfly Net</item>
+        <item>Hammock</item>
+        <item>Ice Cream Cone</item>
+        <item>Straw Hat</item>
+        <item>Campfire</item>
+        <item>Tent</item>
+        <item>Rowing Boat</item>
+        <item>Fishing Rod</item>
+        <item>Watermelon</item>
+        <item>Shooting Star</item>
+        <item>Guitar</item>
+        <item>Jar of Jam</item>
+        <item>Apple</item>
+        <item>Kite</item>
+        <item>Basket of Mushrooms</item>
+        <item>Chestnuts</item>
+        <item>Pumpkin</item>
+        <item>Knitting</item>
+        <item>Falling Leaf</item>
+        <item>Oil Lamp</item>
+        <item>Scarf</item>
+        <item>Board Game</item>
+        <item>Slippers</item>
+        <item>Armchair</item>
+        <item>Fresh Loaf</item>
+        <item>Advent Wreath</item>
+        <item>Gingerbread</item>
+        <item>Snowman</item>
+        <item>Little Fir Tree</item>
+        <item>Blue Moon</item>
+    </string-array>
+
+    <!-- Night sky -->
+    <string name="sky_screen_title">The Night Sky</string>
+    <plurals name="sky_summary_stars">
+        <item quantity="one">%d star</item>
+        <item quantity="other">%d stars</item>
+    </plurals>
+    <plurals name="sky_summary_constellations">
+        <item quantity="one">%d constellation</item>
+        <item quantity="other">%d constellations</item>
+    </plurals>
+    <string name="sky_summary_this_year">this year %1$d of %2$d</string>
+    <string name="sky_previous_month">Previous month</string>
+    <string name="sky_next_month">Next month</string>
+    <string name="sky_month_empty">No stars this month yet</string>
+    <string name="sky_empty">The first star lights up after your first closed day.</string>
+    <string name="sky_record_deleted">The entry was deleted; the star stays.</string>
+    <string name="sky_atlas_title">Atlas of constellations</string>
+    <string name="sky_atlas_times">%d×</string>
+    <string name="sky_atlas_rises">rises in week %d</string>
+    <string name="sky_atlas_rare">only in years with a 53rd week</string>
+    <plurals name="sky_canvas_description">
+        <item quantity="one">%2$s: %1$d star</item>
+        <item quantity="other">%2$s: %1$d stars</item>
+    </plurals>
+    <string name="sky_canvas_constellations">constellations %s</string>
 </resources>

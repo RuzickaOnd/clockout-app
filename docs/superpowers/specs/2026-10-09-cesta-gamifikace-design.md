@@ -105,17 +105,17 @@ Most v polovině cesty nese i význam: překročení hranice mezi prací a vlast
 Vstup: množina dnů z `practice_days` (`Set<LocalDate>`), `includeWeekends`, `today: LocalDate`.
 
 - Týden začíná pondělím (stejně jako `calculateStreakInfo`).
-- **Nabízené dny týdne**: Po–Pá, nebo Po–Ne se zapnutými víkendy. Uzavřené dny mimo nabízené (víkend při
-  vypnutých víkendech) se do rytmu nepočítají.
+- **Dny týdne**: práh určují pracovní dny (Po–Pá); uzavřená sobota či neděle se počítá vždy jako bonus, bez ohledu
+  na aktuální nastavení víkendů (rozhodnutí z review Noční oblohy — přepnutí víkendů tak rytmus nikdy nesníží).
 - **Týden prvního uzavřeného dne** nabízí jen dny od tohoto dne dál — kdo začne ve středu, není potrestán za
   pondělí a úterý, kdy aplikaci ještě neměl.
-- **Práh týdne** = `max(1, pracovní dny − 1)` → 4 z 5. Se zapnutými víkendy se uzavřená sobota či neděle započítá navíc a může nahradit vynechaný pracovní den, ale práh nezvyšuje (rozhodnutí z review: zapnutí víkendů tak rytmus nikdy nesníží).
+- **Práh týdne** = `max(1, pracovní dny − 1)` → 4 z 5; víkendový den může nahradit vynechaný pracovní, práh nezvyšuje.
 - **Aktuální týden** se započítá, jakmile dosáhne prahu; dokud ne, rytmus neláme ani neprodlužuje.
 - **Ukončené týdny** se procházejí od nejnovějšího: splněný týden přičte 1 a vynuluje počítadlo chyb, nesplněný
   přičte 1 k chybám; **dva nesplněné týdny po sobě rytmus ukončí** („nikdy nevynechej dvakrát"). Procházení končí
   nejpozději týdnem prvního uzavřeného dne.
 - **Nejdelší rytmus**: stejné pravidlo aplikované na celou historii, maximum ze všech sérií.
-- Mění-li se nastavení víkendů, rytmus se přepočítá podle aktuálního nastavení; díky víkendům „navíc“ může jen vzrůst.
+- Nastavení víkendů rytmus neovlivňuje; určuje jen, kdy se rituál nabízí.
 
 Výstup:
 
