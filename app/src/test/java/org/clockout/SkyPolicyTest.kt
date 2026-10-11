@@ -136,4 +136,44 @@ class SkyPolicyTest {
         assertEquals(0, SkyData.EMPTY.summary.stars)
         assertEquals(0, SkyData.EMPTY.summary.constellationsLit)
     }
+
+    // Week 41 of 2026 (from Mon 5 Oct) is Knitting: every line but Sat-Sun runs through Friday.
+    // Week 42 (from Mon 12 Oct) is Falling Leaf: Mon-Tue-Wed-Thu form a loop.
+
+    @Test
+    fun `a newcomer closing every weekday from Monday lights Knitting on the fifth day`() {
+        assertEquals(5, SkyPolicy.daysToFirstConstellation(emptySet(), LocalDate.of(2026, 10, 5), includeWeekends = false))
+    }
+
+    @Test
+    fun `four closed weekdays leave one day to the first constellation`() {
+        val closed = (0L..3L).map { LocalDate.of(2026, 10, 5).plusDays(it) }.toSet()
+        assertEquals(1, SkyPolicy.daysToFirstConstellation(closed, LocalDate.of(2026, 10, 8), includeWeekends = false))
+    }
+
+    @Test
+    fun `days the ritual is not offered on are skipped`() {
+        // A lone Thursday, today is Saturday and weekends are off: the next chance is Mon-Thu of week 42.
+        val closed = setOf(LocalDate.of(2026, 10, 8))
+        assertEquals(4, SkyPolicy.daysToFirstConstellation(closed, LocalDate.of(2026, 10, 10), includeWeekends = false))
+    }
+
+    @Test
+    fun `with weekends on the weekend can light the first constellation`() {
+        // Thursday alone keeps its first, partial week in rhythm; Saturday and Sunday share a line.
+        val closed = setOf(LocalDate.of(2026, 10, 8))
+        assertEquals(2, SkyPolicy.daysToFirstConstellation(closed, LocalDate.of(2026, 10, 10), includeWeekends = true))
+    }
+
+    @Test
+    fun `there is nothing to count once a constellation is lit`() {
+        val closed = (0L..4L).map { LocalDate.of(2026, 10, 5).plusDays(it) }.toSet()
+        assertNull(SkyPolicy.daysToFirstConstellation(closed, LocalDate.of(2026, 10, 9), includeWeekends = false))
+    }
+
+    @Test
+    fun `the sky data carries the countdown`() {
+        val sky = SkyData(setOf(LocalDate.of(2026, 10, 8)), emptyMap(), emptyMap(), LocalDate.of(2026, 10, 10), includeWeekends = true)
+        assertEquals(2, sky.daysToFirstConstellation)
+    }
 }

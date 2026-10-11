@@ -90,6 +90,7 @@ import org.clockout.presentation.components.BreathingVisual
 import org.clockout.presentation.components.ClosureBulb
 import org.clockout.presentation.components.FrostedBackgroundContainer
 import org.clockout.presentation.components.PathStageEmblem
+import org.clockout.presentation.sky.skyCountdownText
 import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.components.isInhalePhase
 import org.clockout.presentation.components.rememberBreathCycle
@@ -280,6 +281,7 @@ fun RitualScreen(
                             selectedMood = state.selectedMood,
                             reachedStage = state.reachedStage,
                             rhythmConstellationNumber = state.rhythmConstellationNumber,
+                            skyTeaser = state.skyTeaser,
                             language = state.language,
                             onIntent = onIntent,
                             onFinish = onFinish
@@ -874,6 +876,7 @@ private fun StepLogContent(
     selectedMood: MoodTag?,
     reachedStage: PathStage?,
     rhythmConstellationNumber: Int?,
+    skyTeaser: SkyTeaser?,
     language: AppLanguage,
     onIntent: (RitualIntent) -> Unit,
     onFinish: () -> Unit
@@ -985,6 +988,22 @@ private fun StepLogContent(
                             style = MaterialTheme.typography.bodySmall,
                             color = IndigoAccent,
                             modifier = Modifier.testTag("ritual_path_rhythm_week")
+                        )
+                    }
+                    skyTeaser?.let { teaser ->
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "✦ " + stringResource(R.string.sky_teaser_title),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = IndigoAccent,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = skyCountdownText(teaser.stars, teaser.daysToFirstConstellation),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextSlate,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.testTag("ritual_sky_teaser")
                         )
                     }
                 }

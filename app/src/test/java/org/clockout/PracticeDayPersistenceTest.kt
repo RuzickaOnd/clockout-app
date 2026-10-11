@@ -33,18 +33,20 @@ class PracticeDayPersistenceTest {
     @get:Rule val preferencesFolder = TemporaryFolder()
 
     private lateinit var database: ClockoutDatabase
+    private lateinit var preferences: RitualPreferences
     private lateinit var repository: RitualRepositoryImpl
 
     @Before
     fun setUp() {
         val context: Context = ApplicationProvider.getApplicationContext()
         database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
+        preferences = RitualPreferences(
+            PreferenceDataStoreFactory.create {
+                preferencesFolder.newFile("padla_test.preferences_pb").apply { delete() }
+            }
+        )
         repository = RitualRepositoryImpl(
-            preferences = RitualPreferences(
-                PreferenceDataStoreFactory.create {
-                    preferencesFolder.newFile("padla_test.preferences_pb").apply { delete() }
-                }
-            ),
+            preferences = preferences,
             ritualLogDao = database.ritualLogDao(),
             practiceDayDao = database.practiceDayDao()
         )
@@ -165,5 +167,14 @@ class PracticeDayPersistenceTest {
         today.value = LocalDate.of(2026, 10, 10)
 
         assertEquals(LocalDate.of(2026, 10, 10), clocked.getSky().first().today)
+    }
+
+    @Test
+    fun `the sky knows whether the ritual is offered at weekends`() = runTest {
+        assertEquals(false, repository.getSky().first().includeWeekends)
+
+        preferences.setIncludeWeekends(true)
+
+        assertEquals(true, repository.getSky().first { it.includeWeekends }.includeWeekends)
     }
 }

@@ -567,4 +567,17 @@
         <item quantity="other">%2$s: %1$d hvězd</item>
     </plurals>
     <string name="sky_canvas_constellations">souhvězdí: %s</string>
+
+    <!-- Upoutávka na noční oblohu, dokud se nerozsvítí první souhvězdí -->
+    <string name="sky_teaser_title">Na noční obloze přibyla hvězda</string>
+    <plurals name="sky_teaser_days_left">
+        <item quantity="one">ještě %d uzavřený den do tvého prvního souhvězdí</item>
+        <item quantity="few">ještě %d uzavřené dny do tvého prvního souhvězdí</item>
+        <item quantity="many">ještě %d uzavřeného dne do tvého prvního souhvězdí</item>
+        <item quantity="other">ještě %d uzavřených dní do tvého prvního souhvězdí</item>
+    </plurals>
+
+    <string name="sky_about_title">O čem je obloha</string>
+    <string name="sky_about_text">Každý uzavřený den rozsvítí na obloze jednu hvězdu. Má barvu nálady, se kterou jsi den zavřel(a).\n\nKaždý týden v roce má svoje souhvězdí: od Hrnku čaje v lednu po Jedličku v prosinci. Když je týden v rytmu, jeho hvězdy se spojí a souhvězdí se rozsvítí. Každý rok se ve stejném týdnu vrací, takže máš další příležitost ho rozsvítit.\n\nObloha je tichá sbírka tvých večerů. Nic se z ní neztratí, nic nemusíš stihnout a vynechaný den nic nezhasne. Je tu jen pro radost z toho, jak roste.</string>
+    <string name="sky_atlas_desc">Souhvězdí, která jsi už rozsvítil(a), a ta, která teprve vyjdou.</string>
 </resources>

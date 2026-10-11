@@ -61,7 +61,9 @@ fun SkyPreviewCard(data: SkyData, onOpen: () -> Unit) {
             Text(text = monthTitle(current), style = MaterialTheme.typography.bodySmall, color = TextMuted)
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = skySummaryText(data.summary, withYear = false),
+                text = data.daysToFirstConstellation
+                    ?.let { skyCountdownText(data.summary.stars, it) }
+                    ?: skySummaryText(data.summary, withYear = false),
                 style = MaterialTheme.typography.bodySmall,
                 color = TextSlate
             )

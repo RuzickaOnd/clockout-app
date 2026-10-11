@@ -85,7 +85,9 @@ Samostatná Activity podle vzoru `PathActivity` (`applyFrostedWindowChrome()`, `
 4. **Karta dne** po klepnutí na hvězdu (zásah v okruhu 24 dp od nejbližší hvězdy): datum, emoji a název nálady,
    otázka a odpověď přes `RitualLogLocalization`. Bez záznamu: datum a „Záznam byl smazán, hvězda zůstává."
    Opětovné klepnutí nebo jiný měsíc kartu zavře.
-5. Atlas souhvězdí: mřížka miniatur, na úzkém okně 3 sloupce, na širokém 5.
+5. **O čem je obloha**: krátká karta, že každý uzavřený den je hvězda, každý týden roku má souhvězdí, které se vrací,
+   a že obloha je tichá sbírka — nic se neztratí a nic se nemusí stihnout.
+6. Atlas souhvězdí (s větou „Souhvězdí, která jsi už rozsvítil(a), a ta, která teprve vyjdou.“): mřížka miniatur, na úzkém okně 3 sloupce, na širokém 5.
 
 Přístupnost: plátno oblohy má popis, např. „Říjen 2026: 12 hvězd, souhvězdí Dýně a Padající list". Podrobnosti
 jednotlivých dní nabízí Historie.
@@ -99,6 +101,13 @@ Bez jediného dne v `practice_days` ukáže obrazovka prázdný stav: „První 
 - **Ukáže se i v prázdné Historii**, pokud `practice_days` není prázdná — po smazání historie obloha dál existuje.
   Prázdný stav Historie (🌙) pak stojí pod kartou.
 - Bez dnů v `practice_days` se karta neukáže vůbec.
+
+### Upoutávka před prvním souhvězdím
+
+Dokud se nerozsvítí první souhvězdí, aplikace na oblohu upozorňuje: dokončovací karta rituálu ukáže malou zmínku
+„✦ Na noční obloze přibyla hvězda" a pod ní „2 hvězdy · ještě 3 uzavřené dny do tvého prvního souhvězdí";
+náhled v Historii ukáže tentýž odpočet místo souhrnu. Počet dní předpokládá, že uživatel uzavře každý den, kdy se
+rituál nabízí (víkendy jen se zapnutými víkendy). Po rozsvícení prvního souhvězdí upoutávka zmizí.
 
 ### Dokončovací karta rituálu
 

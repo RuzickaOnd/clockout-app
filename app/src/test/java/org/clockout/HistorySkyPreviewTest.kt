@@ -52,6 +52,13 @@ class HistorySkyPreviewTest {
     }
 
     @Test
+    fun `before the first constellation the preview counts the days left`() {
+        // From Friday 9 Oct with Monday 5 Oct closed: Friday, then Mon-Thu of week 42 light Falling Leaf.
+        show(HistoryState(sky = sky))
+        composeTestRule.onNodeWithText("1 hvězda · ještě 5 uzavřených dní do tvého prvního souhvězdí").assertIsDisplayed()
+    }
+
+    @Test
     fun `the sky preview sits under the mood summary of a full history`() {
         val entry = RitualLogEntry(day.toString(), "Q", null, MoodTag.CALM, 1L)
         show(HistoryState(logs = listOf(entry), totalCount = 1, moodCounts = mapOf(MoodTag.CALM to 1), sky = sky))

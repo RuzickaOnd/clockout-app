@@ -97,12 +97,13 @@ class RitualRepositoryImpl(
         practiceDaysFlow.combine(todayFlow) { days, today -> PathPolicy.progress(days = days, today = today) }
 
     override fun getSky(): Flow<SkyData> =
-        combine(practiceDaysFlow, logsFlow, todayFlow) { days, logs, today ->
+        combine(practiceDaysFlow, logsFlow, todayFlow, preferences.includeWeekendsFlow) { days, logs, today, includeWeekends ->
             SkyData(
                 days = days,
                 logs = logs.mapNotNull { entry -> parsePracticeDay(entry.date)?.let { it to entry } }.toMap(),
                 rhythmWeeks = PathRhythm.evaluate(days, today).weeks,
-                today = today
+                today = today,
+                includeWeekends = includeWeekends
             )
         }
 

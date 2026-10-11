@@ -110,4 +110,13 @@ class SkyScreenTest {
         }
         composeTestRule.onNodeWithText("Záznam byl smazán, hvězda zůstává.").assertIsDisplayed()
     }
+
+    @Test
+    fun `the screen explains what the sky is about`() {
+        show()
+        // Composed in full inside the scrolling column; scrolling would wait for the twinkle forever.
+        composeTestRule.onNodeWithText("O čem je obloha").assertExists()
+        composeTestRule.onNodeWithText("Obloha je tichá sbírka tvých večerů", substring = true).assertExists()
+        composeTestRule.onNodeWithText("Souhvězdí, která jsi už rozsvítil(a), a ta, která teprve vyjdou.").assertExists()
+    }
 }

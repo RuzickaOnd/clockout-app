@@ -37,11 +37,14 @@ data class SkyData(
     val days: Set<LocalDate>,
     val logs: Map<LocalDate, RitualLogEntry>,
     val rhythmWeeks: Map<LocalDate, Boolean>,
-    val today: LocalDate
+    val today: LocalDate,
+    /** Only for the countdown: which future days the ritual will be offered on. */
+    val includeWeekends: Boolean = false
 ) {
     // Computed once per emission rather than on every read: the screen reads both on each recomposition.
     val months: List<YearMonth> by lazy { SkyPolicy.months(days, today) }
     val summary: SkySummary by lazy { SkyPolicy.summary(days, rhythmWeeks, today) }
+    val daysToFirstConstellation: Int? by lazy { SkyPolicy.daysToFirstConstellation(days, today, includeWeekends) }
     fun month(yearMonth: YearMonth): SkyMonth = SkyPolicy.month(yearMonth, days, logs, rhythmWeeks)
 
     companion object {
@@ -92,6 +95,31 @@ object SkyPolicy {
         if (rhythmWeeks[monday] != true) return false
         val closed = (0 until 7).filter { monday.plusDays(it.toLong()) in days }.toSet()
         return ConstellationCatalog.forWeek(constellationNumber(monday)).edges.any { (a, b) -> a in closed && b in closed }
+    }
+
+    private const val COUNTDOWN_LOOKAHEAD_DAYS = 21
+
+    /**
+     * How many more closed days light the first constellation, assuming the user closes every day
+     * the ritual is offered on from today - the honest count, rather than the smallest subset of
+     * days, which the first-week rule would make favour starting late in the week. Null once any
+     * constellation has been lit: from then on the sky is discovered and needs no teaser.
+     */
+    fun daysToFirstConstellation(days: Set<LocalDate>, today: LocalDate, includeWeekends: Boolean): Int? {
+        val weeks = PathRhythm.evaluate(days, today).weeks
+        if (weeks.keys.any { isLit(it, days, weeks) }) return null
+        val closed = days.toMutableSet()
+        var added = 0
+        var day = today
+        repeat(COUNTDOWN_LOOKAHEAD_DAYS) {
+            if ((includeWeekends || day.dayOfWeek < DayOfWeek.SATURDAY) && closed.add(day)) {
+                added++
+                val simulated = PathRhythm.evaluate(closed, day).weeks
+                if (isLit(day.mondayOfWeek(), closed, simulated)) return added
+            }
+            day = day.plusDays(1)
+        }
+        return null
     }
 
     fun months(days: Set<LocalDate>, today: LocalDate): List<YearMonth> {

@@ -160,6 +160,7 @@ fun SkyScreen(data: SkyData, language: AppLanguage, onBack: () -> Unit, modifier
                     val date = LocalDate.parse(iso)
                     SkyDayCard(date = date, entry = data.logs[date], language = language)
                 }
+                AboutTheSky()
                 Atlas(data.summary)
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -268,6 +269,30 @@ internal fun SkyDayCard(date: LocalDate, entry: RitualLogEntry?, language: AppLa
     }
 }
 
+/** What the sky means, the way the path screen explains the path: a collection, not a target. */
+@Composable
+private fun AboutTheSky() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .frostedGlass(cornerRadius = 22.dp)
+            .padding(20.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.sky_about_title),
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold, fontSize = 16.sp),
+            color = TextLight
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.sky_about_text),
+            style = MaterialTheme.typography.bodySmall,
+            color = TextSlate,
+            lineHeight = 20.sp
+        )
+    }
+}
+
 /**
  * All 53 constellations. The rows are chunked by hand for the reason BreathingStyleScreen gives:
  * a lazy grid cannot live inside this scrolling column, and a short last row is padded instead.
@@ -276,11 +301,18 @@ internal fun SkyDayCard(date: LocalDate, entry: RitualLogEntry?, language: AppLa
 private fun Atlas(summary: SkySummary) {
     val names = stringArrayResource(R.array.constellation_names)
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(
-            text = stringResource(R.string.sky_atlas_title),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-            color = TextLight
-        )
+        Column {
+            Text(
+                text = stringResource(R.string.sky_atlas_title),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = TextLight
+            )
+            Text(
+                text = stringResource(R.string.sky_atlas_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = TextMuted
+            )
+        }
         BoxWithConstraints {
             val columns = if (maxWidth >= 600.dp) 5 else 3
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -331,6 +363,12 @@ private fun Atlas(summary: SkySummary) {
         }
     }
 }
+
+/** "2 stars · 3 more closed days to your first constellation" - the teaser before the sky has a figure. */
+@Composable
+fun skyCountdownText(stars: Int, daysToFirstConstellation: Int): String =
+    pluralStringResource(R.plurals.sky_summary_stars, stars, stars) + " · " +
+        pluralStringResource(R.plurals.sky_teaser_days_left, daysToFirstConstellation, daysToFirstConstellation)
 
 @Composable
 fun skySummaryText(summary: SkySummary, withYear: Boolean): String {

@@ -258,7 +258,8 @@ class RitualViewModel(
                     rhythmConstellationNumber = SkyPolicy.constellationNumber(thisMonday).takeIf {
                         SkyPolicy.isLit(thisMonday, skyAfter.days, skyAfter.rhythmWeeks) &&
                             !SkyPolicy.isLit(thisMonday, skyBefore.days, skyBefore.rhythmWeeks)
-                    }
+                    },
+                    skyTeaser = skyAfter.daysToFirstConstellation?.let { SkyTeaser(skyAfter.summary.stars, it) }
                 )
             }
             // Read after the log is written, so the count includes today.

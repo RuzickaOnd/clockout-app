@@ -12,6 +12,7 @@ import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStep
 import org.clockout.presentation.ritual.RitualScreen
 import org.clockout.presentation.ritual.RitualState
+import org.clockout.presentation.ritual.SkyTeaser
 import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.MyApplicationTheme
 import org.junit.Rule
@@ -96,6 +97,26 @@ class RitualScreenLocalizationTest {
             }
         }
         composeTestRule.onNodeWithText("Tento týden jsi v rytmu. Na obloze se rozsvítilo souhvězdí: Konvice.")
+            .performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun `the completion card tells how far the first constellation is`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                MyApplicationTheme {
+                    RitualScreen(
+                        state = RitualState(
+                            question = question, currentStep = RitualStep.Log, selectedMood = MoodTag.CALM,
+                            isCompletedAndSaved = true, skyTeaser = SkyTeaser(stars = 2, daysToFirstConstellation = 3)
+                        ),
+                        onIntent = {}, onFinish = {}
+                    )
+                }
+            }
+        }
+        composeTestRule.onNodeWithText("Na noční obloze přibyla hvězda", substring = true).performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText("2 hvězdy · ještě 3 uzavřené dny do tvého prvního souhvězdí")
             .performScrollTo().assertIsDisplayed()
     }
 }

@@ -26,6 +26,7 @@ import org.clockout.presentation.ritual.RitualViewModel
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
@@ -146,5 +147,20 @@ class RitualPathCelebrationTest {
         assumeTrue(seedThisWeek(otherDays = 3, sharingALine = false))
 
         assertNull(finishRitual().state.value.rhythmConstellationNumber)
+    }
+
+    @Test
+    fun `the first ritual points to the night sky and counts the days left`() = runTest(dispatcher) {
+        val teaser = finishRitual().state.value.skyTeaser
+
+        assertEquals(1, teaser?.stars)
+        assertTrue("days left: ${teaser?.daysToFirstConstellation}", teaser!!.daysToFirstConstellation in 1..21)
+    }
+
+    @Test
+    fun `the teaser is gone once a constellation is lit`() = runTest(dispatcher) {
+        seedThisWeek(otherDays = 3)
+
+        assertNull(finishRitual().state.value.skyTeaser)
     }
 }

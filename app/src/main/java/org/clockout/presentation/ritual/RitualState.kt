@@ -27,5 +27,10 @@ data class RitualState(
     /** The stage this ritual has just reached, or null when it reached none. */
     val reachedStage: PathStage? = null,
     /** This week's constellation when this ritual has just brought the week into rhythm. */
-    val rhythmConstellationNumber: Int? = null
+    val rhythmConstellationNumber: Int? = null,
+    /** Points to the night sky until its first constellation lights up; null from then on. */
+    val skyTeaser: SkyTeaser? = null
 )
+
+/** How far the first constellation still is: the stars so far and the closed days still needed. */
+data class SkyTeaser(val stars: Int, val daysToFirstConstellation: Int)
