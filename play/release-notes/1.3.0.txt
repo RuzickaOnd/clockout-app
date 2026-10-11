@@ -1,0 +1,14 @@
+<cs-CZ>
+Novinka: Cesta domů a Noční obloha
+• Každý uzavřený den tě posune o kus dál po cestě z kanceláře domů. Deset stupňů, od Zaklapnutého notebooku až po Doma.
+• Týdenní rytmus: stačí uzavřít všechny pracovní dny až na jeden, sobota a neděle se počítají navíc.
+• Noční obloha: za každý večer hvězda v barvě tvé nálady, týden v rytmu rozsvítí jedno z 53 souhvězdí.
+• Nic se neztratí: postup zůstane i po smazání historie.
+</cs-CZ>
+<en-US>
+New: The Way Home and The Night Sky
+• Every day you close takes you a step further on the way home from work. Ten stages, from Laptop Closed to Home.
+• A weekly rhythm: close every weekday but one, and Saturday or Sunday counts as a bonus.
+• The Night Sky: a star for every evening in the colour of your mood; a week in rhythm lights one of 53 constellations.
+• Nothing is ever lost: your progress stays even when you clear the history.
+</en-US>

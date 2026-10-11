@@ -26,20 +26,24 @@ WIDTH, HEIGHT = 1242, 2208
 # raw capture -> caption above the phone
 SCREENS = {
     "cs": [
-        ("01-home.png",      "DENNÍ RITUÁL",    "Uzavři den vědomě",     "Jeden rituál, čtyři krátké kroky."),
-        ("02-question.png",  "KROK 1 · OTÁZKA", "Zaparkuj myšlenky",     "Nech práci za zavřenými dveřmi."),
-        ("03-breathing.png", "KROK 2 · DECH",   "Zklidni dech 4–4",      "Čtyři animace na výběr, zvuk i jemná haptika."),
-        ("04-lamp.png",      "KROK 3 · LAMPA",  "Zhasni pracovní lampu", "Symbolická tečka za dnešním dnem."),
-        ("05-mood.png",      "KROK 4 · NÁLADA", "Zaznamenej náladu",     "Jedno klepnutí, žádné vyplňování."),
-        ("06-history.png",   "PŘEHLED",         "Sleduj svůj týden",     "Bez nátlaku a bez trestů za vynechaný den."),
+        ("01-home.png",      "DENNÍ RITUÁL",           "Uzavři den vědomě",     "Jeden rituál, čtyři krátké kroky."),
+        ("08-sky.png",       "NOVINKA · NOČNÍ OBLOHA", "Hvězda za každý večer", "Týden v rytmu rozsvítí souhvězdí."),
+        ("07-path.png",      "NOVINKA · CESTA DOMŮ",   "Každý večer blíž domů", "Deset stupňů cesty z kanceláře domů."),
+        ("02-question.png",  "KROK 1 · OTÁZKA",        "Zaparkuj myšlenky",     "Nech práci za zavřenými dveřmi."),
+        ("03-breathing.png", "KROK 2 · DECH",          "Zklidni dech 4–4",      "Čtyři animace na výběr, zvuk i jemná haptika."),
+        ("04-lamp.png",      "KROK 3 · LAMPA",         "Zhasni pracovní lampu", "Symbolická tečka za dnešním dnem."),
+        ("05-mood.png",      "KROK 4 · NÁLADA",        "Zaznamenej náladu",     "Jedno klepnutí, žádné vyplňování."),
+        ("06-history.png",   "PŘEHLED",                "Sleduj své večery",     "Nálady, odpovědi i obloha, bez nátlaku."),
     ],
     "en": [
-        ("01-home.png",      "DAILY RITUAL",      "Close the day on purpose", "One ritual, four short steps."),
-        ("02-question.png",  "STEP 1 · QUESTION", "Park your thoughts",       "Leave work behind closed doors."),
-        ("03-breathing.png", "STEP 2 · BREATH",   "Breathe 4 in, 4 out",      "Four animations to choose from, sound and haptics."),
-        ("04-lamp.png",      "STEP 3 · LAMP",     "Turn off the desk lamp",   "A symbolic full stop to the day."),
-        ("05-mood.png",      "STEP 4 · MOOD",     "Log how you feel",         "One tap. Nothing to fill in."),
-        ("06-history.png",   "OVERVIEW",          "See your week",            "No pressure, no penalty for a missed day."),
+        ("01-home.png",      "DAILY RITUAL",        "Close the day on purpose",  "One ritual, four short steps."),
+        ("08-sky.png",       "NEW · THE NIGHT SKY", "A star for every evening",  "A week in rhythm lights a constellation."),
+        ("07-path.png",      "NEW · THE WAY HOME",  "Closer to home each night", "Ten stages of the walk home from work."),
+        ("02-question.png",  "STEP 1 · QUESTION",   "Park your thoughts",        "Leave work behind closed doors."),
+        ("03-breathing.png", "STEP 2 · BREATH",     "Breathe 4 in, 4 out",       "Four animations to choose from, sound and haptics."),
+        ("04-lamp.png",      "STEP 3 · LAMP",       "Turn off the desk lamp",    "A symbolic full stop to the day."),
+        ("05-mood.png",      "STEP 4 · MOOD",       "Log how you feel",          "One tap. Nothing to fill in."),
+        ("06-history.png",   "OVERVIEW",            "Look back on your evenings", "Moods, answers and your sky, no pressure."),
     ],
 }
 
