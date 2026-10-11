@@ -580,4 +580,8 @@
     <string name="sky_about_title">O čem je obloha</string>
     <string name="sky_about_text">Každý uzavřený den rozsvítí na obloze jednu hvězdu. Má barvu nálady, se kterou jsi den zavřel(a).\n\nKaždý týden v roce má svoje souhvězdí: od Hrnku čaje v lednu po Jedličku v prosinci. Když je týden v rytmu, jeho hvězdy se spojí a souhvězdí se rozsvítí. Každý rok se ve stejném týdnu vrací, takže máš další příležitost ho rozsvítit.\n\nObloha je tichá sbírka tvých večerů. Nic se z ní neztratí, nic nemusíš stihnout a vynechaný den nic nezhasne. Je tu jen pro radost z toho, jak roste.</string>
     <string name="sky_atlas_desc">Souhvězdí, která jsi už rozsvítil(a), a ta, která teprve vyjdou.</string>
+
+    <string name="sky_summary_last_year">loni %d</string>
+    <string name="sky_atlas_lit_years">Rozsvíceno: %s</string>
+    <string name="sky_atlas_not_lit_yet">Zatím nerozsvíceno – vychází v týdnu %d.</string>
 </resources>

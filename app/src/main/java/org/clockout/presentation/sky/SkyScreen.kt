@@ -1,6 +1,7 @@
 package org.clockout.presentation.sky
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -19,6 +20,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,6 +57,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -300,6 +304,7 @@ private fun AboutTheSky() {
 @Composable
 private fun Atlas(summary: SkySummary) {
     val names = stringArrayResource(R.array.constellation_names)
+    var selected by rememberSaveable { mutableStateOf<Int?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column {
             Text(
@@ -324,7 +329,10 @@ private fun Atlas(summary: SkySummary) {
                             Column(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .frostedGlass(cornerRadius = 16.dp)
+                                    .frostedGlass(isActive = selected == number, cornerRadius = 16.dp)
+                                    .clickable(onClickLabel = names[number - 1], role = Role.Button) {
+                                        selected = number.takeIf { it != selected }
+                                    }
                                     .padding(8.dp)
                                     .testTag("sky_atlas_tile_$number"),
                                 horizontalAlignment = Alignment.CenterHorizontally
@@ -358,6 +366,15 @@ private fun Atlas(summary: SkySummary) {
                         }
                         repeat(columns - row.size) { Spacer(modifier = Modifier.weight(1f)) }
                     }
+                    // Opens under the row of the tapped tile: above the atlas it would be out of
+                    // sight for any tile further down than the first few rows.
+                    selected?.takeIf { number -> row.any { it.number == number } }?.let { number ->
+                        AtlasDetailCard(
+                            name = names[number - 1],
+                            number = number,
+                            years = summary.litYearsByNumber[number].orEmpty()
+                        )
+                    }
                 }
             }
         }
@@ -365,6 +382,38 @@ private fun Atlas(summary: SkySummary) {
 }
 
 /** "2 stars · 3 more closed days to your first constellation" - the teaser before the sky has a figure. */
+/** Which years a constellation was lit in - the atlas tile itself only has room for "2×". */
+@Composable
+private fun AtlasDetailCard(name: String, number: Int, years: List<Int>) {
+    // A tile in the last visible row opens its card below the fold; scroll it into sight.
+    val bringIntoView = remember { BringIntoViewRequester() }
+    LaunchedEffect(number) { bringIntoView.bringIntoView() }
+    Column(
+        modifier = Modifier
+            .bringIntoViewRequester(bringIntoView)
+            .fillMaxWidth()
+            .frostedGlass(isActive = true, cornerRadius = 18.dp)
+            .padding(16.dp)
+            .testTag("sky_atlas_detail"),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = name,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = TextLight
+        )
+        Text(
+            text = when {
+                years.isNotEmpty() -> stringResource(R.string.sky_atlas_lit_years, years.joinToString(", "))
+                number == ConstellationCatalog.SIZE -> stringResource(R.string.sky_atlas_rare)
+                else -> stringResource(R.string.sky_atlas_not_lit_yet, number)
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = TextSlate
+        )
+    }
+}
+
 @Composable
 fun skyCountdownText(stars: Int, daysToFirstConstellation: Int): String =
     pluralStringResource(R.plurals.sky_summary_stars, stars, stars) + " · " +
@@ -378,6 +427,8 @@ fun skySummaryText(summary: SkySummary, withYear: Boolean): String {
     )
     if (withYear) {
         parts += stringResource(R.string.sky_summary_this_year, summary.litThisYear, summary.weeksThisYear)
+        // Recalled only when there is something to recall, so a first year is not told "last year 0".
+        if (summary.litLastYear > 0) parts += stringResource(R.string.sky_summary_last_year, summary.litLastYear)
     }
     return parts.joinToString(" · ")
 }

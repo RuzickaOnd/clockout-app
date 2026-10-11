@@ -560,4 +560,8 @@
     <string name="sky_about_title">What the sky is about</string>
     <string name="sky_about_text">Every day you close lights one star in the sky, in the colour of the mood you closed it with.\n\nEvery week of the year has its own constellation, from the Cup of Tea in January to the Little Fir Tree in December. When a week is in rhythm, its stars join up and the constellation lights. It comes back in the same week every year, so there is always another chance to light it.\n\nThe sky is a quiet collection of your evenings. Nothing in it is ever lost, there is nothing to keep up with, and a missed day turns nothing off. It is here only for the joy of watching it grow.</string>
     <string name="sky_atlas_desc">The constellations you have lit, and those still to rise.</string>
+
+    <string name="sky_summary_last_year">last year %d</string>
+    <string name="sky_atlas_lit_years">Lit in: %s</string>
+    <string name="sky_atlas_not_lit_yet">Not lit yet – rises in week %d.</string>
 </resources>

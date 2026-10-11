@@ -1,6 +1,8 @@
 package org.clockout
 
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -8,6 +10,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.unit.dp
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.MoodTag
@@ -17,6 +21,7 @@ import org.clockout.presentation.sky.SkyDayCard
 import org.clockout.presentation.sky.SkyScreen
 import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.MyApplicationTheme
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -70,11 +75,10 @@ class SkyScreenTest {
         show()
         // The atlas is composed in full inside the scrolling column, so its tiles exist off screen.
         // Scrolling to them would wait for the twinkle to go idle, which it never does.
-        composeTestRule.onNode(hasTestTag("sky_atlas_tile_41") and hasAnyDescendant(hasText("Pletení")))
-            .assertExists()
-        composeTestRule.onNode(hasTestTag("sky_atlas_tile_41") and hasAnyDescendant(hasText("1×"))).assertExists()
-        composeTestRule.onNode(hasTestTag("sky_atlas_tile_42") and hasAnyDescendant(hasText("vychází v týdnu 42")))
-            .assertExists()
+        // A tile is clickable, so its texts are merged into the tile node itself.
+        composeTestRule.onNode(hasTestTag("sky_atlas_tile_41") and hasText("Pletení")).assertExists()
+        composeTestRule.onNode(hasTestTag("sky_atlas_tile_41") and hasText("1×")).assertExists()
+        composeTestRule.onNode(hasTestTag("sky_atlas_tile_42") and hasText("vychází v týdnu 42")).assertExists()
     }
 
     @Test
@@ -118,5 +122,62 @@ class SkyScreenTest {
         composeTestRule.onNodeWithText("O čem je obloha").assertExists()
         composeTestRule.onNodeWithText("Obloha je tichá sbírka tvých večerů", substring = true).assertExists()
         composeTestRule.onNodeWithText("Souhvězdí, která jsi už rozsvítil(a), a ta, která teprve vyjdou.").assertExists()
+    }
+
+    @Test
+    fun `the summary recalls last year`() {
+        val lastYear = LocalDate.of(2025, 10, 6)
+        val thisYear = LocalDate.of(2026, 10, 5)
+        show(
+            SkyData(
+                days = setOf(lastYear, lastYear.plusDays(4), thisYear, thisYear.plusDays(4)),
+                logs = emptyMap(),
+                rhythmWeeks = mapOf(lastYear to true, thisYear to true),
+                today = today
+            )
+        )
+        composeTestRule.onNodeWithText("4 hvězdy · 2 souhvězdí · letos 1 z 53 · loni 1").assertIsDisplayed()
+    }
+
+    @Test
+    fun `tapping an atlas tile tells the years it was lit in`() {
+        show()
+        composeTestRule.onNodeWithTag("sky_atlas_tile_41").performSemanticsAction(SemanticsActions.OnClick)
+        composeTestRule.mainClock.advanceTimeBy(500)
+        composeTestRule.onNode(hasTestTag("sky_atlas_detail") and hasAnyDescendant(hasText("Pletení"))).assertExists()
+        composeTestRule.onNode(hasTestTag("sky_atlas_detail") and hasAnyDescendant(hasText("Rozsvíceno: 2026")))
+            .assertExists()
+
+        composeTestRule.onNodeWithTag("sky_atlas_tile_42").performSemanticsAction(SemanticsActions.OnClick)
+        composeTestRule.mainClock.advanceTimeBy(500)
+        composeTestRule.onNode(
+            hasTestTag("sky_atlas_detail") and hasAnyDescendant(hasText("Zatím nerozsvíceno – vychází v týdnu 42."))
+        ).assertExists()
+
+        composeTestRule.onNodeWithTag("sky_atlas_tile_42").performSemanticsAction(SemanticsActions.OnClick)
+        composeTestRule.mainClock.advanceTimeBy(500)
+        composeTestRule.onNodeWithTag("sky_atlas_detail").assertDoesNotExist()
+    }
+
+    @Test
+    fun `the years card opens right under the tapped tile`() {
+        show()
+        composeTestRule.onNodeWithTag("sky_atlas_tile_41").performSemanticsAction(SemanticsActions.OnClick)
+        composeTestRule.mainClock.advanceTimeBy(500)
+
+        val tile = composeTestRule.onNodeWithTag("sky_atlas_tile_41").getUnclippedBoundsInRoot()
+        val card = composeTestRule.onNodeWithTag("sky_atlas_detail").getUnclippedBoundsInRoot()
+        // Directly below the tile's row: not above the atlas, where a tap far down would never see it.
+        assertTrue("card top ${card.top} vs tile bottom ${tile.bottom}", card.top >= tile.bottom)
+        assertTrue("card top ${card.top} vs tile bottom ${tile.bottom}", card.top - tile.bottom < 40.dp)
+    }
+
+    @Test
+    fun `the years card scrolls itself into view`() {
+        show()
+        composeTestRule.onNodeWithTag("sky_atlas_tile_41").performSemanticsAction(SemanticsActions.OnClick)
+        composeTestRule.mainClock.advanceTimeBy(2_000)
+
+        composeTestRule.onNodeWithTag("sky_atlas_detail").assertIsDisplayed()
     }
 }

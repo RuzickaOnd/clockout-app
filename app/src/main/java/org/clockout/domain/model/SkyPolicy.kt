@@ -26,7 +26,11 @@ data class SkySummary(
     val constellationsLit: Int,
     val litThisYear: Int,
     val weeksThisYear: Int,
-    val timesLitByNumber: Map<Int, Int>
+    /** Distinct constellations lit in the previous ISO year, so January does not start from nothing. */
+    val litLastYear: Int,
+    val timesLitByNumber: Map<Int, Int>,
+    /** The ISO years each constellation was lit in, oldest first. */
+    val litYearsByNumber: Map<Int, List<Int>>
 )
 
 /**
@@ -132,13 +136,17 @@ object SkyPolicy {
     fun summary(days: Set<LocalDate>, rhythmWeeks: Map<LocalDate, Boolean>, today: LocalDate): SkySummary {
         val lit = rhythmWeeks.keys.filter { isLit(it, days, rhythmWeeks) }
         val year = today.get(IsoFields.WEEK_BASED_YEAR)
+        fun distinctIn(isoYear: Int) =
+            lit.filter { it.get(IsoFields.WEEK_BASED_YEAR) == isoYear }.map(::constellationNumber).toSet().size
         return SkySummary(
             stars = days.size,
             constellationsLit = lit.size,
-            litThisYear = lit.filter { it.get(IsoFields.WEEK_BASED_YEAR) == year }
-                .map(::constellationNumber).toSet().size,
+            litThisYear = distinctIn(year),
             weeksThisYear = today.range(IsoFields.WEEK_OF_WEEK_BASED_YEAR).maximum.toInt(),
-            timesLitByNumber = lit.groupingBy(::constellationNumber).eachCount()
+            litLastYear = distinctIn(year - 1),
+            timesLitByNumber = lit.groupingBy(::constellationNumber).eachCount(),
+            litYearsByNumber = lit.groupBy(::constellationNumber)
+                .mapValues { (_, mondays) -> mondays.map { it.get(IsoFields.WEEK_BASED_YEAR) }.sorted() }
         )
     }
 

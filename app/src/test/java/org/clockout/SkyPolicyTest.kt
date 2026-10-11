@@ -123,6 +123,8 @@ class SkyPolicyTest {
         assertEquals(2, summary.litThisYear)
         assertEquals(53, summary.weeksThisYear)
         assertEquals(mapOf(41 to 2, 40 to 1), summary.timesLitByNumber)
+        assertEquals(1, summary.litLastYear)
+        assertEquals(mapOf(41 to listOf(2025, 2026), 40 to listOf(2026)), summary.litYearsByNumber)
     }
 
     @Test
