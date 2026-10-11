@@ -3,6 +3,8 @@ package org.clockout.data.repository
 import org.clockout.data.local.QuestionsData
 import org.clockout.data.local.RitualLogMigrator
 import org.clockout.data.local.RitualPreferences
+import org.clockout.data.local.db.PracticeDayDao
+import org.clockout.data.local.db.PracticeDayEntity
 import org.clockout.data.local.db.RitualLogDao
 import org.clockout.data.local.db.toDomain
 import org.clockout.data.local.db.toEntity
@@ -14,16 +16,24 @@ import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.TelemetryConsent
 import org.clockout.domain.model.DayStatus
 import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.PathPolicy
+import org.clockout.domain.model.PathProgress
+import org.clockout.domain.model.PathRhythm
+import org.clockout.domain.model.SkyData
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
 import org.clockout.domain.model.WorkdayCloseWindow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -31,14 +41,22 @@ import java.util.Locale
 class RitualRepositoryImpl(
     private val preferences: RitualPreferences,
     private val ritualLogDao: RitualLogDao,
-    private val logMigrator: RitualLogMigrator = RitualLogMigrator(preferences, ritualLogDao),
+    private val practiceDayDao: PracticeDayDao,
+    private val logMigrator: RitualLogMigrator = RitualLogMigrator(preferences, ritualLogDao, practiceDayDao),
     /**
      * Whether the audio file behind a custom sound is still on disk. Injected because the check
      * needs a Context the repository has no other use for, and because it lets a test reproduce
      * a restored cloud backup without touching the file system. Defaults to "everything is
      * there", which is what a test that does not care about sounds wants.
      */
-    private val soundFileExists: (fileName: String) -> Boolean = { true }
+    private val soundFileExists: (fileName: String) -> Boolean = { true },
+    /**
+     * Today's date, emitted again whenever it changes. The path's rhythm and the sky's current
+     * month depend on the date, and nothing else would emit when it changes under an open screen.
+     * The app passes `Context.todayFlow()`, which follows the system's date broadcasts; without a
+     * context (tests) it is just today, read once.
+     */
+    private val todayFlow: Flow<LocalDate> = flow { emit(LocalDate.now()) }
 ) : RitualRepository {
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -70,6 +88,39 @@ class RitualRepositoryImpl(
         return logsFlow.combine(preferences.includeWeekendsFlow) { entries, includeWeekends ->
             calculateStreakInfo(entries, includeWeekends)
         }
+    }
+
+    private val practiceDaysFlow: Flow<Set<LocalDate>> = flow {
+        logMigrator.ensureMigrated()
+        emitAll(practiceDayDao.observeAll().map { dates -> dates.mapNotNull(::parsePracticeDay).toSet() })
+    }
+
+    override fun getPathProgress(): Flow<PathProgress> =
+        practiceDaysFlow.combine(todayFlow) { days, today -> PathPolicy.progress(days = days, today = today) }
+            // The rhythm walks the whole history; keep that off the main thread.
+            .flowOn(Dispatchers.Default)
+
+    override fun getSky(): Flow<SkyData> =
+        combine(practiceDaysFlow, logsFlow, todayFlow, preferences.includeWeekendsFlow) { days, logs, today, includeWeekends ->
+            SkyData(
+                days = days,
+                logs = logs.mapNotNull { entry -> parsePracticeDay(entry.date)?.let { it to entry } }.toMap(),
+                rhythmWeeks = PathRhythm.evaluate(days, today).weeks,
+                today = today,
+                includeWeekends = includeWeekends
+            )
+        }
+            .flowOn(Dispatchers.Default)
+
+    /**
+     * Rows seeded from ritual_logs carry whatever digits the system locale wrote them in - Persian
+     * or Arabic-Indic ones included - which ISO parsing rejects, so they are read back as ASCII.
+     * A row that still does not parse is skipped rather than taking the home screen down with it.
+     */
+    private fun parsePracticeDay(date: String): LocalDate? {
+        val ascii = date.map { char -> Character.digit(char, 10).takeIf { it >= 0 }?.digitToChar() ?: char }
+            .joinToString("")
+        return runCatching { LocalDate.parse(ascii) }.getOrNull()
     }
 
     private fun calculateStreakInfo(
@@ -128,15 +179,20 @@ class RitualRepositoryImpl(
     }
 
     override suspend fun logRitual(selectedAnswer: String?, mood: MoodTag, questionText: String) {
+        // One reading of the clock for both rows: read twice, a ritual saved at midnight could
+        // land in the history on one day and on the path on the next.
+        val now = Date()
         val entry = RitualLogEntry(
-            date = getTodayDateString(),
+            date = dateFormat.format(now),
             questionText = questionText,
             selectedAnswer = selectedAnswer,
             moodTag = mood,
-            timestamp = System.currentTimeMillis()
+            timestamp = now.time
         )
+        // LocalDate always prints ASCII ISO digits; entry.date follows the system locale's digits.
+        val practiceDay = now.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
         logMigrator.ensureMigrated()
-        ritualLogDao.upsert(entry.toEntity())
+        ritualLogDao.logDay(entry.toEntity(), PracticeDayEntity(practiceDay.toString()))
         preferences.incrementCompletedRitualCount()
     }
 

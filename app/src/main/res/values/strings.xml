@@ -49,7 +49,7 @@
     <string name="common_delete">Delete</string>
     <string name="history_clear_tooltip">Clear history</string>
     <string name="history_clear_dialog_title">Delete ritual history?</string>
-    <string name="history_clear_dialog_text">This action will delete all recorded completed workdays.</string>
+    <string name="history_clear_dialog_text">This action will delete all recorded completed workdays. Your stage on the path and your rhythm stay.</string>
     <string name="history_empty_title">No records yet</string>
     <string name="history_empty_desc">Once you complete your first 3-minute ritual after work today, your mood and reflection will appear here.</string>
     <plurals name="history_total_closed_days">
@@ -392,10 +392,176 @@
     <string name="settings_app_version_label">Version</string>
     <string name="settings_clear_data_button">Clear data and history</string>
     <string name="settings_clear_data_dialog_title">Clear app data?</string>
-    <string name="settings_clear_data_dialog_text">This action will delete all recorded ritual history.</string>
+    <string name="settings_clear_data_dialog_text">This action will delete all recorded ritual history. Your stage on the path and your rhythm stay.</string>
     <string name="settings_clear_data_confirm">Clear</string>
 
     <!-- Notifications -->
     <string name="notification_workday_end_title">ClockOut – time to wrap up work</string>
     <string name="notification_workday_end_text">Take 2 minutes to pause and close your workday.</string>
+
+    <!-- Path: the way home -->
+    <string name="path_stage_0_title">Still at the Desk</string>
+    <string name="path_stage_0_verse">The screen is still on, and the day has not ended.</string>
+    <string name="path_stage_0_desc">No day closed yet. The way home begins the first time you close up work.</string>
+    <string name="path_stage_1_title">Laptop Closed</string>
+    <string name="path_stage_1_verse">The click of the lid is the first step.</string>
+    <string name="path_stage_1_desc">Your first closed day. Work got a clear ending, even though you are still in the same room.</string>
+    <string name="path_stage_2_title">Coat On</string>
+    <string name="path_stage_2_verse">Not leaving yet, but getting ready.</string>
+    <string name="path_stage_2_desc">Five closed days. Your body is starting to remember that the ritual means it is time to leave.</string>
+    <string name="path_stage_3_title">Key in the Lock</string>
+    <string name="path_stage_3_verse">Behind the door stays everything that can wait until tomorrow.</string>
+    <string name="path_stage_3_desc">Ten days. You are learning to lock work away where it belongs.</string>
+    <string name="path_stage_4_title">Down the Stairs</string>
+    <string name="path_stage_4_verse">Every step down leaves your head a little lighter.</string>
+    <string name="path_stage_4_desc">Twenty days. Thoughts of work still call out, but they fade with every step.</string>
+    <string name="path_stage_5_title">The Street at Dusk</string>
+    <string name="path_stage_5_verse">The street lamps come on, and nobody needs anything from you.</string>
+    <string name="path_stage_5_desc">Thirty-five days. Closing the day stops being an effort and becomes a habit.</string>
+    <string name="path_stage_6_title">Through the Park</string>
+    <string name="path_stage_6_verse">You slow down. The way no longer hurries anywhere.</string>
+    <string name="path_stage_6_desc">Fifty days. Between work and home you have a stretch of calm of your own.</string>
+    <string name="path_stage_7_title">Over the Bridge</string>
+    <string name="path_stage_7_verse">The river flows under the bridge, and the workday stays on the far bank.</string>
+    <string name="path_stage_7_desc">Seventy-five days. You now cross the line between work and your own time without thinking about it.</string>
+    <string name="path_stage_8_title">The Garden Gate</string>
+    <string name="path_stage_8_verse">The creak of the gate sounds like home.</string>
+    <string name="path_stage_8_desc">One hundred days. Your evenings belong to you and the people around you again.</string>
+    <string name="path_stage_9_title">The Threshold</string>
+    <string name="path_stage_9_verse">Your shoes stay outside, and so does the whole day.</string>
+    <string name="path_stage_9_desc">One hundred and fifty days. You know that moment of crossing so well that nothing can disturb it.</string>
+    <string name="path_stage_10_title">Home</string>
+    <string name="path_stage_10_verse">There is a light in the window, and calm inside.</string>
+    <string name="path_stage_10_desc">Two hundred and fifty days. You carry the way home inside you, wherever you work from.</string>
+
+    <string name="path_card_title">The Path</string>
+    <string name="path_card_beginning">The path begins with your first closed day</string>
+    <string name="path_card_final">You\'re home. You know the way by heart now.</string>
+    <string name="path_next_stage">Next: %s</string>
+    <plurals name="path_days_to_next">
+        <item quantity="one">%d more day to the next stage</item>
+        <item quantity="other">%d more days to the next stage</item>
+    </plurals>
+    <plurals name="path_rhythm_current">
+        <item quantity="one">Rhythm: %d week</item>
+        <item quantity="other">Rhythm: %d weeks</item>
+    </plurals>
+    <string name="path_rhythm_longest">longest %d</string>
+    <plurals name="path_closed_days">
+        <item quantity="one">%d closed day</item>
+        <item quantity="other">%d closed days</item>
+    </plurals>
+    <plurals name="path_stage_threshold">
+        <item quantity="one">from %d day</item>
+        <item quantity="other">from %d days</item>
+    </plurals>
+    <string name="path_open_description">Open the path</string>
+    <string name="path_screen_title">The Way Home</string>
+    <string name="path_current_badge">Your stage</string>
+    <string name="path_origin_title">What the path is about</string>
+    <string name="path_origin_text">The way home from work used to close the day by itself: shut the laptop, put on a coat, lock up, take the stairs and walk home. Working from home, that way is missing, and work easily spills into the evening.\n\nEvery day you close moves you a little further along a way you rebuild one day at a time. At the end of it you are home, which is where the evening belongs.</string>
+    <string name="path_stages_title">Ten stages</string>
+    <string name="path_rhythm_title">How the rhythm works</string>
+    <string name="path_rhythm_text">A week is in rhythm when you close all but one of its weekdays: four of five. A Saturday or Sunday you close counts as well and can stand in for a missed weekday. One weaker week will not break the rhythm, it just does not count; only two in a row do. The week you are in counts once it reaches the threshold.\n\nYour stage and your rhythm stay even when you clear the history. They remember only the dates you closed the day, nothing of what you wrote.</string>
+    <string name="settings_about_path_button">The Way Home</string>
+    <string name="ritual_path_stage_reached">A new stage on the path</string>
+    <string name="ritual_path_rhythm_constellation">You\'re in rhythm this week. A constellation lit up in the sky: %s.</string>
+
+    <!-- Night sky: one constellation per ISO week, index = week - 1 -->
+    <string-array name="constellation_names">
+        <item>Cup of Tea</item>
+        <item>Wool Socks</item>
+        <item>Fireplace</item>
+        <item>Warm Blanket</item>
+        <item>Sled</item>
+        <item>Mittens on the Radiator</item>
+        <item>Bedside Book</item>
+        <item>Pot of Soup</item>
+        <item>Candle</item>
+        <item>Kettle</item>
+        <item>Umbrella by the Door</item>
+        <item>Snowdrop</item>
+        <item>Rain Boots</item>
+        <item>Bicycle</item>
+        <item>Watering Can</item>
+        <item>Open Window</item>
+        <item>Birdhouse</item>
+        <item>Swing</item>
+        <item>Dandelion</item>
+        <item>Cat on the Sill</item>
+        <item>Garden Bench</item>
+        <item>Basket of Strawberries</item>
+        <item>Paper Lantern</item>
+        <item>Butterfly Net</item>
+        <item>Hammock</item>
+        <item>Ice Cream Cone</item>
+        <item>Straw Hat</item>
+        <item>Campfire</item>
+        <item>Tent</item>
+        <item>Rowing Boat</item>
+        <item>Fishing Rod</item>
+        <item>Watermelon</item>
+        <item>Shooting Star</item>
+        <item>Guitar</item>
+        <item>Jar of Jam</item>
+        <item>Apple</item>
+        <item>Kite</item>
+        <item>Basket of Mushrooms</item>
+        <item>Chestnuts</item>
+        <item>Pumpkin</item>
+        <item>Knitting</item>
+        <item>Falling Leaf</item>
+        <item>Oil Lamp</item>
+        <item>Scarf</item>
+        <item>Board Game</item>
+        <item>Slippers</item>
+        <item>Armchair</item>
+        <item>Fresh Loaf</item>
+        <item>Advent Wreath</item>
+        <item>Gingerbread</item>
+        <item>Snowman</item>
+        <item>Little Fir Tree</item>
+        <item>Blue Moon</item>
+    </string-array>
+
+    <!-- Night sky -->
+    <string name="sky_screen_title">The Night Sky</string>
+    <plurals name="sky_summary_stars">
+        <item quantity="one">%d star</item>
+        <item quantity="other">%d stars</item>
+    </plurals>
+    <plurals name="sky_summary_constellations">
+        <item quantity="one">%d constellation</item>
+        <item quantity="other">%d constellations</item>
+    </plurals>
+    <string name="sky_summary_this_year">this year %1$d of %2$d</string>
+    <string name="sky_previous_month">Previous month</string>
+    <string name="sky_next_month">Next month</string>
+    <string name="sky_month_empty">No stars this month yet</string>
+    <string name="sky_empty">The first star lights up after your first closed day.</string>
+    <string name="sky_record_deleted">The entry was deleted; the star stays.</string>
+    <string name="sky_atlas_title">Atlas of constellations</string>
+    <string name="sky_atlas_times">%d×</string>
+    <string name="sky_atlas_rises">rises in week %d</string>
+    <string name="sky_atlas_rare">only in years with a 53rd week</string>
+    <plurals name="sky_canvas_description">
+        <item quantity="one">%2$s: %1$d star</item>
+        <item quantity="other">%2$s: %1$d stars</item>
+    </plurals>
+    <string name="sky_canvas_constellations">constellations: %s</string>
+
+    <!-- Night sky teaser, until the first constellation lights up -->
+    <string name="sky_teaser_title">A new star in the night sky</string>
+    <plurals name="sky_teaser_days_left">
+        <item quantity="one">%d more closed day to your first constellation</item>
+        <item quantity="other">%d more closed days to your first constellation</item>
+    </plurals>
+
+    <string name="sky_about_title">What the sky is about</string>
+    <string name="sky_about_text">Every day you close lights one star in the sky, in the colour of the mood you closed it with.\n\nEvery week of the year has its own constellation, from the Cup of Tea in January to the Little Fir Tree in December. When a week is in rhythm, its stars join up and the constellation lights. It comes back in the same week every year, so there is always another chance to light it.\n\nThe sky is a quiet collection of your evenings. Nothing in it is ever lost, there is nothing to keep up with, and a missed day turns nothing off. It is here only for the joy of watching it grow.</string>
+    <string name="sky_atlas_desc">The constellations you have lit, and those still to rise.</string>
+
+    <string name="sky_summary_last_year">last year %d</string>
+    <string name="sky_atlas_lit_years">Lit in: %s</string>
+    <string name="sky_atlas_not_lit_yet">Not lit yet – rises in week %d.</string>
 </resources>

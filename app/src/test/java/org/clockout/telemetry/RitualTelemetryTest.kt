@@ -63,7 +63,8 @@ class RitualTelemetryTest {
                     preferencesFolder.newFile("padla_test.preferences_pb").apply { delete() }
                 }
             ),
-            ritualLogDao = database.ritualLogDao()
+            ritualLogDao = database.ritualLogDao(),
+            practiceDayDao = database.practiceDayDao()
         )
         tracker = RecordingAnalyticsTracker()
     }

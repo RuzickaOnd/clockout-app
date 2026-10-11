@@ -67,7 +67,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -79,6 +81,7 @@ import org.clockout.R
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.PathStage
 import org.clockout.domain.model.RitualStep
 import org.clockout.presentation.components.CLOSURE_BULB_ANIM_MILLIS
 import org.clockout.presentation.components.CLOSURE_BUTTON_IN_DELAY_MILLIS
@@ -86,6 +89,8 @@ import org.clockout.presentation.components.CLOSURE_TEXT_IN_DELAY_MILLIS
 import org.clockout.presentation.components.BreathingVisual
 import org.clockout.presentation.components.ClosureBulb
 import org.clockout.presentation.components.FrostedBackgroundContainer
+import org.clockout.presentation.components.PathStageEmblem
+import org.clockout.presentation.sky.skyCountdownText
 import org.clockout.presentation.components.frostedGlass
 import org.clockout.presentation.components.isInhalePhase
 import org.clockout.presentation.components.rememberBreathCycle
@@ -93,6 +98,8 @@ import org.clockout.presentation.components.ContentMaxWidth
 import org.clockout.presentation.components.maxContentWidth
 import org.clockout.presentation.util.descriptionRes
 import org.clockout.presentation.util.labelRes
+import org.clockout.presentation.util.titleRes
+import org.clockout.presentation.util.verseRes
 import org.clockout.ui.theme.FrostedGlassBackground
 import org.clockout.ui.theme.FrostedGlassBorder
 import org.clockout.ui.theme.IndigoAccent
@@ -272,6 +279,9 @@ fun RitualScreen(
                         StepLogContent(
                             isSaved = state.isCompletedAndSaved,
                             selectedMood = state.selectedMood,
+                            reachedStage = state.reachedStage,
+                            rhythmConstellationNumber = state.rhythmConstellationNumber,
+                            skyTeaser = state.skyTeaser,
                             language = state.language,
                             onIntent = onIntent,
                             onFinish = onFinish
@@ -864,6 +874,9 @@ private fun ClosureCrossfade(
 private fun StepLogContent(
     isSaved: Boolean,
     selectedMood: MoodTag?,
+    reachedStage: PathStage?,
+    rhythmConstellationNumber: Int?,
+    skyTeaser: SkyTeaser?,
     language: AppLanguage,
     onIntent: (RitualIntent) -> Unit,
     onFinish: () -> Unit
@@ -941,6 +954,58 @@ private fun StepLogContent(
                         color = TextSlate,
                         textAlign = TextAlign.Center
                     )
+                    if (reachedStage != null) {
+                        Spacer(modifier = Modifier.height(22.dp))
+                        PathStageEmblem(stage = reachedStage, size = 56.dp)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = stringResource(R.string.ritual_path_stage_reached),
+                            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.5.sp),
+                            color = TextMuted,
+                            modifier = Modifier.testTag("ritual_path_stage_reached")
+                        )
+                        Text(
+                            text = stringResource(reachedStage.titleRes),
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = TextLight,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(reachedStage.verseRes),
+                            style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
+                            color = TextSlate,
+                            textAlign = TextAlign.Center
+                        )
+                    } else if (rhythmConstellationNumber != null) {
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.ritual_path_rhythm_constellation,
+                                stringArrayResource(R.array.constellation_names)[rhythmConstellationNumber - 1]
+                            ),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = IndigoAccent,
+                            modifier = Modifier.testTag("ritual_path_rhythm_week")
+                        )
+                    }
+                    skyTeaser?.let { teaser ->
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "✦ " + stringResource(R.string.sky_teaser_title),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = IndigoAccent,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = skyCountdownText(teaser.stars, teaser.daysToFirstConstellation),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextSlate,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.testTag("ritual_sky_teaser")
+                        )
+                    }
                 }
             }
         } else {

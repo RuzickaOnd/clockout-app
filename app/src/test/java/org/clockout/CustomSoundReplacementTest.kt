@@ -61,6 +61,7 @@ class CustomSoundReplacementTest {
     private fun repository() = RitualRepositoryImpl(
         preferences = preferences,
         ritualLogDao = database.ritualLogDao(),
+        practiceDayDao = database.practiceDayDao(),
         // Only the uploaded file is on disk; everything restored from a cloud backup is not.
         soundFileExists = { it == uploaded.fileName }
     )

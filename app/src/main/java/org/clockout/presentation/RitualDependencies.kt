@@ -9,6 +9,7 @@ import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.repository.RitualRepository
 import org.clockout.data.repository.RitualRepositoryImpl
+import org.clockout.util.todayFlow
 
 /**
  * Builds the repository the app's screens read and write through.
@@ -24,9 +25,12 @@ import org.clockout.data.repository.RitualRepositoryImpl
 fun rememberRitualRepository(context: Context = LocalContext.current): RitualRepository {
     val preferences = remember(context) { RitualPreferences(context) }
     return remember(context) {
+        val database = ClockoutDatabase.getInstance(context)
         RitualRepositoryImpl(
             preferences = preferences,
-            ritualLogDao = ClockoutDatabase.getInstance(context).ritualLogDao(),
+            ritualLogDao = database.ritualLogDao(),
+            practiceDayDao = database.practiceDayDao(),
+            todayFlow = context.applicationContext.todayFlow(),
             // A cloud backup restores the sound metadata but not the audio files, which travel
             // only on a device-to-device transfer, so what is on disk has the last word.
             soundFileExists = { fileName -> CustomSoundStorage.resolveFile(context, fileName).exists() }

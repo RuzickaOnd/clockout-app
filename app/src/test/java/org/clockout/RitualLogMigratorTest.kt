@@ -3,6 +3,7 @@ package org.clockout
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.clockout.data.local.LegacyRitualLogSource
 import org.clockout.data.local.RitualLogMigrator
@@ -76,7 +77,7 @@ class RitualLogMigratorTest {
             listOf(legacyEntry("2026-09-05", MoodTag.TIRED), legacyEntry("2026-09-06", MoodTag.TENSE))
         )
 
-        RitualLogMigrator(legacy, dao).ensureMigrated()
+        RitualLogMigrator(legacy, dao, database.practiceDayDao()).ensureMigrated()
 
         assertEquals(2, dao.count())
         assertEquals("TIRED", dao.getByDate("2026-09-05")?.moodTagId)
@@ -87,7 +88,7 @@ class RitualLogMigratorTest {
     @Test
     fun `import runs only once even when called repeatedly`() = runTest {
         val legacy = FakeLegacySource(listOf(legacyEntry("2026-09-06")))
-        val migrator = RitualLogMigrator(legacy, dao)
+        val migrator = RitualLogMigrator(legacy, dao, database.practiceDayDao())
 
         migrator.ensureMigrated()
         dao.deleteAll()
@@ -101,7 +102,7 @@ class RitualLogMigratorTest {
     fun `an already migrated install does not re-read the legacy blob`() = runTest {
         val legacy = FakeLegacySource(listOf(legacyEntry("2026-09-06")), migrated = true)
 
-        RitualLogMigrator(legacy, dao).ensureMigrated()
+        RitualLogMigrator(legacy, dao, database.practiceDayDao()).ensureMigrated()
 
         assertEquals(0, dao.count())
         assertEquals(0, legacy.readCount)
@@ -111,10 +112,22 @@ class RitualLogMigratorTest {
     fun `an empty legacy blob still marks the install as migrated`() = runTest {
         val legacy = FakeLegacySource(emptyList())
 
-        RitualLogMigrator(legacy, dao).ensureMigrated()
+        RitualLogMigrator(legacy, dao, database.practiceDayDao()).ensureMigrated()
 
         assertEquals(0, dao.count())
         assertTrue(legacy.isMarkedMigrated())
         assertFalse(legacy.readLegacyLogs().isNotEmpty())
+    }
+
+    @Test
+    fun `legacy logs also become practice days`() = runTest {
+        val legacy = FakeLegacySource(listOf(legacyEntry("2025-03-03"), legacyEntry("2025-03-04")))
+
+        RitualLogMigrator(legacy, dao, database.practiceDayDao()).ensureMigrated()
+
+        assertEquals(
+            setOf("2025-03-03", "2025-03-04"),
+            database.practiceDayDao().observeAll().first().toSet()
+        )
     }
 }

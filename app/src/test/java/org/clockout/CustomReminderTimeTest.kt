@@ -46,7 +46,11 @@ class CustomReminderTimeTest {
                 preferencesFolder.newFile("padla_test.preferences_pb").apply { delete() }
             }
         )
-        repository = RitualRepositoryImpl(preferences = preferences, ritualLogDao = database.ritualLogDao())
+        repository = RitualRepositoryImpl(
+            preferences = preferences,
+            ritualLogDao = database.ritualLogDao(),
+            practiceDayDao = database.practiceDayDao()
+        )
     }
 
     @After

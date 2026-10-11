@@ -50,7 +50,8 @@ class ReviewPromptFlowTest {
         )
         repository = RitualRepositoryImpl(
             preferences = preferences,
-            ritualLogDao = database.ritualLogDao()
+            ritualLogDao = database.ritualLogDao(),
+            practiceDayDao = database.practiceDayDao()
         )
         shouldRequestReview = ShouldRequestReviewUseCase(repository)
     }

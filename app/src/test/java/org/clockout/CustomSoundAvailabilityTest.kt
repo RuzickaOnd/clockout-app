@@ -52,6 +52,7 @@ class CustomSoundAvailabilityTest {
     private fun repository(soundFileExists: (String) -> Boolean) = RitualRepositoryImpl(
         preferences = preferences,
         ritualLogDao = database.ritualLogDao(),
+        practiceDayDao = database.practiceDayDao(),
         soundFileExists = soundFileExists
     )
 

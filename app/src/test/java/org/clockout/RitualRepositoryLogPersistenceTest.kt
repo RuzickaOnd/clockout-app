@@ -31,7 +31,8 @@ class RitualRepositoryLogPersistenceTest {
 
     private fun repository() = RitualRepositoryImpl(
         preferences = RitualPreferences(context),
-        ritualLogDao = database.ritualLogDao()
+        ritualLogDao = database.ritualLogDao(),
+        practiceDayDao = database.practiceDayDao()
     )
 
     @Before

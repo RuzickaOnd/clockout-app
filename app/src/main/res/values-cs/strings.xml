@@ -51,7 +51,7 @@
     <string name="common_delete">Smazat</string>
     <string name="history_clear_tooltip">Smazat historii</string>
     <string name="history_clear_dialog_title">Smazat historii rituálů?</string>
-    <string name="history_clear_dialog_text">Tato akce vymaže všechny dosud zaznamenané ukončené dny.</string>
+    <string name="history_clear_dialog_text">Tato akce vymaže všechny dosud zaznamenané ukončené dny. Stupeň cesty a rytmus zůstanou zachovány.</string>
     <string name="history_empty_title">Zatím žádné záznamy</string>
     <string name="history_empty_desc">Až dnes po práci projdeš svým prvním 3minutovým rituálem, objeví se zde tvá nálada i myšlenka.</string>
     <plurals name="history_total_closed_days">
@@ -396,10 +396,192 @@
     <string name="settings_app_version_label">Verze</string>
     <string name="settings_clear_data_button">Vymazat data a historii</string>
     <string name="settings_clear_data_dialog_title">Vymazat data aplikace?</string>
-    <string name="settings_clear_data_dialog_text">Tato akce smaže historii zaznamenaných rituálů.</string>
+    <string name="settings_clear_data_dialog_text">Tato akce smaže historii zaznamenaných rituálů. Stupeň cesty a rytmus zůstanou zachovány.</string>
     <string name="settings_clear_data_confirm">Vymazat</string>
 
     <!-- Notifications -->
     <string name="notification_workday_end_title">Padla – čas ukončit práci</string>
     <string name="notification_workday_end_text">Zastav se na 2 minuty a vědomě uzavři dnešní pracovní den.</string>
+
+    <!-- Cesta domů -->
+    <string name="path_stage_0_title">Ještě u stolu</string>
+    <string name="path_stage_0_verse">Monitor svítí a den ještě neskončil.</string>
+    <string name="path_stage_0_desc">Zatím není uzavřený žádný den. Cesta domů začne, až poprvé zaklapneš práci.</string>
+    <string name="path_stage_1_title">Zaklapnutý notebook</string>
+    <string name="path_stage_1_verse">Cvaknutí víka je první krok.</string>
+    <string name="path_stage_1_desc">První uzavřený den. Práce dostala jasný konec, i když jsi pořád ve stejném pokoji.</string>
+    <string name="path_stage_2_title">Kabát na ramenou</string>
+    <string name="path_stage_2_verse">Ještě nejdeš, ale už se chystáš.</string>
+    <string name="path_stage_2_desc">Pět uzavřených dní. Tělo si začíná pamatovat, že po rituálu přichází odchod.</string>
+    <string name="path_stage_3_title">Klíč v zámku</string>
+    <string name="path_stage_3_verse">Za dveřmi zůstává všechno, co počká do zítřka.</string>
+    <string name="path_stage_3_desc">Deset dní. Učíš se zamknout práci tam, kam patří.</string>
+    <string name="path_stage_4_title">Schody dolů</string>
+    <string name="path_stage_4_verse">S každým schodem je hlava o kousek lehčí.</string>
+    <string name="path_stage_4_desc">Dvacet dní. Myšlenky na práci se ještě ozvou, ale s každým krokem slábnou.</string>
+    <string name="path_stage_5_title">Ulice za soumraku</string>
+    <string name="path_stage_5_verse">Rozsvěcují se lampy a nikdo po tobě nic nechce.</string>
+    <string name="path_stage_5_desc">Třicet pět dní. Uzavírání dne přestává být úsilím a stává se zvykem.</string>
+    <string name="path_stage_6_title">Parkem</string>
+    <string name="path_stage_6_verse">Zpomalíš. Cesta už nikam nespěchá.</string>
+    <string name="path_stage_6_desc">Padesát dní. Mezi prací a domovem máš vlastní kus klidu.</string>
+    <string name="path_stage_7_title">Přes most</string>
+    <string name="path_stage_7_verse">Pod mostem teče řeka a pracovní den zůstal na druhém břehu.</string>
+    <string name="path_stage_7_desc">Sedmdesát pět dní. Hranici mezi prací a vlastním časem už překračuješ bez přemýšlení.</string>
+    <string name="path_stage_8_title">Branka</string>
+    <string name="path_stage_8_verse">Vrznutí branky zní jako domov.</string>
+    <string name="path_stage_8_desc">Sto dní. Večery zase patří tobě a lidem kolem tebe.</string>
+    <string name="path_stage_9_title">Práh</string>
+    <string name="path_stage_9_verse">Boty zůstanou venku a s nimi i celý den.</string>
+    <string name="path_stage_9_desc">Sto padesát dní. Tu chvíli přechodu znáš tak dobře, že ji nic nenaruší.</string>
+    <string name="path_stage_10_title">Doma</string>
+    <string name="path_stage_10_verse">V okně svítí a uvnitř je klid.</string>
+    <string name="path_stage_10_desc">Dvě stě padesát dní. Cestu domů máš v sobě, ať pracuješ odkudkoli.</string>
+
+    <string name="path_card_title">Cesta</string>
+    <string name="path_card_beginning">Cesta začíná prvním uzavřeným dnem</string>
+    <string name="path_card_final">Jsi doma. Cestu teď znáš nazpaměť.</string>
+    <string name="path_next_stage">Další: %s</string>
+    <plurals name="path_days_to_next">
+        <item quantity="one">Ještě %d den do dalšího stupně</item>
+        <item quantity="few">Ještě %d dny do dalšího stupně</item>
+        <item quantity="many">Ještě %d dne do dalšího stupně</item>
+        <item quantity="other">Ještě %d dní do dalšího stupně</item>
+    </plurals>
+    <plurals name="path_rhythm_current">
+        <item quantity="one">Rytmus: %d týden</item>
+        <item quantity="few">Rytmus: %d týdny</item>
+        <item quantity="many">Rytmus: %d týdne</item>
+        <item quantity="other">Rytmus: %d týdnů</item>
+    </plurals>
+    <string name="path_rhythm_longest">nejdelší %d</string>
+    <plurals name="path_closed_days">
+        <item quantity="one">%d uzavřený den</item>
+        <item quantity="few">%d uzavřené dny</item>
+        <item quantity="many">%d uzavřeného dne</item>
+        <item quantity="other">%d uzavřených dní</item>
+    </plurals>
+    <plurals name="path_stage_threshold">
+        <item quantity="one">od %d dne</item>
+        <item quantity="few">od %d dní</item>
+        <item quantity="many">od %d dne</item>
+        <item quantity="other">od %d dní</item>
+    </plurals>
+    <string name="path_open_description">Otevřít cestu</string>
+    <string name="path_screen_title">Cesta domů</string>
+    <string name="path_current_badge">Tvůj stupeň</string>
+    <string name="path_origin_title">O čem je cesta</string>
+    <string name="path_origin_text">Dřív den uzavírala cesta z práce sama: zaklapnout počítač, obléct kabát, zamknout, sejít schody a jít domů. Při práci z domova tahle cesta chybí a práce pak snadno přeteče do večera.\n\nKaždý uzavřený den tě posune o kus dál po cestě, kterou si tak den po dni stavíš znovu. Na konci jsi doma, a právě tam má večer patřit.</string>
+    <string name="path_stages_title">Deset stupňů</string>
+    <string name="path_rhythm_title">Jak funguje rytmus</string>
+    <string name="path_rhythm_text">Týden je v rytmu, když uzavřeš všechny pracovní dny až na jeden, tedy čtyři z pěti. Uzavřená sobota nebo neděle se počítá také a může nahradit vynechaný pracovní den. Jeden slabší týden rytmus nepřeruší, jen se nezapočítá; přeruší ho až dva po sobě. Aktuální týden se započítá, jakmile dosáhne prahu.\n\nStupeň i rytmus zůstanou, i když smažeš historii. Pamatují si jen data uzavřených dní, nic z toho, co jsi napsal(a).</string>
+    <string name="settings_about_path_button">Cesta domů</string>
+    <string name="ritual_path_stage_reached">Nový stupeň cesty</string>
+    <string name="ritual_path_rhythm_constellation">Tento týden jsi v rytmu. Na obloze se rozsvítilo souhvězdí: %s.</string>
+
+    <!-- Noční obloha: jedno souhvězdí na ISO týden, index = týden - 1 -->
+    <string-array name="constellation_names">
+        <item>Hrnek čaje</item>
+        <item>Vlněné ponožky</item>
+        <item>Krb</item>
+        <item>Teplá deka</item>
+        <item>Sáňky</item>
+        <item>Rukavice na topení</item>
+        <item>Kniha na nočním stolku</item>
+        <item>Hrnec polévky</item>
+        <item>Svíčka</item>
+        <item>Konvice</item>
+        <item>Deštník u dveří</item>
+        <item>Sněženka</item>
+        <item>Holínky</item>
+        <item>Kolo</item>
+        <item>Konev</item>
+        <item>Otevřené okno</item>
+        <item>Ptačí budka</item>
+        <item>Houpačka</item>
+        <item>Pampeliška</item>
+        <item>Kočka na parapetu</item>
+        <item>Zahradní lavička</item>
+        <item>Košík jahod</item>
+        <item>Lampion</item>
+        <item>Síťka na motýly</item>
+        <item>Houpací síť</item>
+        <item>Kornout zmrzliny</item>
+        <item>Slamák</item>
+        <item>Táborák</item>
+        <item>Stan</item>
+        <item>Loďka</item>
+        <item>Rybářský prut</item>
+        <item>Meloun</item>
+        <item>Padající hvězda</item>
+        <item>Kytara</item>
+        <item>Sklenice marmelády</item>
+        <item>Jablko</item>
+        <item>Drak</item>
+        <item>Košík hub</item>
+        <item>Kaštany</item>
+        <item>Dýně</item>
+        <item>Pletení</item>
+        <item>Padající list</item>
+        <item>Petrolejka</item>
+        <item>Šála</item>
+        <item>Deskovka</item>
+        <item>Papuče</item>
+        <item>Křeslo</item>
+        <item>Čerstvý chleba</item>
+        <item>Adventní věnec</item>
+        <item>Perníček</item>
+        <item>Sněhulák</item>
+        <item>Jedlička</item>
+        <item>Modrý měsíc</item>
+    </string-array>
+
+    <!-- Night sky -->
+    <string name="sky_screen_title">Noční obloha</string>
+    <plurals name="sky_summary_stars">
+        <item quantity="one">%d hvězda</item>
+        <item quantity="few">%d hvězdy</item>
+        <item quantity="many">%d hvězdy</item>
+        <item quantity="other">%d hvězd</item>
+    </plurals>
+    <plurals name="sky_summary_constellations">
+        <item quantity="one">%d souhvězdí</item>
+        <item quantity="few">%d souhvězdí</item>
+        <item quantity="many">%d souhvězdí</item>
+        <item quantity="other">%d souhvězdí</item>
+    </plurals>
+    <string name="sky_summary_this_year">letos %1$d z %2$d</string>
+    <string name="sky_previous_month">Předchozí měsíc</string>
+    <string name="sky_next_month">Další měsíc</string>
+    <string name="sky_month_empty">Tento měsíc zatím bez hvězd</string>
+    <string name="sky_empty">První hvězda se rozsvítí po prvním uzavřeném dni.</string>
+    <string name="sky_record_deleted">Záznam byl smazán, hvězda zůstává.</string>
+    <string name="sky_atlas_title">Atlas souhvězdí</string>
+    <string name="sky_atlas_times">%d×</string>
+    <string name="sky_atlas_rises">vychází v týdnu %d</string>
+    <string name="sky_atlas_rare">jen v letech s 53. týdnem</string>
+    <plurals name="sky_canvas_description">
+        <item quantity="one">%2$s: %1$d hvězda</item>
+        <item quantity="few">%2$s: %1$d hvězdy</item>
+        <item quantity="many">%2$s: %1$d hvězdy</item>
+        <item quantity="other">%2$s: %1$d hvězd</item>
+    </plurals>
+    <string name="sky_canvas_constellations">souhvězdí: %s</string>
+
+    <!-- Upoutávka na noční oblohu, dokud se nerozsvítí první souhvězdí -->
+    <string name="sky_teaser_title">Na noční obloze přibyla hvězda</string>
+    <plurals name="sky_teaser_days_left">
+        <item quantity="one">ještě %d uzavřený den do tvého prvního souhvězdí</item>
+        <item quantity="few">ještě %d uzavřené dny do tvého prvního souhvězdí</item>
+        <item quantity="many">ještě %d uzavřeného dne do tvého prvního souhvězdí</item>
+        <item quantity="other">ještě %d uzavřených dní do tvého prvního souhvězdí</item>
+    </plurals>
+
+    <string name="sky_about_title">O čem je obloha</string>
+    <string name="sky_about_text">Každý uzavřený den rozsvítí na obloze jednu hvězdu. Má barvu nálady, se kterou jsi den zavřel(a).\n\nKaždý týden v roce má svoje souhvězdí: od Hrnku čaje v lednu po Jedličku v prosinci. Když je týden v rytmu, jeho hvězdy se spojí a souhvězdí se rozsvítí. Každý rok se ve stejném týdnu vrací, takže máš další příležitost ho rozsvítit.\n\nObloha je tichá sbírka tvých večerů. Nic se z ní neztratí, nic nemusíš stihnout a vynechaný den nic nezhasne. Je tu jen pro radost z toho, jak roste.</string>
+    <string name="sky_atlas_desc">Souhvězdí, která jsi už rozsvítil(a), a ta, která teprve vyjdou.</string>
+
+    <string name="sky_summary_last_year">loni %d</string>
+    <string name="sky_atlas_lit_years">Rozsvíceno: %s</string>
+    <string name="sky_atlas_not_lit_yet">Zatím nerozsvíceno – vychází v týdnu %d.</string>
 </resources>

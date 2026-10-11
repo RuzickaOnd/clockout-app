@@ -4,6 +4,7 @@ import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.PathStage
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStep
 
@@ -22,5 +23,14 @@ data class RitualState(
     val isClosureTriggered: Boolean = false,
     val isCompletedAndSaved: Boolean = false,
     /** Set for one frame once a finished ritual earns a Play Store review request. */
-    val shouldRequestReview: Boolean = false
+    val shouldRequestReview: Boolean = false,
+    /** The stage this ritual has just reached, or null when it reached none. */
+    val reachedStage: PathStage? = null,
+    /** This week's constellation when this ritual has just brought the week into rhythm. */
+    val rhythmConstellationNumber: Int? = null,
+    /** Points to the night sky until its first constellation lights up; null from then on. */
+    val skyTeaser: SkyTeaser? = null
 )
+
+/** How far the first constellation still is: the stars so far and the closed days still needed. */
+data class SkyTeaser(val stars: Int, val daysToFirstConstellation: Int)

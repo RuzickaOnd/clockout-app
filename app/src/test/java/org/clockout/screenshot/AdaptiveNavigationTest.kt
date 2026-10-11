@@ -1,5 +1,8 @@
 package org.clockout.screenshot
 
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -52,6 +55,7 @@ class PhoneNavigationTest {
         composeTestRule.onNodeWithTag("nav_settings_button").assertIsDisplayed()
         composeTestRule.onNodeWithText("Today").assertDoesNotExist()
 
+        composeTestRule.awaitHomeData()
         composeTestRule.onRoot().captureRoboImage(
             filePath = "src/test/screenshots/formfactor/phone_portrait/app_no_rail.png"
         )
@@ -86,6 +90,7 @@ class TabletNavigationTest {
         composeTestRule.onNodeWithTag("nav_history_button").assertDoesNotExist()
         composeTestRule.onNodeWithTag("nav_settings_button").assertDoesNotExist()
 
+        composeTestRule.awaitHomeData()
         composeTestRule.onRoot().captureRoboImage(
             filePath = "src/test/screenshots/formfactor/tablet_landscape/app_with_rail.png"
         )
@@ -101,4 +106,15 @@ class TabletNavigationTest {
         composeTestRule.onNodeWithText("Settings").assertDoesNotExist()
         composeTestRule.onNodeWithTag("ritual_close_button").assertIsDisplayed()
     }
+}
+
+/**
+ * Room answers on its own executor, which the Compose test clock does not wait for, so a capture
+ * taken straight after setContent could catch the home screen before its flows emitted - the week
+ * strip empty ("0 of 0 days closed") and no path card. Waiting for both makes the capture
+ * deterministic.
+ */
+private fun ComposeContentTestRule.awaitHomeData() = waitUntil(timeoutMillis = 5_000) {
+    onAllNodesWithTag("path_card").fetchSemanticsNodes().isNotEmpty() &&
+        onAllNodesWithText("Mon").fetchSemanticsNodes().isNotEmpty()
 }

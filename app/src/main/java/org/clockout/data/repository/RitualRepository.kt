@@ -5,6 +5,8 @@ import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.PathProgress
+import org.clockout.domain.model.SkyData
 import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.TelemetryConsent
 import org.clockout.domain.model.RitualLogEntry
@@ -16,6 +18,10 @@ interface RitualRepository {
     fun getTodayQuestion(): RitualQuestion
     fun getLogs(): Flow<List<RitualLogEntry>>
     fun getStreakInfo(): Flow<RitualStreakInfo>
+    /** The path's stage and weekly rhythm; survives [clearLogs], which only empties the history. */
+    fun getPathProgress(): Flow<PathProgress>
+    /** The night sky: practice days, the entries still in the history, and the rhythm per week. */
+    fun getSky(): Flow<SkyData>
     /** Records a finished ritual: the log entry itself, and the lifetime completion count. */
     suspend fun logRitual(selectedAnswer: String?, mood: MoodTag, questionText: String)
     suspend fun getCompletedRitualCount(): Int

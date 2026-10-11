@@ -40,6 +40,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.window.core.layout.WindowWidthSizeClass
 import android.content.Intent
 import org.clockout.BreathingStyleActivity
+import org.clockout.PathActivity
+import org.clockout.SkyActivity
 import org.clockout.R
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.TelemetryConsent
@@ -223,6 +225,9 @@ fun PadlaApp(
                                     currentScreen = Screen.Ritual
                                 },
                                 onNavigateToHistory = { currentScreen = Screen.History },
+                                onOpenPath = {
+                                    context.startActivity(Intent(context, PathActivity::class.java))
+                                },
                                 onNavigateToSettings = { currentScreen = Screen.Settings },
                                 showTopBarNavigation = !showRail
                             )
@@ -276,6 +281,7 @@ fun PadlaApp(
                                 state = historyState,
                                 onBack = { currentScreen = Screen.Home },
                                 onClearHistory = { historyViewModel.clearAllHistory() },
+                                onOpenSky = { context.startActivity(Intent(context, SkyActivity::class.java)) },
                                 showBackButton = !showRail
                             )
                         }
@@ -303,6 +309,9 @@ fun PadlaApp(
                                 onDismissSoundImportError = { settingsViewModel.dismissSoundImportError() },
                                 onOpenBreathingStyle = {
                                     context.startActivity(Intent(context, BreathingStyleActivity::class.java))
+                                },
+                                onOpenPath = {
+                                    context.startActivity(Intent(context, PathActivity::class.java))
                                 },
                                 onTelemetryConsentToggled = { settingsViewModel.setTelemetryConsent(it) },
                                 onOpenPrivacyPolicy = { context.openUrl(PRIVACY_POLICY_URL) },
