@@ -24,16 +24,16 @@ import org.clockout.domain.model.RitualLogEntry
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
 import org.clockout.domain.model.WorkdayCloseWindow
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
-import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -51,10 +51,12 @@ class RitualRepositoryImpl(
      */
     private val soundFileExists: (fileName: String) -> Boolean = { true },
     /**
-     * Today's date, emitted again at every midnight. The path's rhythm and the sky's current month
-     * depend on the date, and nothing else would emit when it changes under an open screen.
+     * Today's date, emitted again whenever it changes. The path's rhythm and the sky's current
+     * month depend on the date, and nothing else would emit when it changes under an open screen.
+     * The app passes `Context.todayFlow()`, which follows the system's date broadcasts; without a
+     * context (tests) it is just today, read once.
      */
-    private val todayFlow: Flow<LocalDate> = midnightTicker()
+    private val todayFlow: Flow<LocalDate> = flow { emit(LocalDate.now()) }
 ) : RitualRepository {
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -95,6 +97,8 @@ class RitualRepositoryImpl(
 
     override fun getPathProgress(): Flow<PathProgress> =
         practiceDaysFlow.combine(todayFlow) { days, today -> PathPolicy.progress(days = days, today = today) }
+            // The rhythm walks the whole history; keep that off the main thread.
+            .flowOn(Dispatchers.Default)
 
     override fun getSky(): Flow<SkyData> =
         combine(practiceDaysFlow, logsFlow, todayFlow, preferences.includeWeekendsFlow) { days, logs, today, includeWeekends ->
@@ -106,6 +110,7 @@ class RitualRepositoryImpl(
                 includeWeekends = includeWeekends
             )
         }
+            .flowOn(Dispatchers.Default)
 
     /**
      * Rows seeded from ritual_logs carry whatever digits the system locale wrote them in - Persian
@@ -174,17 +179,20 @@ class RitualRepositoryImpl(
     }
 
     override suspend fun logRitual(selectedAnswer: String?, mood: MoodTag, questionText: String) {
+        // One reading of the clock for both rows: read twice, a ritual saved at midnight could
+        // land in the history on one day and on the path on the next.
+        val now = Date()
         val entry = RitualLogEntry(
-            date = getTodayDateString(),
+            date = dateFormat.format(now),
             questionText = questionText,
             selectedAnswer = selectedAnswer,
             moodTag = mood,
-            timestamp = System.currentTimeMillis()
+            timestamp = now.time
         )
-        logMigrator.ensureMigrated()
-        ritualLogDao.upsert(entry.toEntity())
         // LocalDate always prints ASCII ISO digits; entry.date follows the system locale's digits.
-        practiceDayDao.insert(PracticeDayEntity(LocalDate.now().toString()))
+        val practiceDay = now.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+        logMigrator.ensureMigrated()
+        ritualLogDao.logDay(entry.toEntity(), PracticeDayEntity(practiceDay.toString()))
         preferences.incrementCompletedRitualCount()
     }
 
@@ -267,13 +275,5 @@ class RitualRepositoryImpl(
         // Migrate first so the legacy blob is dropped too, otherwise it would reappear later.
         logMigrator.ensureMigrated()
         ritualLogDao.deleteAll()
-    }
-}
-
-private fun midnightTicker(): Flow<LocalDate> = flow {
-    while (true) {
-        val now = LocalDateTime.now()
-        emit(now.toLocalDate())
-        delay(Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).toMillis() + 1)
     }
 }

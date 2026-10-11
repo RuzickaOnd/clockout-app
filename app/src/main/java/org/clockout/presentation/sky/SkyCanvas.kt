@@ -61,8 +61,10 @@ fun SkyCanvas(
     val names = stringArrayResource(R.array.constellation_names)
     val measurer = rememberTextMeasurer()
     val labelStyle = remember { TextStyle(color = SkyLine.copy(alpha = 0.9f), fontSize = 11.sp) }
-    // Measured once per name and canvas width, not on every twinkle frame.
-    val labels = remember(month) { mutableMapOf<Pair<Int, Int>, TextLayoutResult>() }
+    // Measured once per name and canvas width, not on every twinkle frame. Keyed by the name
+    // itself, so a change of language - SkyActivity starts in English until DataStore answers -
+    // measures the new names instead of reusing the old ones.
+    val labels = remember(month) { mutableMapOf<Pair<String, Int>, TextLayoutResult>() }
     val timeState: State<Float> = if (twinkle) {
         rememberInfiniteTransition(label = "twinkle").animateFloat(
             initialValue = 0f,
@@ -132,9 +134,10 @@ fun SkyCanvas(
                 )
             }
             if (!showNames) return@forEach
-            val label = labels.getOrPut(week.constellationNumber to size.width.toInt()) {
+            val name = names[week.constellationNumber - 1]
+            val label = labels.getOrPut(name to size.width.toInt()) {
                 measurer.measure(
-                    names[week.constellationNumber - 1],
+                    name,
                     labelStyle,
                     constraints = Constraints(maxWidth = size.width.toInt())
                 )

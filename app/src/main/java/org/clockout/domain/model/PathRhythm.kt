@@ -2,7 +2,6 @@ package org.clockout.domain.model
 
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.temporal.TemporalAdjusters
 
 /**
  * Counts rhythm in weeks rather than days, so a single missed day never breaks anything.
@@ -24,8 +23,8 @@ object PathRhythm {
         val longest: Int,
         val isCurrentWeekInRhythm: Boolean,
         /**
-         * Monday of every week since the first closed day that offered a day at all, mapped to
-         * whether it was in rhythm. The night sky draws its constellations from this map, so the
+         * Monday of every week from the first closed day's week to today's, mapped to whether it
+         * was in rhythm. The night sky draws its constellations from this map, so the
          * path and the sky can never disagree about a week.
          */
         val weeks: Map<LocalDate, Boolean> = emptyMap()
@@ -40,8 +39,7 @@ object PathRhythm {
 
         val weeks = generateSequence(firstDay.mondayOfWeek()) { it.plusWeeks(1) }
             .takeWhile { !it.isAfter(currentWeek) }
-            .mapNotNull { monday -> isWeekMet(monday, days, firstDay)?.let { monday to it } }
-            .toMap()
+            .associateWith { monday -> isWeekMet(monday, days, firstDay) }
         val isCurrentWeekInRhythm = weeks[currentWeek] == true
 
         var run = 0
@@ -62,19 +60,14 @@ object PathRhythm {
         return Result(run, longest, isCurrentWeekInRhythm, weeks)
     }
 
-    /** Null for a week that offered no day at all, which neither counts nor breaks anything. */
-    private fun isWeekMet(
-        monday: LocalDate,
-        days: Set<LocalDate>,
-        firstDay: LocalDate
-    ): Boolean? {
+    /**
+     * Every week from the first closed day's Monday on offers at least one day - the first day
+     * itself - so there is no "empty week" case to skip.
+     */
+    private fun isWeekMet(monday: LocalDate, days: Set<LocalDate>, firstDay: LocalDate): Boolean {
         val week = (0L until 7L).map { monday.plusDays(it) }.filterNot { it.isBefore(firstDay) }
         val weekdays = week.filter { it.dayOfWeek < DayOfWeek.SATURDAY }
-        if (week.isEmpty()) return null
         val threshold = maxOf(1, weekdays.size - 1)
         return week.count { it in days } >= threshold
     }
-
-    private fun LocalDate.mondayOfWeek(): LocalDate =
-        with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 }

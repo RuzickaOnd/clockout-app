@@ -10,6 +10,7 @@ import kotlinx.coroutines.test.runTest
 import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.local.db.PracticeDayEntity
+import org.clockout.data.local.db.RitualLogEntity
 import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathStage
@@ -176,5 +177,15 @@ class PracticeDayPersistenceTest {
         preferences.setIncludeWeekends(true)
 
         assertEquals(true, repository.getSky().first { it.includeWeekends }.includeWeekends)
+    }
+
+    @Test
+    fun `a closed day writes its entry and its practice day together`() = runTest {
+        val entry = RitualLogEntity("2026-10-09", "Q", null, "CALM", 1L)
+
+        database.ritualLogDao().logDay(entry, PracticeDayEntity("2026-10-09"))
+
+        assertEquals("CALM", database.ritualLogDao().getByDate("2026-10-09")?.moodTagId)
+        assertEquals(listOf("2026-10-09"), database.practiceDayDao().observeAll().first())
     }
 }

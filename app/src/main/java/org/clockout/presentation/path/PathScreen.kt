@@ -150,9 +150,7 @@ private fun CurrentStageHeader(progress: PathProgress) {
         )
         Spacer(modifier = Modifier.height(6.dp))
         val days = pluralStringResource(R.plurals.path_closed_days, progress.closedDays, progress.closedDays)
-        val rhythm = if (progress.longestRhythmWeeks == 0) null else
-            pluralStringResource(R.plurals.path_rhythm_current, progress.rhythmWeeks, progress.rhythmWeeks) +
-                " · " + stringResource(R.string.path_rhythm_longest, progress.longestRhythmWeeks)
+        val rhythm = pathRhythmLine(progress)
         Text(
             text = listOfNotNull(days, rhythm).joinToString("\n"),
             style = MaterialTheme.typography.bodyMedium,

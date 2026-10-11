@@ -8,9 +8,12 @@ import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.MeditationSoundStyle
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.AppLanguage
+import org.clockout.domain.model.PathProgress
+import org.clockout.domain.model.SkyData
 import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.RitualStep
 import org.clockout.domain.model.SkyPolicy
+import org.clockout.domain.model.mondayOfWeek
 import org.clockout.domain.usecase.GetTodayRitualUseCase
 import org.clockout.domain.usecase.LogMoodUseCase
 import org.clockout.domain.usecase.ShouldRequestReviewUseCase
@@ -19,6 +22,7 @@ import org.clockout.domain.telemetry.AnalyticsTracker
 import org.clockout.domain.telemetry.NoOpAnalyticsTracker
 import org.clockout.domain.telemetry.analyticsId
 import org.clockout.sound.AmbientAudioPlayer
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,9 +33,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.temporal.TemporalAdjusters
 
 class RitualViewModel(
     private val appContext: Context,
@@ -238,28 +240,34 @@ class RitualViewModel(
             val finalAnswer = currentState.customAnswerText.trim().ifEmpty {
                 currentState.selectedAnswer
             }
-            val pathBefore = ritualRepository.getPathProgress().first()
-            val skyBefore = ritualRepository.getSky().first()
+            val before = progressSnapshot()
             logMoodUseCase(
                 selectedAnswer = finalAnswer,
                 mood = mood,
                 questionText = currentState.question.text(currentState.language)
             )
-            val pathAfter = ritualRepository.getPathProgress().first()
-            val skyAfter = ritualRepository.getSky().first()
-            val thisMonday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            val after = progressSnapshot()
+            val thisMonday = LocalDate.now().mondayOfWeek()
             _state.update {
                 it.copy(
                     isCompletedAndSaved = true,
                     shouldRequestReview = moodWasChosen && shouldRequestReviewUseCase(mood),
-                    reachedStage = pathAfter.stage.takeIf { stage -> stage != pathBefore.stage },
+                    reachedStage = if (before != null && after != null) {
+                        after.path.stage.takeIf { stage -> stage != before.path.stage }
+                    } else {
+                        null
+                    },
                     // Announced when this week's figure first gets a line, not merely when the week
                     // reaches its rhythm: a first, partial week can be in rhythm on a lone star.
-                    rhythmConstellationNumber = SkyPolicy.constellationNumber(thisMonday).takeIf {
-                        SkyPolicy.isLit(thisMonday, skyAfter.days, skyAfter.rhythmWeeks) &&
-                            !SkyPolicy.isLit(thisMonday, skyBefore.days, skyBefore.rhythmWeeks)
+                    rhythmConstellationNumber = if (before != null && after != null) {
+                        SkyPolicy.constellationNumber(thisMonday).takeIf {
+                            SkyPolicy.isLit(thisMonday, after.sky.days, after.sky.rhythmWeeks) &&
+                                !SkyPolicy.isLit(thisMonday, before.sky.days, before.sky.rhythmWeeks)
+                        }
+                    } else {
+                        null
                     },
-                    skyTeaser = skyAfter.daysToFirstConstellation?.let { SkyTeaser(skyAfter.summary.stars, it) }
+                    skyTeaser = after?.sky?.daysToFirstConstellation?.let { SkyTeaser(after.sky.summary.stars, it) }
                 )
             }
             // Read after the log is written, so the count includes today.
@@ -274,6 +282,21 @@ class RitualViewModel(
                 )
             )
         }
+    }
+
+    private class ProgressSnapshot(val path: PathProgress, val sky: SkyData)
+
+    /**
+     * The path and the sky, read on either side of the log write to tell what this ritual changed.
+     * They only decorate the completion card: whatever goes wrong while reading them, the ritual
+     * itself must still be written, so a failure here yields no celebration rather than no entry.
+     */
+    private suspend fun progressSnapshot(): ProgressSnapshot? = try {
+        ProgressSnapshot(ritualRepository.getPathProgress().first(), ritualRepository.getSky().first())
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (failure: Exception) {
+        null
     }
 
     /** Clears the one-shot flag once the host has handed the request over to Play. */

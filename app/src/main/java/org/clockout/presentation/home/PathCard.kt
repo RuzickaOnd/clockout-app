@@ -29,6 +29,7 @@ import org.clockout.R
 import org.clockout.domain.model.PathProgress
 import org.clockout.presentation.components.PathStageEmblem
 import org.clockout.presentation.components.frostedGlass
+import org.clockout.presentation.path.pathRhythmLine
 import org.clockout.presentation.util.titleRes
 import org.clockout.ui.theme.IndigoAccent
 import org.clockout.ui.theme.TextLight
@@ -95,7 +96,7 @@ internal fun PathCard(progress: PathProgress, onOpenPath: () -> Unit) {
                     color = TextMuted
                 )
             }
-            rhythmLine(progress)?.let { line ->
+            pathRhythmLine(progress)?.let { line ->
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(text = line, style = MaterialTheme.typography.bodySmall, color = TextSlate)
             }
@@ -111,14 +112,4 @@ private fun progressLine(progress: PathProgress): String {
         daysToNext == null -> stringResource(R.string.path_card_final)
         else -> pluralStringResource(R.plurals.path_days_to_next, daysToNext, daysToNext)
     }
-}
-
-/** Null until a first week has been in rhythm, so a newcomer is not shown a row of zeros. */
-@Composable
-private fun rhythmLine(progress: PathProgress): String? {
-    if (progress.longestRhythmWeeks == 0) return null
-    val longest = stringResource(R.string.path_rhythm_longest, progress.longestRhythmWeeks)
-    if (progress.rhythmWeeks == 0) return longest.replaceFirstChar { it.titlecase() }
-    val current = pluralStringResource(R.plurals.path_rhythm_current, progress.rhythmWeeks, progress.rhythmWeeks)
-    return "$current · $longest"
 }

@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.clockout.domain.model.AppLanguage
@@ -34,11 +35,13 @@ class PathActivity : ComponentActivity() {
                     val repository = rememberRitualRepository()
                     val language by repository.getLanguage()
                         .collectAsStateWithLifecycle(initialValue = AppLanguage.ENGLISH)
-                    val progress by repository.getPathProgress()
-                        .collectAsStateWithLifecycle(initialValue = PathProgress.EMPTY)
+                    // Null until Room answers, so the first frame does not show a newcomer's path.
+                    // Remembered, so a change of language does not restart the collection.
+                    val progressFlow = remember(repository) { repository.getPathProgress() }
+                    val progress by progressFlow.collectAsStateWithLifecycle(initialValue = null as PathProgress?)
 
                     AppLocalization(language) {
-                        PathScreen(progress = progress, onBack = { finish() })
+                        progress?.let { PathScreen(progress = it, onBack = { finish() }) }
                     }
                 }
             }

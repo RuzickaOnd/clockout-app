@@ -381,7 +381,6 @@ private fun Atlas(summary: SkySummary) {
     }
 }
 
-/** "2 stars · 3 more closed days to your first constellation" - the teaser before the sky has a figure. */
 /** Which years a constellation was lit in - the atlas tile itself only has room for "2×". */
 @Composable
 private fun AtlasDetailCard(name: String, number: Int, years: List<Int>) {
@@ -414,6 +413,7 @@ private fun AtlasDetailCard(name: String, number: Int, years: List<Int>) {
     }
 }
 
+/** "2 stars · 3 more closed days to your first constellation" - the teaser before the sky has a figure. */
 @Composable
 fun skyCountdownText(stars: Int, daysToFirstConstellation: Int): String =
     pluralStringResource(R.plurals.sky_summary_stars, stars, stars) + " · " +

@@ -88,4 +88,20 @@ class PathScreenTest {
 
         assertTrue(opened)
     }
+
+    @Test
+    fun `a broken rhythm reads the same as on the home card`() {
+        composeTestRule.setContent {
+            AppLocalization(AppLanguage.CZECH) {
+                MyApplicationTheme {
+                    PathScreen(
+                        progress = progress.copy(rhythmWeeks = 0, longestRhythmWeeks = 4),
+                        onBack = {}
+                    )
+                }
+            }
+        }
+        composeTestRule.onNodeWithText("Nejdelší 4", substring = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText("Rytmus: 0", substring = true).assertDoesNotExist()
+    }
 }

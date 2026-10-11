@@ -150,5 +150,4 @@ object SkyPolicy {
         )
     }
 
-    private fun LocalDate.mondayOfWeek(): LocalDate = with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 }

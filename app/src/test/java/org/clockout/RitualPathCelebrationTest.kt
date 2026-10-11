@@ -5,7 +5,9 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -13,10 +15,12 @@ import kotlinx.coroutines.test.setMain
 import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.local.db.PracticeDayEntity
+import org.clockout.data.repository.RitualRepository
 import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.domain.model.ConstellationCatalog
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathStage
+import org.clockout.domain.model.SkyData
 import org.clockout.domain.model.SkyPolicy
 import org.clockout.domain.usecase.GetTodayRitualUseCase
 import org.clockout.domain.usecase.LogMoodUseCase
@@ -162,5 +166,25 @@ class RitualPathCelebrationTest {
         seedThisWeek(otherDays = 3)
 
         assertNull(finishRitual().state.value.skyTeaser)
+    }
+
+    @Test
+    fun `a failure in the path or the sky never costs the ritual its entry`() = runTest(dispatcher) {
+        val brokenSky = object : RitualRepository by repository {
+            override fun getSky(): Flow<SkyData> = flow { throw IllegalStateException("sky broke") }
+        }
+        val viewModel = RitualViewModel(
+            appContext = context,
+            getTodayRitualUseCase = GetTodayRitualUseCase(brokenSky),
+            logMoodUseCase = LogMoodUseCase(brokenSky),
+            shouldRequestReviewUseCase = ShouldRequestReviewUseCase(brokenSky),
+            ritualRepository = brokenSky
+        )
+
+        viewModel.onIntent(RitualIntent.MoodSelected(MoodTag.CALM))
+        viewModel.state.first { it.isCompletedAndSaved }
+
+        assertEquals(1, repository.getLogs().first().size)
+        assertNull(viewModel.state.value.skyTeaser)
     }
 }
