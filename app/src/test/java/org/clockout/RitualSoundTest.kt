@@ -6,9 +6,6 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.clockout.domain.usecase.GetTodayRitualUseCase
-import org.clockout.domain.usecase.LogMoodUseCase
-import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
 import org.clockout.testing.FakeSoundPlayer
@@ -46,13 +43,10 @@ class RitualSoundTest {
     private fun viewModel(): RitualViewModel {
         val repository = container.ritualLogs
         return RitualViewModel(
-            getTodayRitualUseCase = GetTodayRitualUseCase(repository),
-            logMoodUseCase = LogMoodUseCase(repository),
-            shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
             logs = repository,
             settings = container.settings,
             sounds = container.sounds,
-            progress = container.progress,
+            completeRitual = container.completeRitual,
             audioPlayer = player
         ).also { it.startSession(1) }
     }

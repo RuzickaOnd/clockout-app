@@ -1,11 +1,24 @@
 package org.clockout.testing
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import org.clockout.domain.model.CustomSound
+import org.clockout.domain.model.MoodTag
+import org.clockout.domain.model.PathProgress
+import org.clockout.domain.model.RitualLogEntry
+import org.clockout.domain.model.RitualQuestion
+import org.clockout.domain.model.RitualStreakInfo
+import org.clockout.domain.model.SkyData
 import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.SoundImportResult
 import org.clockout.domain.platform.ReminderScheduler
 import org.clockout.domain.platform.SoundFileStore
 import org.clockout.domain.platform.SoundPlayer
+import org.clockout.domain.repository.ProgressRepository
+import org.clockout.domain.repository.RitualLogRepository
+import java.time.LocalDate
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -34,4 +47,43 @@ class FakeSoundFileStore(
     val deleted = mutableListOf<CustomSound>()
     override suspend fun import(source: String, existingCount: Int) = onImport(existingCount)
     override suspend fun delete(sound: CustomSound) { deleted += sound }
+}
+
+class FakeRitualLogRepository(
+    private val question: RitualQuestion,
+    var completedCount: Int = 0,
+    var reviewShown: Boolean = false
+) : RitualLogRepository {
+    val logged = mutableListOf<Triple<String?, MoodTag, String>>()
+    private val logs = MutableStateFlow<List<RitualLogEntry>>(emptyList())
+    override fun getTodayQuestion() = question
+    override fun getTodayDateString() = LocalDate.now().toString()
+    override fun getLogs(): Flow<List<RitualLogEntry>> = logs
+    override fun getStreakInfo(): Flow<RitualStreakInfo> = flowOf(
+        RitualStreakInfo(
+            completedThisWeekCount = logged.size,
+            targetWorkDays = 5,
+            isTodayCompleted = logged.isNotEmpty(),
+            todayLog = null,
+            weekDays = emptyList()
+        )
+    )
+    override suspend fun logRitual(selectedAnswer: String?, mood: MoodTag, questionText: String) {
+        logged += Triple(selectedAnswer, mood, questionText)
+        completedCount++
+    }
+    override suspend fun getCompletedRitualCount() = completedCount
+    override suspend fun isReviewPromptShown() = reviewShown
+    override suspend fun markReviewPromptShown() { reviewShown = true }
+    override suspend fun clearLogs() = Unit
+}
+
+/** Answers with the snapshots in turn: the first read is "before" the log, the second "after". */
+class FakeProgressRepository(
+    private val paths: ArrayDeque<PathProgress>,
+    private val skies: ArrayDeque<SkyData>,
+    private val failure: Exception? = null
+) : ProgressRepository {
+    override fun getPathProgress(): Flow<PathProgress> = flow { failure?.let { throw it }; emit(paths.removeFirst()) }
+    override fun getSky(): Flow<SkyData> = flow { failure?.let { throw it }; emit(skies.removeFirst()) }
 }

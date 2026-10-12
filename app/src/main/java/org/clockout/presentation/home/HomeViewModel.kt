@@ -9,8 +9,6 @@ import org.clockout.domain.repository.SettingsRepository
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.RitualDayPolicy
 import org.clockout.domain.model.RitualStreakInfo
-import org.clockout.domain.usecase.GetStreakUseCase
-import org.clockout.domain.usecase.GetTodayRitualUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,8 +27,6 @@ class HomeViewModel(
     private val logs: RitualLogRepository,
     private val settings: SettingsRepository,
     private val progress: ProgressRepository,
-    private val getTodayRitualUseCase: GetTodayRitualUseCase,
-    private val getStreakUseCase: GetStreakUseCase,
     private val isWithinWindow: () -> Boolean = WorkdayCloseWindow::isOpenNow
 ) : ViewModel() {
 
@@ -39,7 +35,7 @@ class HomeViewModel(
 
     private val _state = MutableStateFlow(
         HomeState(
-            todayQuestion = getTodayRitualUseCase(),
+            todayQuestion = logs.getTodayQuestion(),
             isWithinWindow = isWithinWindow(),
             isRitualDay = RitualDayPolicy.isTodayRitualDay(includeWeekends)
         )
@@ -53,7 +49,7 @@ class HomeViewModel(
     private fun observeData() {
         viewModelScope.launch {
             combine(
-                getStreakUseCase(),
+                logs.getStreakInfo(),
                 settings.getTestMode(),
                 settings.getLanguage(),
                 settings.getIncludeWeekends(),

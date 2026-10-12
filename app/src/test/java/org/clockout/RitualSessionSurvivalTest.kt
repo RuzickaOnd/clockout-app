@@ -2,9 +2,6 @@ package org.clockout
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import org.clockout.domain.usecase.GetTodayRitualUseCase
-import org.clockout.domain.usecase.LogMoodUseCase
-import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
 import org.clockout.testing.FakeSoundPlayer
@@ -59,13 +56,10 @@ class RitualSessionSurvivalTest {
         val repository = graph.ritualLogs
         return RitualViewModel(
             audioPlayer = FakeSoundPlayer(),
-            getTodayRitualUseCase = GetTodayRitualUseCase(repository),
-            logMoodUseCase = LogMoodUseCase(repository),
-            shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
             logs = repository,
             settings = graph.settings,
             sounds = graph.sounds,
-            progress = graph.progress
+            completeRitual = graph.completeRitual
         )
     }
 

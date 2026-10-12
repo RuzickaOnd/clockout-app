@@ -46,10 +46,6 @@ import org.clockout.R
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.TelemetryConsent
 import org.clockout.domain.telemetry.UserProperty
-import org.clockout.domain.usecase.GetStreakUseCase
-import org.clockout.domain.usecase.GetTodayRitualUseCase
-import org.clockout.domain.usecase.LogMoodUseCase
-import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.history.HistoryScreen
 import org.clockout.presentation.history.HistoryViewModel
 import org.clockout.presentation.home.HomeScreen
@@ -121,10 +117,6 @@ fun PadlaApp(
     LaunchedEffect(consent) {
         analyticsTracker.setCollectionEnabled(consent == TelemetryConsent.GRANTED)
     }
-    val getTodayRitualUseCase = remember { GetTodayRitualUseCase(container.ritualLogs) }
-    val logMoodUseCase = remember { LogMoodUseCase(container.ritualLogs) }
-    val shouldRequestReviewUseCase = remember { ShouldRequestReviewUseCase(container.ritualLogs) }
-    val getStreakUseCase = remember { GetStreakUseCase(container.ritualLogs) }
 
     var currentScreen by rememberSaveable(stateSaver = ScreenSaver) {
         mutableStateOf<Screen>(Screen.Home)
@@ -214,7 +206,7 @@ fun PadlaApp(
                     when (screen) {
                         is Screen.Home -> {
                             val homeViewModel: HomeViewModel = viewModel {
-                                HomeViewModel(container.ritualLogs, container.settings, container.progress, getTodayRitualUseCase, getStreakUseCase)
+                                HomeViewModel(container.ritualLogs, container.settings, container.progress)
                             }
                             val homeState by homeViewModel.state.collectAsStateWithLifecycle()
 
@@ -237,13 +229,10 @@ fun PadlaApp(
                             // fold in the middle of the ritual does not throw away the answer and the timer.
                             val ritualViewModel: RitualViewModel = viewModel {
                                 RitualViewModel(
-                                    getTodayRitualUseCase,
-                                    logMoodUseCase,
-                                    shouldRequestReviewUseCase,
                                     container.ritualLogs,
                                     container.settings,
                                     container.sounds,
-                                    container.progress,
+                                    container.completeRitual,
                                     audioPlayer = container.newSoundPlayer(),
                                     analyticsTracker = analyticsTracker
                                 )

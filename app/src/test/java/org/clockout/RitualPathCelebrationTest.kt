@@ -12,8 +12,7 @@ import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathStage
 import org.clockout.domain.model.SkyData
 import org.clockout.domain.model.SkyPolicy
-import org.clockout.domain.usecase.GetTodayRitualUseCase
-import org.clockout.domain.usecase.LogMoodUseCase
+import org.clockout.domain.usecase.CompleteRitualUseCase
 import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
@@ -74,13 +73,10 @@ class RitualPathCelebrationTest {
 
     private fun viewModel() = RitualViewModel(
         audioPlayer = FakeSoundPlayer(),
-        getTodayRitualUseCase = GetTodayRitualUseCase(repository),
-        logMoodUseCase = LogMoodUseCase(repository),
-        shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
         logs = repository,
         settings = container.settings,
         sounds = container.sounds,
-        progress = container.progress
+        completeRitual = container.completeRitual
     )
 
     private suspend fun finishRitual(): RitualViewModel = viewModel().also { vm ->
@@ -172,13 +168,10 @@ class RitualPathCelebrationTest {
         }
         val viewModel = RitualViewModel(
             audioPlayer = FakeSoundPlayer(),
-            getTodayRitualUseCase = GetTodayRitualUseCase(repository),
-            logMoodUseCase = LogMoodUseCase(repository),
-            shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
             logs = repository,
             settings = container.settings,
             sounds = container.sounds,
-            progress = brokenSky
+            completeRitual = CompleteRitualUseCase(repository, brokenSky, ShouldRequestReviewUseCase(repository))
         )
 
         viewModel.onIntent(RitualIntent.MoodSelected(MoodTag.CALM))

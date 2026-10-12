@@ -7,9 +7,6 @@ import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.telemetry.AnalyticsEvent
-import org.clockout.domain.usecase.GetTodayRitualUseCase
-import org.clockout.domain.usecase.LogMoodUseCase
-import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
 import org.clockout.testing.FakeSoundPlayer
@@ -45,13 +42,10 @@ class RitualTelemetryTest {
         val context: Context = ApplicationProvider.getApplicationContext()
         return RitualViewModel(
             audioPlayer = FakeSoundPlayer(),
-            getTodayRitualUseCase = GetTodayRitualUseCase(repository),
-            logMoodUseCase = LogMoodUseCase(repository),
-            shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
             logs = repository,
             settings = container.settings,
             sounds = container.sounds,
-            progress = container.progress,
+            completeRitual = container.completeRitual,
             analyticsTracker = tracker
         )
     }

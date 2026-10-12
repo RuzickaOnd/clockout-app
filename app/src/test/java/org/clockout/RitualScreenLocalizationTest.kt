@@ -10,9 +10,9 @@ import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathStage
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStep
+import org.clockout.domain.model.SkyTeaser
 import org.clockout.presentation.ritual.RitualScreen
 import org.clockout.presentation.ritual.RitualState
-import org.clockout.presentation.ritual.SkyTeaser
 import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.MyApplicationTheme
 import org.junit.Rule

@@ -17,6 +17,8 @@ import org.clockout.domain.repository.ProgressRepository
 import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.repository.SettingsRepository
 import org.clockout.domain.repository.SoundRepository
+import org.clockout.domain.usecase.CompleteRitualUseCase
+import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.notification.AlarmReminderScheduler
 import org.clockout.sound.AmbientAudioPlayer
 import org.clockout.util.todayFlow
@@ -54,6 +56,8 @@ class AppContainer(
         includeWeekends = settings.getIncludeWeekends(),
         todayFlow = todayFlow
     )
+
+    val completeRitual = CompleteRitualUseCase(ritualLogs, progress, ShouldRequestReviewUseCase(ritualLogs))
 
     val reminderScheduler: ReminderScheduler = AlarmReminderScheduler(appContext)
     val soundFileStore: SoundFileStore = CustomSoundStorage(appContext)

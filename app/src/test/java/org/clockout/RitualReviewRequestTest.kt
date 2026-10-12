@@ -5,9 +5,6 @@ import androidx.test.core.app.ApplicationProvider
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
-import org.clockout.domain.usecase.GetTodayRitualUseCase
-import org.clockout.domain.usecase.LogMoodUseCase
-import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
 import org.clockout.testing.FakeSoundPlayer
@@ -59,13 +56,10 @@ class RitualReviewRequestTest {
 
     private fun viewModel() = RitualViewModel(
         audioPlayer = FakeSoundPlayer(),
-        getTodayRitualUseCase = GetTodayRitualUseCase(repository),
-        logMoodUseCase = LogMoodUseCase(repository),
-        shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
         logs = repository,
         settings = container.settings,
         sounds = container.sounds,
-        progress = container.progress
+        completeRitual = container.completeRitual
     )
 
     /** Nine rituals already behind the user, so the next one is the tenth. */
