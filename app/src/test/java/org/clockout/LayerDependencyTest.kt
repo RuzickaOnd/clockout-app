@@ -12,10 +12,15 @@ class LayerDependencyTest {
 
     private val root = File("src/main/java/org/clockout")
 
-    private fun importsIn(layer: String): List<Pair<String, String>> =
-        File(root, layer).walkTopDown().filter { it.extension == "kt" }.flatMap { file ->
+    private fun importsIn(layer: String): List<Pair<String, String>> {
+        val dir = File(root, layer)
+        val files = dir.walkTopDown().filter { it.extension == "kt" }.toList()
+        // A wrong working directory would otherwise yield no files and pass without enforcing anything.
+        assertTrue("No Kotlin sources under ${dir.absolutePath}; the test is not looking at the code", files.isNotEmpty())
+        return files.flatMap { file ->
             file.readLines().filter { it.startsWith("import ") }.map { file.relativeTo(root).path to it }
-        }.toList()
+        }
+    }
 
     @Test
     fun `presentation never imports the data layer`() {
