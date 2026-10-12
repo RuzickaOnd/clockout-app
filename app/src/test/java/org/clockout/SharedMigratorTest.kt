@@ -26,8 +26,9 @@ import org.robolectric.annotation.Config
 import java.time.LocalDate
 
 /**
- * The legacy import is guarded by a per-instance flag and mutex; two migrators would import the
- * pre-Room blob twice. The history and the path must therefore share one.
+ * The history and the path share one `RitualLogMigrator`, whose flag and mutex are per instance.
+ * That rule is enforced by [AppContainer]'s wiring, not by these tests; they pin the observable
+ * outcome of it.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [36])
@@ -49,7 +50,7 @@ class SharedMigratorTest {
     }
 
     @Test
-    fun `a legacy blob is imported once however the history and the path race for it`() = runTest {
+    fun `a legacy blob reaches both the history and the path exactly once`() = runTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val dataStore = PreferenceDataStoreFactory.create { folder.newFile("legacy.preferences_pb").apply { delete() } }
         val legacyJson = """[{"date":"2026-09-07","questionText":"Q","selectedAnswer":"A","moodTag":"CALM","timestamp":1}]"""

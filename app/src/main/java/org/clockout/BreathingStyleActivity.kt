@@ -32,9 +32,7 @@ import org.clockout.util.applyFrostedWindowChrome
  *
  * What it does have to bring itself is the window chrome and the language: the app switches
  * language independently of the system locale, so the screen has to be wrapped in
- * [AppLocalization] exactly as [org.clockout.presentation.PadlaApp] wraps its own content, and the
- * container has to be reached above that wrapper so DataStore and Room never see a
- * locale-overridden context.
+ * [AppLocalization] exactly as [org.clockout.presentation.PadlaApp] wraps its own content.
  */
 class BreathingStyleActivity : ComponentActivity() {
 

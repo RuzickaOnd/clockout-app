@@ -42,7 +42,11 @@ class AppContainer(
 ) {
     private val appContext = context.applicationContext
 
-    /** The one migrator: its flag and mutex are per instance, so a second would import the legacy blob twice. */
+    /**
+     * The one migrator: its flag and mutex are per instance. A second instance would still read the
+     * persisted flag, but a concurrent import by both could let a late one overwrite an entry written
+     * in between, or bring back a blob meant to be dropped (after `clearLogs`, say).
+     */
     val logMigrator = RitualLogMigrator(preferences, database.ritualLogDao(), database.practiceDayDao())
 
     val settings: SettingsRepository = SettingsRepositoryImpl(preferences)

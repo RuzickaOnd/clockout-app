@@ -12,7 +12,7 @@ import org.clockout.domain.model.QuestionCatalog
  */
 class ClockoutApplication : Application() {
 
-    /** Built on first use, so a process started only for the reminder receiver pays for it too. */
+    /** Built on first use, by whichever entry point — an Activity or the reminder receiver — gets there first. */
     val container: AppContainer by lazy { AppContainer(this) }
 
     override fun onCreate() {
