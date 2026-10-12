@@ -1,21 +1,13 @@
 package org.clockout.telemetry
 
 import android.content.Context
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
-import org.clockout.data.local.RitualPreferences
+import org.clockout.AppContainer
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.repository.RitualRepository
-import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.domain.model.TelemetryConsent
 import org.clockout.presentation.settings.SettingsViewModel
+import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -25,6 +17,12 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 
 /** The Settings switch is the only way back from a "no", so it has to write both directions. */
 @RunWith(RobolectricTestRunner::class)
@@ -33,6 +31,7 @@ class SettingsTelemetryTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
 
+    private lateinit var container: AppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var repository: RitualRepository
 
@@ -41,17 +40,9 @@ class SettingsTelemetryTest {
         // viewModelScope posts to Dispatchers.Main; without this the write has not happened by the
         // time the assertion runs. Same arrangement CustomSoundReplacementTest uses.
         Dispatchers.setMain(UnconfinedTestDispatcher())
-        val context: Context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
-        repository = RitualRepositoryImpl(
-            preferences = RitualPreferences(
-                PreferenceDataStoreFactory.create {
-                    preferencesFolder.newFile("padla_test.preferences_pb").apply { delete() }
-                }
-            ),
-            ritualLogDao = database.ritualLogDao(),
-            practiceDayDao = database.practiceDayDao()
-        )
+        container = testAppContainer(preferencesFolder)
+        database = container.database
+        repository = container.ritualRepository
     }
 
     @After

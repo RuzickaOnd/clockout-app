@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.SkyData
-import org.clockout.presentation.rememberRitualRepository
+import org.clockout.presentation.appContainer
 import org.clockout.presentation.sky.SkyScreen
 import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.FrostedCanvas
@@ -31,7 +31,7 @@ class SkyActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = FrostedCanvas) {
-                    val repository = rememberRitualRepository()
+                    val repository = appContainer().ritualRepository
                     val language by repository.getLanguage()
                         .collectAsStateWithLifecycle(initialValue = AppLanguage.ENGLISH)
                     // Null until Room answers: drawing an empty sky first would flash the newcomer state.

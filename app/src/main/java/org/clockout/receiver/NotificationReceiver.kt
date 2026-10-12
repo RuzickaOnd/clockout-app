@@ -9,7 +9,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import org.clockout.MainActivity
 import org.clockout.R
-import org.clockout.data.local.RitualPreferences
+import org.clockout.appContainer
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.RitualDayPolicy
 import org.clockout.notification.NotificationScheduler
@@ -34,7 +34,7 @@ class NotificationReceiver : BroadcastReceiver() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val preferences = RitualPreferences(context)
+                val preferences = context.appContainer.preferences
                 val isEnabled = preferences.notificationEnabledFlow.first()
                 val hour = preferences.notificationHourFlow.first()
                 val minute = preferences.notificationMinuteFlow.first()

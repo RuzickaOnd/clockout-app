@@ -2,32 +2,31 @@ package org.clockout
 
 import android.content.Context
 import android.net.Uri
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import org.clockout.data.local.CustomSoundStorage
+import org.clockout.data.local.SoundImportError
+import org.clockout.data.local.SoundImportResult
+import org.clockout.domain.model.CustomSound
+import org.clockout.domain.model.SoundChoice
+import org.clockout.presentation.settings.SettingsViewModel
+import org.clockout.testing.testAppContainer
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.clockout.data.local.CustomSoundStorage
-import org.clockout.data.local.RitualPreferences
-import org.clockout.data.local.SoundImportError
-import org.clockout.data.local.SoundImportResult
-import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepositoryImpl
-import org.clockout.domain.model.CustomSound
-import org.clockout.domain.model.SoundChoice
-import org.clockout.presentation.settings.SettingsViewModel
-import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
 /**
  * Uploading a file over a sound whose audio is gone has to land on the existing entry: the id is
@@ -38,9 +37,11 @@ import org.robolectric.annotation.Config
 @Config(sdk = [36])
 class CustomSoundReplacementTest {
 
+    @get:Rule val preferencesFolder = TemporaryFolder()
+
     private lateinit var context: Context
-    private lateinit var database: ClockoutDatabase
-    private lateinit var preferences: RitualPreferences
+    private lateinit var container: AppContainer
+    private val preferences get() = container.preferences
 
     private val restored = CustomSound(
         id = CustomSound.ID_PREFIX + "restored",
@@ -58,13 +59,7 @@ class CustomSoundReplacementTest {
         addedAt = 1L
     )
 
-    private fun repository() = RitualRepositoryImpl(
-        preferences = preferences,
-        ritualLogDao = database.ritualLogDao(),
-        practiceDayDao = database.practiceDayDao(),
-        // Only the uploaded file is on disk; everything restored from a cloud backup is not.
-        soundFileExists = { it == uploaded.fileName }
-    )
+    private fun repository() = container.ritualRepository
 
     /** Stands in for CustomSoundStorage, keeping its documented refusal once the library is full. */
     private fun viewModel() = SettingsViewModel(
@@ -83,15 +78,17 @@ class CustomSoundReplacementTest {
         // replaceCustomSound is fire-and-forget on viewModelScope; this makes it start eagerly.
         Dispatchers.setMain(UnconfinedTestDispatcher())
         context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
-        preferences = RitualPreferences(context)
+        // Only the uploaded file is on disk; everything restored from a cloud backup is not.
+        container = testAppContainer(
+            preferencesFolder,
+            soundFileExists = { it == uploaded.fileName },
+            context = context
+        )
     }
 
     @After
-    fun tearDown() = runTest {
-        preferences.customSoundsFlow.first().forEach { preferences.removeCustomSound(it.id) }
-        preferences.setSelectedSoundId(SoundChoice.Default.id)
-        database.close()
+    fun tearDown() {
+        container.database.close()
         Dispatchers.resetMain()
     }
 

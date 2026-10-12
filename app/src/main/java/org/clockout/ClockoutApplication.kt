@@ -10,6 +10,9 @@ import org.clockout.data.local.QuestionsData
  */
 class ClockoutApplication : Application() {
 
+    /** Built on first use, so a process started only for the reminder receiver pays for it too. */
+    val container: AppContainer by lazy { AppContainer(this) }
+
     override fun onCreate() {
         super.onCreate()
         QuestionsData.initialize(this)

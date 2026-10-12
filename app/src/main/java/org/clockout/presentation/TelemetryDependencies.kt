@@ -14,8 +14,8 @@ import org.clockout.telemetry.FirebaseAnalyticsTracker
  * The gated tracker the app reports through.
  *
  * Built from the application context, so it outlives an Activity recreation, and above
- * [org.clockout.presentation.util.AppLocalization] for the same reason [rememberRitualRepository]
- * is: neither has any use for a context whose configuration has been overridden to localize
+ * [org.clockout.presentation.util.AppLocalization] for the same reason the
+ * [org.clockout.AppContainer] is: neither has any use for a context whose configuration has been overridden to localize
  * strings.
  *
  * Falls back to [NoOpAnalyticsTracker] when no [FirebaseApp] has been initialized. `FirebaseCrashlytics.getInstance()`

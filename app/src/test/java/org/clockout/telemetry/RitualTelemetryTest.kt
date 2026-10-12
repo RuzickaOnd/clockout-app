@@ -1,14 +1,10 @@
 package org.clockout.telemetry
 
 import android.content.Context
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.test.runTest
-import org.clockout.data.local.RitualPreferences
+import org.clockout.AppContainer
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.repository.RitualRepository
-import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.telemetry.AnalyticsEvent
 import org.clockout.domain.usecase.GetTodayRitualUseCase
@@ -16,6 +12,7 @@ import org.clockout.domain.usecase.LogMoodUseCase
 import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
+import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -26,6 +23,7 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.test.runTest
 
 /**
  * What the ritual reports, and - more importantly - what it does not. The question, the answer and
@@ -37,6 +35,7 @@ class RitualTelemetryTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
 
+    private lateinit var container: AppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var repository: RitualRepository
     private lateinit var tracker: RecordingAnalyticsTracker
@@ -56,16 +55,9 @@ class RitualTelemetryTest {
     @Before
     fun setUp() {
         val context: Context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
-        repository = RitualRepositoryImpl(
-            preferences = RitualPreferences(
-                PreferenceDataStoreFactory.create {
-                    preferencesFolder.newFile("padla_test.preferences_pb").apply { delete() }
-                }
-            ),
-            ritualLogDao = database.ritualLogDao(),
-            practiceDayDao = database.practiceDayDao()
-        )
+        container = testAppContainer(preferencesFolder)
+        database = container.database
+        repository = container.ritualRepository
         tracker = RecordingAnalyticsTracker()
     }
 

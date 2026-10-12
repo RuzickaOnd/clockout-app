@@ -21,8 +21,8 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaul
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -109,14 +109,14 @@ fun PadlaApp(
     overlay: @Composable BoxScope.() -> Unit = {}
 ) {
     val context = LocalContext.current
-    val repository = rememberRitualRepository(context)
+    val repository = appContainer().ritualRepository
     val analyticsTracker = rememberAnalyticsTracker(context)
     val scope = rememberCoroutineScope()
 
     // Null until DataStore has actually emitted. Starting at UNKNOWN instead would flash the opt-in
     // dialog on every launch for users who answered it long ago, the same trap
     // HomeState.isTestModeEnabled documents.
-    val consent by repository.getTelemetryConsent().collectAsState(initial = null)
+    val consent by repository.getTelemetryConsent().collectAsStateWithLifecycle(initialValue = null)
 
     LaunchedEffect(consent) {
         analyticsTracker.setCollectionEnabled(consent == TelemetryConsent.GRANTED)
@@ -139,13 +139,13 @@ fun PadlaApp(
         currentScreen = Screen.Home
     }
 
-    val language by repository.getLanguage().collectAsState(initial = AppLanguage.ENGLISH)
+    val language by repository.getLanguage().collectAsStateWithLifecycle(initialValue = AppLanguage.ENGLISH)
 
     // Reported from here rather than from the Application class: consent may arrive long after
     // startup, and these have to be sent when it does, not only when a setting next changes.
-    val breathingStyle by repository.getBreathingStyle().collectAsState(initial = null)
-    val soundEnabled by repository.getSoundEnabled().collectAsState(initial = null)
-    val includeWeekends by repository.getIncludeWeekends().collectAsState(initial = null)
+    val breathingStyle by repository.getBreathingStyle().collectAsStateWithLifecycle(initialValue = null)
+    val soundEnabled by repository.getSoundEnabled().collectAsStateWithLifecycle(initialValue = null)
+    val includeWeekends by repository.getIncludeWeekends().collectAsStateWithLifecycle(initialValue = null)
 
     LaunchedEffect(consent, breathingStyle, soundEnabled, includeWeekends, language) {
         if (consent != TelemetryConsent.GRANTED) return@LaunchedEffect
@@ -216,7 +216,7 @@ fun PadlaApp(
                             val homeViewModel: HomeViewModel = viewModel {
                                 HomeViewModel(repository, getTodayRitualUseCase, getStreakUseCase)
                             }
-                            val homeState by homeViewModel.state.collectAsState()
+                            val homeState by homeViewModel.state.collectAsStateWithLifecycle()
 
                             HomeScreen(
                                 state = homeState,
@@ -247,7 +247,7 @@ fun PadlaApp(
                             }
                             // Resets the ritual only when the user actually started it again.
                             LaunchedEffect(ritualSession) { ritualViewModel.startSession(ritualSession) }
-                            val ritualState by ritualViewModel.state.collectAsState()
+                            val ritualState by ritualViewModel.state.collectAsStateWithLifecycle()
 
                             // The request goes out on the completion card rather than on the way
                             // home: the user is done, nothing is interrupted, and the good mood
@@ -275,7 +275,7 @@ fun PadlaApp(
                             val historyViewModel: HistoryViewModel = viewModel {
                                 HistoryViewModel(repository)
                             }
-                            val historyState by historyViewModel.state.collectAsState()
+                            val historyState by historyViewModel.state.collectAsStateWithLifecycle()
 
                             HistoryScreen(
                                 state = historyState,
@@ -289,7 +289,7 @@ fun PadlaApp(
                             val settingsViewModel: SettingsViewModel = viewModel {
                                 SettingsViewModel(repository)
                             }
-                            val settingsState by settingsViewModel.state.collectAsState()
+                            val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
 
                             SettingsScreen(
                                 state = settingsState,

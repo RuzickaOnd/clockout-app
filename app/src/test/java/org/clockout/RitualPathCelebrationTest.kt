@@ -1,22 +1,11 @@
 package org.clockout
 
 import android.content.Context
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
 import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.local.db.PracticeDayEntity
 import org.clockout.data.repository.RitualRepository
-import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.domain.model.ConstellationCatalog
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathStage
@@ -27,6 +16,7 @@ import org.clockout.domain.usecase.LogMoodUseCase
 import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
+import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -39,6 +29,14 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -51,25 +49,19 @@ class RitualPathCelebrationTest {
 
     private val dispatcher = UnconfinedTestDispatcher()
     private lateinit var context: Context
+    private lateinit var container: AppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var preferences: RitualPreferences
-    private lateinit var repository: RitualRepositoryImpl
+    private lateinit var repository: RitualRepository
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
         context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
-        preferences = RitualPreferences(
-            PreferenceDataStoreFactory.create {
-                preferencesFolder.newFile("padla_test.preferences_pb").apply { delete() }
-            }
-        )
-        repository = RitualRepositoryImpl(
-            preferences = preferences,
-            ritualLogDao = database.ritualLogDao(),
-            practiceDayDao = database.practiceDayDao()
-        )
+        container = testAppContainer(preferencesFolder)
+        database = container.database
+        repository = container.ritualRepository
+        preferences = container.preferences
     }
 
     @After

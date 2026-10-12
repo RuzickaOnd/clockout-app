@@ -12,7 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.BreathingStyle
-import org.clockout.presentation.rememberRitualRepository
+import org.clockout.presentation.appContainer
 import org.clockout.presentation.settings.BreathingStyleScreen
 import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.FrostedCanvas
@@ -45,7 +45,7 @@ class BreathingStyleActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = FrostedCanvas) {
-                    val repository = rememberRitualRepository()
+                    val repository = appContainer().ritualRepository
                     val language by repository.getLanguage()
                         .collectAsStateWithLifecycle(initialValue = AppLanguage.ENGLISH)
                     val style by repository.getBreathingStyle()

@@ -12,7 +12,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.PathProgress
 import org.clockout.presentation.path.PathScreen
-import org.clockout.presentation.rememberRitualRepository
+import org.clockout.presentation.appContainer
 import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.FrostedCanvas
 import org.clockout.ui.theme.MyApplicationTheme
@@ -32,7 +32,7 @@ class PathActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = FrostedCanvas) {
-                    val repository = rememberRitualRepository()
+                    val repository = appContainer().ritualRepository
                     val language by repository.getLanguage()
                         .collectAsStateWithLifecycle(initialValue = AppLanguage.ENGLISH)
                     // Null until Room answers, so the first frame does not show a newcomer's path.

@@ -1,20 +1,17 @@
 package org.clockout
 
-import android.content.Context
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
-import org.clockout.data.local.RitualPreferences
-import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepositoryImpl
+import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
 
 /**
  * The week strip on the home screen only shows the days the ritual is offered on, so the
@@ -24,26 +21,21 @@ import org.robolectric.annotation.Config
 @Config(sdk = [36])
 class RitualWeekOverviewTest {
 
-    private lateinit var context: Context
-    private lateinit var database: ClockoutDatabase
-    private lateinit var preferences: RitualPreferences
+    @get:Rule val preferencesFolder = TemporaryFolder()
 
-    private fun repository() = RitualRepositoryImpl(
-        preferences = preferences,
-        ritualLogDao = database.ritualLogDao(),
-        practiceDayDao = database.practiceDayDao()
-    )
+    private lateinit var container: AppContainer
+    private val preferences get() = container.preferences
+
+    private fun repository() = container.ritualRepository
 
     @Before
     fun setUp() {
-        context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
-        preferences = RitualPreferences(context)
+        container = testAppContainer(preferencesFolder)
     }
 
     @After
     fun tearDown() {
-        database.close()
+        container.database.close()
     }
 
     @Test

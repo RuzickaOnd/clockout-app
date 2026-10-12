@@ -1,16 +1,11 @@
 package org.clockout
 
 import android.content.Context
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
-import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.repository.RitualRepository
-import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.presentation.settings.SettingsState
+import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -23,6 +18,8 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
 
 /**
  * A hand-picked workday end time is remembered apart from the active one, so the custom chip
@@ -34,23 +31,15 @@ class CustomReminderTimeTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
 
+    private lateinit var container: AppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var repository: RitualRepository
 
     @Before
     fun setUp() {
-        val context: Context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
-        val preferences = RitualPreferences(
-            PreferenceDataStoreFactory.create {
-                preferencesFolder.newFile("padla_test.preferences_pb").apply { delete() }
-            }
-        )
-        repository = RitualRepositoryImpl(
-            preferences = preferences,
-            ritualLogDao = database.ritualLogDao(),
-            practiceDayDao = database.practiceDayDao()
-        )
+        container = testAppContainer(preferencesFolder)
+        database = container.database
+        repository = container.ritualRepository
     }
 
     @After

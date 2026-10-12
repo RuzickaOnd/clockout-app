@@ -1,22 +1,23 @@
 package org.clockout
 
 import android.content.Context
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
-import org.clockout.data.local.RitualPreferences
-import org.clockout.data.repository.RitualRepositoryImpl
-import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.domain.model.MoodTag
+import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runTest
+import java.time.LocalDate
 
 /**
  * Verifies the mood/day rating survives in the database rather than in a preferences blob:
@@ -26,24 +27,28 @@ import org.robolectric.annotation.Config
 @Config(sdk = [36])
 class RitualRepositoryLogPersistenceTest {
 
-    private lateinit var context: Context
-    private lateinit var database: ClockoutDatabase
+    @get:Rule val preferencesFolder = TemporaryFolder()
 
-    private fun repository() = RitualRepositoryImpl(
-        preferences = RitualPreferences(context),
-        ritualLogDao = database.ritualLogDao(),
-        practiceDayDao = database.practiceDayDao()
-    )
+    private lateinit var context: Context
+    private lateinit var container: AppContainer
+
+    /** A new graph over the same storage, standing in for a repository built after the first one. */
+    private fun repository() = AppContainer(
+        context = context,
+        preferences = container.preferences,
+        database = container.database,
+        todayFlow = flowOf(LocalDate.now())
+    ).ritualRepository
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
+        container = testAppContainer(preferencesFolder, context = context)
     }
 
     @After
     fun tearDown() {
-        database.close()
+        container.database.close()
     }
 
     @Test

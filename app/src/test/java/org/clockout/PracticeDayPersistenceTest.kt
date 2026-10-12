@@ -2,18 +2,15 @@ package org.clockout
 
 import android.content.Context
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
 import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.local.db.PracticeDayEntity
 import org.clockout.data.local.db.RitualLogEntity
-import org.clockout.data.repository.RitualRepositoryImpl
+import org.clockout.data.repository.RitualRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathStage
+import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -24,6 +21,10 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runTest
 import java.time.LocalDate
 import java.util.Locale
 
@@ -33,24 +34,18 @@ class PracticeDayPersistenceTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
 
+    private lateinit var container: AppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var preferences: RitualPreferences
-    private lateinit var repository: RitualRepositoryImpl
+    private lateinit var repository: RitualRepository
 
     @Before
     fun setUp() {
         val context: Context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
-        preferences = RitualPreferences(
-            PreferenceDataStoreFactory.create {
-                preferencesFolder.newFile("padla_test.preferences_pb").apply { delete() }
-            }
-        )
-        repository = RitualRepositoryImpl(
-            preferences = preferences,
-            ritualLogDao = database.ritualLogDao(),
-            practiceDayDao = database.practiceDayDao()
-        )
+        container = testAppContainer(preferencesFolder)
+        database = container.database
+        repository = container.ritualRepository
+        preferences = container.preferences
     }
 
     @After
@@ -111,15 +106,16 @@ class PracticeDayPersistenceTest {
         val original = Locale.getDefault()
         Locale.setDefault(Locale.forLanguageTag("fa-IR"))
         try {
-            val persianRepository = RitualRepositoryImpl(
+            val persianRepository = AppContainer(
+                context = ApplicationProvider.getApplicationContext(),
                 preferences = RitualPreferences(
                     PreferenceDataStoreFactory.create {
                         preferencesFolder.newFile("padla_fa.preferences_pb").apply { delete() }
                     }
                 ),
-                ritualLogDao = database.ritualLogDao(),
-                practiceDayDao = database.practiceDayDao()
-            )
+                database = database,
+                todayFlow = flowOf(LocalDate.now())
+            ).ritualRepository
 
             persianRepository.logRitual(null, MoodTag.CALM, "Q")
         } finally {
@@ -152,16 +148,16 @@ class PracticeDayPersistenceTest {
     @Test
     fun `the sky and the path move on at midnight without a new ritual`() = runTest {
         val today = MutableStateFlow(LocalDate.of(2026, 10, 9))
-        val clocked = RitualRepositoryImpl(
+        val clocked = AppContainer(
+            context = ApplicationProvider.getApplicationContext(),
             preferences = RitualPreferences(
                 PreferenceDataStoreFactory.create {
                     preferencesFolder.newFile("padla_clock.preferences_pb").apply { delete() }
                 }
             ),
-            ritualLogDao = database.ritualLogDao(),
-            practiceDayDao = database.practiceDayDao(),
+            database = database,
             todayFlow = today
-        )
+        ).ritualRepository
         database.practiceDayDao().insert(PracticeDayEntity("2026-10-09"))
         assertEquals(LocalDate.of(2026, 10, 9), clocked.getSky().first().today)
 
