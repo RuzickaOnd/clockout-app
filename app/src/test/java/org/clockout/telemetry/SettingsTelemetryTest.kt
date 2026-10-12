@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.clockout.AppContainer
 import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepository
+import org.clockout.domain.repository.SettingsRepository
 import org.clockout.domain.model.TelemetryConsent
 import org.clockout.presentation.settings.SettingsViewModel
 import org.clockout.testing.testAppContainer
@@ -38,7 +38,7 @@ class SettingsTelemetryTest {
 
     private lateinit var container: AppContainer
     private lateinit var database: ClockoutDatabase
-    private lateinit var repository: RitualRepository
+    private lateinit var repository: SettingsRepository
 
     @Before
     fun setUp() {
@@ -47,7 +47,7 @@ class SettingsTelemetryTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         container = testAppContainer(preferencesFolder)
         database = container.database
-        repository = container.ritualRepository
+        repository = container.settings
     }
 
     @After
@@ -59,7 +59,9 @@ class SettingsTelemetryTest {
     @Test
     fun `the switch grants and withdraws`() = runTest {
         val model = SettingsViewModel(
-            repository = repository,
+            settings = repository,
+            sounds = container.sounds,
+            logs = container.ritualLogs,
             audioPlayer = FakeSoundPlayer(),
             reminderScheduler = FakeReminderScheduler(),
             soundFiles = FakeSoundFileStore { SoundImportResult.Failure(SoundImportError.READ_FAILED) }

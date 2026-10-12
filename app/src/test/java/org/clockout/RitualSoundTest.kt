@@ -44,19 +44,22 @@ class RitualSoundTest {
     }
 
     private fun viewModel(): RitualViewModel {
-        val repository = container.ritualRepository
+        val repository = container.ritualLogs
         return RitualViewModel(
             getTodayRitualUseCase = GetTodayRitualUseCase(repository),
             logMoodUseCase = LogMoodUseCase(repository),
             shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
-            ritualRepository = repository,
+            logs = repository,
+            settings = container.settings,
+            sounds = container.sounds,
+            progress = container.progress,
             audioPlayer = player
         ).also { it.startSession(1) }
     }
 
     @Test
     fun `breathing starts the ambient sound unless muted`() = runTest(dispatcher) {
-        container.ritualRepository.setSoundEnabled(true)
+        container.sounds.setSoundEnabled(true)
         val vm = viewModel()
         vm.onIntent(RitualIntent.ProceedToBreathing)
 
@@ -66,7 +69,7 @@ class RitualSoundTest {
 
     @Test
     fun `leaving the ritual stops the sound`() = runTest(dispatcher) {
-        container.ritualRepository.setSoundEnabled(true)
+        container.sounds.setSoundEnabled(true)
         val vm = viewModel()
         vm.onIntent(RitualIntent.ProceedToBreathing)
 
@@ -77,7 +80,7 @@ class RitualSoundTest {
 
     @Test
     fun `a muted ritual stays silent`() = runTest(dispatcher) {
-        container.ritualRepository.setSoundEnabled(false)
+        container.sounds.setSoundEnabled(false)
         val vm = viewModel()
         vm.state.first { it.isSoundMuted }
         vm.onIntent(RitualIntent.ProceedToBreathing)

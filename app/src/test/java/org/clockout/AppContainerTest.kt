@@ -17,7 +17,7 @@ class AppContainerTest {
         val app = ApplicationProvider.getApplicationContext<ClockoutApplication>()
 
         assertSame(app.container, app.container)
-        assertSame(app.container.ritualRepository, app.container.ritualRepository)
+        assertSame(app.container.settings, app.container.settings)
     }
 
     @Test

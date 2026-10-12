@@ -5,11 +5,14 @@ import kotlinx.coroutines.flow.Flow
 import org.clockout.data.local.CustomSoundStorage
 import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepository
 import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.domain.platform.ReminderScheduler
 import org.clockout.domain.platform.SoundFileStore
 import org.clockout.domain.platform.SoundPlayer
+import org.clockout.domain.repository.ProgressRepository
+import org.clockout.domain.repository.RitualLogRepository
+import org.clockout.domain.repository.SettingsRepository
+import org.clockout.domain.repository.SoundRepository
 import org.clockout.notification.AlarmReminderScheduler
 import org.clockout.sound.AmbientAudioPlayer
 import org.clockout.util.todayFlow
@@ -33,13 +36,18 @@ class AppContainer(
 ) {
     private val appContext = context.applicationContext
 
-    val ritualRepository: RitualRepository = RitualRepositoryImpl(
+    private val ritualRepository = RitualRepositoryImpl(
         preferences = preferences,
         ritualLogDao = database.ritualLogDao(),
         practiceDayDao = database.practiceDayDao(),
         todayFlow = todayFlow,
         soundFileExists = soundFileExists
     )
+
+    val settings: SettingsRepository = ritualRepository
+    val sounds: SoundRepository = ritualRepository
+    val ritualLogs: RitualLogRepository = ritualRepository
+    val progress: ProgressRepository = ritualRepository
 
     val reminderScheduler: ReminderScheduler = AlarmReminderScheduler(appContext)
     val soundFileStore: SoundFileStore = CustomSoundStorage(appContext)

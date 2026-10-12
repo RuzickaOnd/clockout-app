@@ -3,7 +3,7 @@ package org.clockout
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepository
+import org.clockout.domain.repository.SettingsRepository
 import org.clockout.presentation.settings.SettingsState
 import org.clockout.testing.testAppContainer
 import org.junit.After
@@ -33,13 +33,13 @@ class CustomReminderTimeTest {
 
     private lateinit var container: AppContainer
     private lateinit var database: ClockoutDatabase
-    private lateinit var repository: RitualRepository
+    private lateinit var repository: SettingsRepository
 
     @Before
     fun setUp() {
         container = testAppContainer(preferencesFolder)
         database = container.database
-        repository = container.ritualRepository
+        repository = container.settings
     }
 
     @After

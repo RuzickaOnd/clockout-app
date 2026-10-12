@@ -38,7 +38,7 @@ class RitualRepositoryLogPersistenceTest {
         preferences = container.preferences,
         database = container.database,
         todayFlow = flowOf(LocalDate.now())
-    ).ritualRepository
+    ).ritualLogs
 
     @Before
     fun setUp() {

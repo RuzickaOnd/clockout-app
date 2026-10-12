@@ -26,7 +26,7 @@ class RitualWeekOverviewTest {
     private lateinit var container: AppContainer
     private val preferences get() = container.preferences
 
-    private fun repository() = container.ritualRepository
+    private fun repository() = container.ritualLogs
 
     @Before
     fun setUp() {

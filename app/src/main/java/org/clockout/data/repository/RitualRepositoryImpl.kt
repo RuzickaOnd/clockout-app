@@ -23,7 +23,6 @@ import org.clockout.domain.model.SkyData
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
-import org.clockout.domain.model.WorkdayCloseWindow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -202,7 +201,6 @@ class RitualRepositoryImpl(
 
     override suspend fun markReviewPromptShown() = preferences.markReviewPromptShown()
 
-    override fun isWithinWorkdayCloseWindow(): Boolean = WorkdayCloseWindow.isOpenNow()
 
     override fun getIncludeWeekends(): Flow<Boolean> = preferences.includeWeekendsFlow
 

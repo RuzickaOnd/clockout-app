@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.clockout.AppContainer
 import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepository
+import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.telemetry.AnalyticsEvent
 import org.clockout.domain.usecase.GetTodayRitualUseCase
@@ -38,7 +38,7 @@ class RitualTelemetryTest {
 
     private lateinit var container: AppContainer
     private lateinit var database: ClockoutDatabase
-    private lateinit var repository: RitualRepository
+    private lateinit var repository: RitualLogRepository
     private lateinit var tracker: RecordingAnalyticsTracker
 
     private fun viewModel(): RitualViewModel {
@@ -48,7 +48,10 @@ class RitualTelemetryTest {
             getTodayRitualUseCase = GetTodayRitualUseCase(repository),
             logMoodUseCase = LogMoodUseCase(repository),
             shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
-            ritualRepository = repository,
+            logs = repository,
+            settings = container.settings,
+            sounds = container.sounds,
+            progress = container.progress,
             analyticsTracker = tracker
         )
     }
@@ -58,7 +61,7 @@ class RitualTelemetryTest {
         val context: Context = ApplicationProvider.getApplicationContext()
         container = testAppContainer(preferencesFolder)
         database = container.database
-        repository = container.ritualRepository
+        repository = container.ritualLogs
         tracker = RecordingAnalyticsTracker()
     }
 

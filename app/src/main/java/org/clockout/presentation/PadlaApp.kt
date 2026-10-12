@@ -110,22 +110,21 @@ fun PadlaApp(
 ) {
     val context = LocalContext.current
     val container = appContainer()
-    val repository = container.ritualRepository
     val analyticsTracker = rememberAnalyticsTracker(context)
     val scope = rememberCoroutineScope()
 
     // Null until DataStore has actually emitted. Starting at UNKNOWN instead would flash the opt-in
     // dialog on every launch for users who answered it long ago, the same trap
     // HomeState.isTestModeEnabled documents.
-    val consent by repository.getTelemetryConsent().collectAsStateWithLifecycle(initialValue = null)
+    val consent by container.settings.getTelemetryConsent().collectAsStateWithLifecycle(initialValue = null)
 
     LaunchedEffect(consent) {
         analyticsTracker.setCollectionEnabled(consent == TelemetryConsent.GRANTED)
     }
-    val getTodayRitualUseCase = remember { GetTodayRitualUseCase(repository) }
-    val logMoodUseCase = remember { LogMoodUseCase(repository) }
-    val shouldRequestReviewUseCase = remember { ShouldRequestReviewUseCase(repository) }
-    val getStreakUseCase = remember { GetStreakUseCase(repository) }
+    val getTodayRitualUseCase = remember { GetTodayRitualUseCase(container.ritualLogs) }
+    val logMoodUseCase = remember { LogMoodUseCase(container.ritualLogs) }
+    val shouldRequestReviewUseCase = remember { ShouldRequestReviewUseCase(container.ritualLogs) }
+    val getStreakUseCase = remember { GetStreakUseCase(container.ritualLogs) }
 
     var currentScreen by rememberSaveable(stateSaver = ScreenSaver) {
         mutableStateOf<Screen>(Screen.Home)
@@ -140,13 +139,13 @@ fun PadlaApp(
         currentScreen = Screen.Home
     }
 
-    val language by repository.getLanguage().collectAsStateWithLifecycle(initialValue = AppLanguage.ENGLISH)
+    val language by container.settings.getLanguage().collectAsStateWithLifecycle(initialValue = AppLanguage.ENGLISH)
 
     // Reported from here rather than from the Application class: consent may arrive long after
     // startup, and these have to be sent when it does, not only when a setting next changes.
-    val breathingStyle by repository.getBreathingStyle().collectAsStateWithLifecycle(initialValue = null)
-    val soundEnabled by repository.getSoundEnabled().collectAsStateWithLifecycle(initialValue = null)
-    val includeWeekends by repository.getIncludeWeekends().collectAsStateWithLifecycle(initialValue = null)
+    val breathingStyle by container.settings.getBreathingStyle().collectAsStateWithLifecycle(initialValue = null)
+    val soundEnabled by container.sounds.getSoundEnabled().collectAsStateWithLifecycle(initialValue = null)
+    val includeWeekends by container.settings.getIncludeWeekends().collectAsStateWithLifecycle(initialValue = null)
 
     LaunchedEffect(consent, breathingStyle, soundEnabled, includeWeekends, language) {
         if (consent != TelemetryConsent.GRANTED) return@LaunchedEffect
@@ -215,7 +214,7 @@ fun PadlaApp(
                     when (screen) {
                         is Screen.Home -> {
                             val homeViewModel: HomeViewModel = viewModel {
-                                HomeViewModel(repository, getTodayRitualUseCase, getStreakUseCase)
+                                HomeViewModel(container.ritualLogs, container.settings, container.progress, getTodayRitualUseCase, getStreakUseCase)
                             }
                             val homeState by homeViewModel.state.collectAsStateWithLifecycle()
 
@@ -241,7 +240,10 @@ fun PadlaApp(
                                     getTodayRitualUseCase,
                                     logMoodUseCase,
                                     shouldRequestReviewUseCase,
-                                    repository,
+                                    container.ritualLogs,
+                                    container.settings,
+                                    container.sounds,
+                                    container.progress,
                                     audioPlayer = container.newSoundPlayer(),
                                     analyticsTracker = analyticsTracker
                                 )
@@ -274,7 +276,7 @@ fun PadlaApp(
                         }
                         is Screen.History -> {
                             val historyViewModel: HistoryViewModel = viewModel {
-                                HistoryViewModel(repository)
+                                HistoryViewModel(container.ritualLogs, container.settings, container.progress)
                             }
                             val historyState by historyViewModel.state.collectAsStateWithLifecycle()
 
@@ -289,7 +291,9 @@ fun PadlaApp(
                         is Screen.Settings -> {
                             val settingsViewModel: SettingsViewModel = viewModel {
                                 SettingsViewModel(
-                                    repository = repository,
+                                    settings = container.settings,
+                                    sounds = container.sounds,
+                                    logs = container.ritualLogs,
                                     audioPlayer = container.newSoundPlayer(),
                                     reminderScheduler = container.reminderScheduler,
                                     soundFiles = container.soundFileStore
@@ -331,10 +335,10 @@ fun PadlaApp(
             if (consent == TelemetryConsent.UNKNOWN) {
                 TelemetryConsentDialog(
                     onGrant = {
-                        scope.launch { repository.setTelemetryConsent(TelemetryConsent.GRANTED) }
+                        scope.launch { container.settings.setTelemetryConsent(TelemetryConsent.GRANTED) }
                     },
                     onDeny = {
-                        scope.launch { repository.setTelemetryConsent(TelemetryConsent.DENIED) }
+                        scope.launch { container.settings.setTelemetryConsent(TelemetryConsent.DENIED) }
                     },
                     onOpenPrivacyPolicy = { context.openUrl(PRIVACY_POLICY_URL) }
                 )

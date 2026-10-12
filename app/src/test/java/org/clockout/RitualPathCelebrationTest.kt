@@ -5,7 +5,8 @@ import androidx.test.core.app.ApplicationProvider
 import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.local.db.PracticeDayEntity
-import org.clockout.data.repository.RitualRepository
+import org.clockout.domain.repository.ProgressRepository
+import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.ConstellationCatalog
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathStage
@@ -53,7 +54,7 @@ class RitualPathCelebrationTest {
     private lateinit var container: AppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var preferences: RitualPreferences
-    private lateinit var repository: RitualRepository
+    private lateinit var repository: RitualLogRepository
 
     @Before
     fun setUp() {
@@ -61,7 +62,7 @@ class RitualPathCelebrationTest {
         context = ApplicationProvider.getApplicationContext()
         container = testAppContainer(preferencesFolder)
         database = container.database
-        repository = container.ritualRepository
+        repository = container.ritualLogs
         preferences = container.preferences
     }
 
@@ -76,7 +77,10 @@ class RitualPathCelebrationTest {
         getTodayRitualUseCase = GetTodayRitualUseCase(repository),
         logMoodUseCase = LogMoodUseCase(repository),
         shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
-        ritualRepository = repository
+        logs = repository,
+        settings = container.settings,
+        sounds = container.sounds,
+        progress = container.progress
     )
 
     private suspend fun finishRitual(): RitualViewModel = viewModel().also { vm ->
@@ -163,15 +167,18 @@ class RitualPathCelebrationTest {
 
     @Test
     fun `a failure in the path or the sky never costs the ritual its entry`() = runTest(dispatcher) {
-        val brokenSky = object : RitualRepository by repository {
+        val brokenSky = object : ProgressRepository by container.progress {
             override fun getSky(): Flow<SkyData> = flow { throw IllegalStateException("sky broke") }
         }
         val viewModel = RitualViewModel(
             audioPlayer = FakeSoundPlayer(),
-            getTodayRitualUseCase = GetTodayRitualUseCase(brokenSky),
-            logMoodUseCase = LogMoodUseCase(brokenSky),
-            shouldRequestReviewUseCase = ShouldRequestReviewUseCase(brokenSky),
-            ritualRepository = brokenSky
+            getTodayRitualUseCase = GetTodayRitualUseCase(repository),
+            logMoodUseCase = LogMoodUseCase(repository),
+            shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
+            logs = repository,
+            settings = container.settings,
+            sounds = container.sounds,
+            progress = brokenSky
         )
 
         viewModel.onIntent(RitualIntent.MoodSelected(MoodTag.CALM))

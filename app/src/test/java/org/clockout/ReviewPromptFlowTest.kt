@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepository
+import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.testing.testAppContainer
@@ -35,14 +35,14 @@ class ReviewPromptFlowTest {
 
     private lateinit var container: AppContainer
     private lateinit var database: ClockoutDatabase
-    private lateinit var repository: RitualRepository
+    private lateinit var repository: RitualLogRepository
     private lateinit var shouldRequestReview: ShouldRequestReviewUseCase
 
     @Before
     fun setUp() {
         container = testAppContainer(preferencesFolder)
         database = container.database
-        repository = container.ritualRepository
+        repository = container.ritualLogs
         shouldRequestReview = ShouldRequestReviewUseCase(repository)
     }
 

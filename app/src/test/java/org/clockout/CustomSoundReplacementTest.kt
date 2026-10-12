@@ -61,11 +61,13 @@ class CustomSoundReplacementTest {
         addedAt = 1L
     )
 
-    private fun repository() = container.ritualRepository
+    private fun repository() = container.sounds
 
     /** Stands in for CustomSoundStorage, keeping its documented refusal once the library is full. */
     private fun viewModel() = SettingsViewModel(
-        repository = repository(),
+        settings = container.settings,
+        sounds = container.sounds,
+        logs = container.ritualLogs,
         audioPlayer = FakeSoundPlayer(),
         reminderScheduler = FakeReminderScheduler(),
         soundFiles = FakeSoundFileStore { existingCount ->

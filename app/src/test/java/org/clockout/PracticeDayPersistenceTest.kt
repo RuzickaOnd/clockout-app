@@ -7,7 +7,8 @@ import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.local.db.PracticeDayEntity
 import org.clockout.data.local.db.RitualLogEntity
-import org.clockout.data.repository.RitualRepository
+import org.clockout.domain.repository.ProgressRepository
+import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathStage
 import org.clockout.testing.testAppContainer
@@ -37,14 +38,16 @@ class PracticeDayPersistenceTest {
     private lateinit var container: AppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var preferences: RitualPreferences
-    private lateinit var repository: RitualRepository
+    private lateinit var logRepository: RitualLogRepository
+    private lateinit var progressRepository: ProgressRepository
 
     @Before
     fun setUp() {
         val context: Context = ApplicationProvider.getApplicationContext()
         container = testAppContainer(preferencesFolder)
         database = container.database
-        repository = container.ritualRepository
+        logRepository = container.ritualLogs
+        progressRepository = container.progress
         preferences = container.preferences
     }
 
@@ -55,20 +58,20 @@ class PracticeDayPersistenceTest {
 
     @Test
     fun `logging twice on the same day counts one practice day`() = runTest {
-        repository.logRitual(null, MoodTag.CALM, "Q")
-        repository.logRitual(null, MoodTag.TENSE, "Q")
+        logRepository.logRitual(null, MoodTag.CALM, "Q")
+        logRepository.logRitual(null, MoodTag.TENSE, "Q")
 
-        assertEquals(1, repository.getPathProgress().first().closedDays)
+        assertEquals(1, progressRepository.getPathProgress().first().closedDays)
     }
 
     @Test
     fun `clearLogs keeps the practice days`() = runTest {
-        repository.logRitual(null, MoodTag.CALM, "Q")
+        logRepository.logRitual(null, MoodTag.CALM, "Q")
 
-        repository.clearLogs()
+        logRepository.clearLogs()
 
-        assertEquals(0, repository.getLogs().first().size)
-        val progress = repository.getPathProgress().first()
+        assertEquals(0, logRepository.getLogs().first().size)
+        val progress = progressRepository.getPathProgress().first()
         assertEquals(1, progress.closedDays)
         assertEquals(PathStage.LAPTOP_CLOSED, progress.stage)
     }
@@ -80,17 +83,17 @@ class PracticeDayPersistenceTest {
             (1L..4L).map { PracticeDayEntity(today.minusDays(it * 7).toString()) }
         )
 
-        repository.logRitual(null, MoodTag.CALM, "Q")
+        logRepository.logRitual(null, MoodTag.CALM, "Q")
 
-        assertEquals(PathStage.COAT_ON, repository.getPathProgress().first().stage)
+        assertEquals(PathStage.COAT_ON, progressRepository.getPathProgress().first().stage)
     }
 
     @Test
     fun `an unparsable date is skipped rather than crashing`() = runTest {
         database.practiceDayDao().insert(PracticeDayEntity("not-a-date"))
-        repository.logRitual(null, MoodTag.CALM, "Q")
+        logRepository.logRitual(null, MoodTag.CALM, "Q")
 
-        assertEquals(1, repository.getPathProgress().first().closedDays)
+        assertEquals(1, progressRepository.getPathProgress().first().closedDays)
     }
 
     @Test
@@ -98,7 +101,7 @@ class PracticeDayPersistenceTest {
         // What SimpleDateFormat with Locale.getDefault() writes under an Arabic-Indic locale.
         database.practiceDayDao().insert(PracticeDayEntity("٢٠٢٦-١٠-٠٥"))
 
-        assertEquals(1, repository.getPathProgress().first().closedDays)
+        assertEquals(1, progressRepository.getPathProgress().first().closedDays)
     }
 
     @Test
@@ -115,7 +118,7 @@ class PracticeDayPersistenceTest {
                 ),
                 database = database,
                 todayFlow = flowOf(LocalDate.now())
-            ).ritualRepository
+            ).ritualLogs
 
             persianRepository.logRitual(null, MoodTag.CALM, "Q")
         } finally {
@@ -127,20 +130,20 @@ class PracticeDayPersistenceTest {
 
     @Test
     fun `the sky holds a logged day with its mood`() = runTest {
-        repository.logRitual(null, MoodTag.SATISFIED, "Q")
+        logRepository.logRitual(null, MoodTag.SATISFIED, "Q")
 
-        val sky = repository.getSky().first()
+        val sky = progressRepository.getSky().first()
         assertEquals(1, sky.days.size)
         assertEquals(MoodTag.SATISFIED, sky.logs[LocalDate.now()]?.moodTag)
     }
 
     @Test
     fun `clearLogs keeps the sky but drops the moods`() = runTest {
-        repository.logRitual(null, MoodTag.SATISFIED, "Q")
+        logRepository.logRitual(null, MoodTag.SATISFIED, "Q")
 
-        repository.clearLogs()
+        logRepository.clearLogs()
 
-        val sky = repository.getSky().first()
+        val sky = progressRepository.getSky().first()
         assertEquals(setOf(LocalDate.now()), sky.days)
         assertTrue(sky.logs.isEmpty())
     }
@@ -157,7 +160,7 @@ class PracticeDayPersistenceTest {
             ),
             database = database,
             todayFlow = today
-        ).ritualRepository
+        ).progress
         database.practiceDayDao().insert(PracticeDayEntity("2026-10-09"))
         assertEquals(LocalDate.of(2026, 10, 9), clocked.getSky().first().today)
 
@@ -168,11 +171,11 @@ class PracticeDayPersistenceTest {
 
     @Test
     fun `the sky knows whether the ritual is offered at weekends`() = runTest {
-        assertEquals(false, repository.getSky().first().includeWeekends)
+        assertEquals(false, progressRepository.getSky().first().includeWeekends)
 
         preferences.setIncludeWeekends(true)
 
-        assertEquals(true, repository.getSky().first { it.includeWeekends }.includeWeekends)
+        assertEquals(true, progressRepository.getSky().first { it.includeWeekends }.includeWeekends)
     }
 
     @Test

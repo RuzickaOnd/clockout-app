@@ -32,12 +32,12 @@ class PathActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = FrostedCanvas) {
-                    val repository = appContainer().ritualRepository
-                    val language by repository.getLanguage()
+                    val container = appContainer()
+                    val language by container.settings.getLanguage()
                         .collectAsStateWithLifecycle(initialValue = AppLanguage.ENGLISH)
                     // Null until Room answers, so the first frame does not show a newcomer's path.
                     // Remembered, so a change of language does not restart the collection.
-                    val progressFlow = remember(repository) { repository.getPathProgress() }
+                    val progressFlow = remember(container) { container.progress.getPathProgress() }
                     val progress by progressFlow.collectAsStateWithLifecycle(initialValue = null as PathProgress?)
 
                     AppLocalization(language) {

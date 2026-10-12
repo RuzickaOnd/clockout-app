@@ -2,7 +2,10 @@ package org.clockout.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import org.clockout.data.repository.RitualRepository
+import org.clockout.domain.model.WorkdayCloseWindow
+import org.clockout.domain.repository.ProgressRepository
+import org.clockout.domain.repository.RitualLogRepository
+import org.clockout.domain.repository.SettingsRepository
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.RitualDayPolicy
 import org.clockout.domain.model.RitualStreakInfo
@@ -23,9 +26,12 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 class HomeViewModel(
-    private val ritualRepository: RitualRepository,
+    private val logs: RitualLogRepository,
+    private val settings: SettingsRepository,
+    private val progress: ProgressRepository,
     private val getTodayRitualUseCase: GetTodayRitualUseCase,
-    private val getStreakUseCase: GetStreakUseCase
+    private val getStreakUseCase: GetStreakUseCase,
+    private val isWithinWindow: () -> Boolean = WorkdayCloseWindow::isOpenNow
 ) : ViewModel() {
 
     /** Last value seen from settings, so a plain refresh can re-evaluate today's rest day. */
@@ -34,7 +40,7 @@ class HomeViewModel(
     private val _state = MutableStateFlow(
         HomeState(
             todayQuestion = getTodayRitualUseCase(),
-            isWithinWindow = ritualRepository.isWithinWorkdayCloseWindow(),
+            isWithinWindow = isWithinWindow(),
             isRitualDay = RitualDayPolicy.isTodayRitualDay(includeWeekends)
         )
     )
@@ -48,9 +54,9 @@ class HomeViewModel(
         viewModelScope.launch {
             combine(
                 getStreakUseCase(),
-                ritualRepository.getTestMode(),
-                ritualRepository.getLanguage(),
-                ritualRepository.getIncludeWeekends(),
+                settings.getTestMode(),
+                settings.getLanguage(),
+                settings.getIncludeWeekends(),
                 withinWindowFlow()
             ) { streakInfo, testMode, language, includeWeekends, isWithinWindow ->
                 HomeData(streakInfo, testMode, language, includeWeekends, isWithinWindow)
@@ -68,8 +74,8 @@ class HomeViewModel(
             }
         }
         viewModelScope.launch {
-            ritualRepository.getPathProgress().collect { progress ->
-                _state.update { it.copy(pathProgress = progress) }
+            progress.getPathProgress().collect { pathProgress ->
+                _state.update { it.copy(pathProgress = pathProgress) }
             }
         }
     }
@@ -81,7 +87,7 @@ class HomeViewModel(
      */
     private fun withinWindowFlow(): Flow<Boolean> = flow {
         while (true) {
-            emit(ritualRepository.isWithinWorkdayCloseWindow())
+            emit(isWithinWindow())
             delay(millisUntilNextHour())
         }
     }.distinctUntilChanged()
@@ -96,14 +102,14 @@ class HomeViewModel(
             is HomeIntent.Refresh -> {
                 _state.update {
                     it.copy(
-                        isWithinWindow = ritualRepository.isWithinWorkdayCloseWindow(),
+                        isWithinWindow = isWithinWindow(),
                         isRitualDay = RitualDayPolicy.isTodayRitualDay(includeWeekends)
                     )
                 }
             }
             is HomeIntent.ToggleTestMode -> {
                 viewModelScope.launch {
-                    ritualRepository.setTestMode(intent.enabled)
+                    settings.setTestMode(intent.enabled)
                 }
             }
         }

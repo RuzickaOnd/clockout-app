@@ -2,7 +2,10 @@ package org.clockout.presentation.ritual
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import org.clockout.data.repository.RitualRepository
+import org.clockout.domain.repository.ProgressRepository
+import org.clockout.domain.repository.RitualLogRepository
+import org.clockout.domain.repository.SettingsRepository
+import org.clockout.domain.repository.SoundRepository
 import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.MeditationSoundStyle
 import org.clockout.domain.model.MoodTag
@@ -38,7 +41,10 @@ class RitualViewModel(
     private val getTodayRitualUseCase: GetTodayRitualUseCase,
     private val logMoodUseCase: LogMoodUseCase,
     private val shouldRequestReviewUseCase: ShouldRequestReviewUseCase,
-    private val ritualRepository: RitualRepository,
+    private val logs: RitualLogRepository,
+    private val settings: SettingsRepository,
+    private val sounds: SoundRepository,
+    private val progress: ProgressRepository,
     private val audioPlayer: SoundPlayer,
     private val analyticsTracker: AnalyticsTracker = NoOpAnalyticsTracker
 ) : ViewModel() {
@@ -103,10 +109,10 @@ class RitualViewModel(
     private fun observePreferences() {
         viewModelScope.launch {
             combine(
-                ritualRepository.getLanguage(),
-                ritualRepository.getSoundEnabled(),
-                ritualRepository.getSoundChoice(),
-                ritualRepository.getBreathingStyle()
+                settings.getLanguage(),
+                sounds.getSoundEnabled(),
+                sounds.getSoundChoice(),
+                settings.getBreathingStyle()
             ) { language, soundEnabled, soundChoice, breathingStyle ->
                 RitualPreferencesSnapshot(language, soundEnabled, soundChoice, breathingStyle)
             }.collect { snapshot ->
@@ -269,7 +275,7 @@ class RitualViewModel(
                 )
             }
             // Read after the log is written, so the count includes today.
-            val daysClosedThisWeek = ritualRepository.getStreakInfo().first().completedThisWeekCount
+            val daysClosedThisWeek = logs.getStreakInfo().first().completedThisWeekCount
             analyticsTracker.track(
                 AnalyticsEvent.RitualStepCompleted(RitualStep.Log.analyticsId())
             )
@@ -290,7 +296,7 @@ class RitualViewModel(
      * itself must still be written, so a failure here yields no celebration rather than no entry.
      */
     private suspend fun progressSnapshot(): ProgressSnapshot? = try {
-        ProgressSnapshot(ritualRepository.getPathProgress().first(), ritualRepository.getSky().first())
+        ProgressSnapshot(progress.getPathProgress().first(), progress.getSky().first())
     } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (failure: Exception) {

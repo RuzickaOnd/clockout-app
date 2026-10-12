@@ -2,7 +2,9 @@ package org.clockout.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import org.clockout.data.repository.RitualRepository
+import org.clockout.domain.repository.RitualLogRepository
+import org.clockout.domain.repository.SettingsRepository
+import org.clockout.domain.repository.SoundRepository
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.BreathingStyle
@@ -22,7 +24,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
-    private val repository: RitualRepository,
+    private val settings: SettingsRepository,
+    private val sounds: SoundRepository,
+    private val logs: RitualLogRepository,
     private val audioPlayer: SoundPlayer,
     private val reminderScheduler: ReminderScheduler,
     /**
@@ -41,7 +45,7 @@ class SettingsViewModel(
         // Its own collector rather than a fifth flow in observeSettings: that combine already takes
         // four and adding another would mean restructuring the holder for one unrelated value.
         viewModelScope.launch {
-            repository.getTelemetryConsent().collect { consent ->
+            settings.getTelemetryConsent().collect { consent ->
                 _state.update { it.copy(telemetryConsent = consent) }
             }
         }
@@ -49,7 +53,7 @@ class SettingsViewModel(
 
     fun setTelemetryConsent(granted: Boolean) {
         viewModelScope.launch {
-            repository.setTelemetryConsent(
+            settings.setTelemetryConsent(
                 if (granted) TelemetryConsent.GRANTED else TelemetryConsent.DENIED
             )
         }
@@ -58,20 +62,20 @@ class SettingsViewModel(
     private fun observeSettings() {
         viewModelScope.launch {
             val notifAndTestFlow = combine(
-                repository.getNotificationTime(),
-                repository.getNotificationEnabled(),
-                repository.getTestMode(),
-                repository.getIncludeWeekends(),
-                repository.getCustomNotificationTime()
+                settings.getNotificationTime(),
+                settings.getNotificationEnabled(),
+                settings.getTestMode(),
+                settings.getIncludeWeekends(),
+                settings.getCustomNotificationTime()
             ) { time, enabled, testMode, includeWeekends, customTime ->
                 NotificationSettings(time, enabled, testMode, includeWeekends, customTime)
             }
 
             val audioAndLangFlow = combine(
-                repository.getSoundEnabled(),
-                repository.getSoundChoice(),
-                repository.getLanguage(),
-                repository.getLanguageOption()
+                sounds.getSoundEnabled(),
+                sounds.getSoundChoice(),
+                settings.getLanguage(),
+                settings.getLanguageOption()
             ) { soundEnabled, soundChoice, language, languageOption ->
                 AudioAndLang(soundEnabled, soundChoice, language, languageOption)
             }
@@ -79,8 +83,8 @@ class SettingsViewModel(
             combine(
                 notifAndTestFlow,
                 audioAndLangFlow,
-                repository.getCustomSounds(),
-                repository.getBreathingStyle()
+                sounds.getCustomSounds(),
+                settings.getBreathingStyle()
             ) { notif, audioLang, customSounds, breathingStyle ->
                 SettingsDataHolder(
                     notifTime = notif.time,
@@ -118,19 +122,19 @@ class SettingsViewModel(
 
     fun setLanguageOption(option: LanguageOption) {
         viewModelScope.launch {
-            repository.setLanguageOption(option)
+            settings.setLanguageOption(option)
         }
     }
 
     fun setLanguage(language: AppLanguage) {
         viewModelScope.launch {
-            repository.setLanguage(language)
+            settings.setLanguage(language)
         }
     }
 
     fun setNotificationEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            repository.setNotificationEnabled(enabled)
+            settings.setNotificationEnabled(enabled)
             if (enabled) {
                 val currentState = _state.value
                 reminderScheduler.schedule(currentState.notificationHour, currentState.notificationMinute)
@@ -142,7 +146,7 @@ class SettingsViewModel(
 
     fun setNotificationTime(hour: Int, minute: Int) {
         viewModelScope.launch {
-            repository.setNotificationTime(hour, minute)
+            settings.setNotificationTime(hour, minute)
             if (_state.value.isNotificationEnabled) {
                 reminderScheduler.schedule(hour, minute)
             }
@@ -151,7 +155,7 @@ class SettingsViewModel(
 
     fun setCustomNotificationTime(hour: Int, minute: Int) {
         viewModelScope.launch {
-            repository.setCustomNotificationTime(hour, minute)
+            settings.setCustomNotificationTime(hour, minute)
             if (_state.value.isNotificationEnabled) {
                 reminderScheduler.schedule(hour, minute)
             }
@@ -160,19 +164,19 @@ class SettingsViewModel(
 
     fun setIncludeWeekends(enabled: Boolean) {
         viewModelScope.launch {
-            repository.setIncludeWeekends(enabled)
+            settings.setIncludeWeekends(enabled)
         }
     }
 
     fun setTestMode(enabled: Boolean) {
         viewModelScope.launch {
-            repository.setTestMode(enabled)
+            settings.setTestMode(enabled)
         }
     }
 
     fun setSoundEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            repository.setSoundEnabled(enabled)
+            sounds.setSoundEnabled(enabled)
             if (!enabled) {
                 audioPlayer.stopAmbient()
                 _state.update { it.copy(isPreviewPlaying = false) }
@@ -182,7 +186,7 @@ class SettingsViewModel(
 
     fun setSoundChoice(choice: SoundChoice) {
         viewModelScope.launch {
-            repository.setSoundChoice(choice)
+            sounds.setSoundChoice(choice)
             audioPlayer.stopAmbient()
             _state.update { it.copy(isPreviewPlaying = false) }
         }
@@ -213,8 +217,8 @@ class SettingsViewModel(
             val result = soundFiles.import(source, _state.value.customSounds.size)
             when (result) {
                 is SoundImportResult.Success -> {
-                    repository.addCustomSound(result.sound)
-                    repository.setSoundChoice(SoundChoice.Custom(result.sound))
+                    sounds.addCustomSound(result.sound)
+                    sounds.setSoundChoice(SoundChoice.Custom(result.sound))
                     _state.update { it.copy(isImportingSound = false, soundImportError = null) }
                 }
 
@@ -237,11 +241,11 @@ class SettingsViewModel(
             _state.update { it.copy(isImportingSound = true, isPreviewPlaying = false, soundImportError = null) }
 
             // The entry being replaced holds no slot of its own - its file is what is missing.
-            val occupiedSlots = repository.getCustomSounds().first().count { it.id != replaced.id }
+            val occupiedSlots = sounds.getCustomSounds().first().count { it.id != replaced.id }
             when (val result = soundFiles.import(source, occupiedSlots)) {
                 is SoundImportResult.Success -> {
                     soundFiles.delete(replaced)
-                    repository.addCustomSound(result.sound.copy(id = replaced.id))
+                    sounds.addCustomSound(result.sound.copy(id = replaced.id))
                     _state.update { it.copy(isImportingSound = false, soundImportError = null) }
                 }
 
@@ -258,9 +262,9 @@ class SettingsViewModel(
             _state.update { it.copy(isPreviewPlaying = false) }
 
             soundFiles.delete(sound)
-            repository.removeCustomSound(sound.id)
+            sounds.removeCustomSound(sound.id)
             if (_state.value.soundChoice.id == sound.id) {
-                repository.setSoundChoice(SoundChoice.Default)
+                sounds.setSoundChoice(SoundChoice.Default)
             }
         }
     }
@@ -271,7 +275,7 @@ class SettingsViewModel(
 
     fun clearAllData() {
         viewModelScope.launch {
-            repository.clearLogs()
+            logs.clearLogs()
         }
     }
 

@@ -1,6 +1,6 @@
 package org.clockout.domain.usecase
 
-import org.clockout.data.repository.RitualRepository
+import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.ReviewPromptPolicy
 
@@ -9,7 +9,7 @@ import org.clockout.domain.model.ReviewPromptPolicy
  * request a Play Store review, and writes down that the question was asked so it never repeats.
  */
 class ShouldRequestReviewUseCase(
-    private val repository: RitualRepository
+    private val repository: RitualLogRepository
 ) {
     suspend operator fun invoke(mood: MoodTag): Boolean {
         val shouldPrompt = ReviewPromptPolicy.shouldPrompt(

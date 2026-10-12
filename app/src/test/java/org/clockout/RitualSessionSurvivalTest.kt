@@ -50,18 +50,22 @@ class RitualSessionSurvivalTest {
 
     private fun viewModel(): RitualViewModel {
         // A new graph over the same storage: the view model is rebuilt the way a new process would.
-        val repository = AppContainer(
+        val graph = AppContainer(
             context = context,
             preferences = container.preferences,
             database = container.database,
             todayFlow = flowOf(LocalDate.now())
-        ).ritualRepository
+        )
+        val repository = graph.ritualLogs
         return RitualViewModel(
             audioPlayer = FakeSoundPlayer(),
             getTodayRitualUseCase = GetTodayRitualUseCase(repository),
             logMoodUseCase = LogMoodUseCase(repository),
             shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
-            ritualRepository = repository
+            logs = repository,
+            settings = graph.settings,
+            sounds = graph.sounds,
+            progress = graph.progress
         )
     }
 

@@ -59,7 +59,7 @@ class CustomSoundAvailabilityTest {
         database = container.database,
         todayFlow = flowOf(LocalDate.now()),
         soundFileExists = soundFileExists
-    ).ritualRepository
+    ).sounds
 
     @Before
     fun setUp() {

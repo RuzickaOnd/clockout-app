@@ -47,7 +47,9 @@ class SettingsReminderSchedulingTest {
     }
 
     private fun viewModel() = SettingsViewModel(
-        repository = container.ritualRepository,
+        settings = container.settings,
+        sounds = container.sounds,
+        logs = container.ritualLogs,
         audioPlayer = FakeSoundPlayer(),
         reminderScheduler = scheduler,
         soundFiles = FakeSoundFileStore { SoundImportResult.Failure(SoundImportError.READ_FAILED) }
@@ -60,7 +62,7 @@ class SettingsReminderSchedulingTest {
 
     @Test
     fun `switching reminders on schedules them at the stored time`() = runTest(dispatcher) {
-        container.ritualRepository.setNotificationTime(18, 5)
+        container.settings.setNotificationTime(18, 5)
         val vm = viewModel()
         vm.state.first { it.notificationHour == 18 && it.notificationMinute == 5 }
 
@@ -80,7 +82,7 @@ class SettingsReminderSchedulingTest {
 
     @Test
     fun `a new time while reminders are off schedules nothing`() = runTest(dispatcher) {
-        container.ritualRepository.setNotificationEnabled(false)
+        container.settings.setNotificationEnabled(false)
         val vm = viewModel()
         vm.state.first { !it.isNotificationEnabled }
 
