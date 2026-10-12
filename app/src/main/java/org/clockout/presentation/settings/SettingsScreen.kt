@@ -104,7 +104,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.clockout.BuildConfig
 import org.clockout.R
-import org.clockout.data.local.SoundImportError
+import org.clockout.domain.model.SoundImportError
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.LanguageOption

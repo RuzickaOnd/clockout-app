@@ -8,6 +8,11 @@ import org.clockout.data.repository.RitualRepository
 import org.clockout.domain.model.TelemetryConsent
 import org.clockout.presentation.settings.SettingsViewModel
 import org.clockout.testing.testAppContainer
+import org.clockout.domain.model.SoundImportError
+import org.clockout.domain.model.SoundImportResult
+import org.clockout.testing.FakeReminderScheduler
+import org.clockout.testing.FakeSoundFileStore
+import org.clockout.testing.FakeSoundPlayer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -53,7 +58,12 @@ class SettingsTelemetryTest {
 
     @Test
     fun `the switch grants and withdraws`() = runTest {
-        val model = SettingsViewModel(repository)
+        val model = SettingsViewModel(
+            repository = repository,
+            audioPlayer = FakeSoundPlayer(),
+            reminderScheduler = FakeReminderScheduler(),
+            soundFiles = FakeSoundFileStore { SoundImportResult.Failure(SoundImportError.READ_FAILED) }
+        )
 
         // Awaited rather than read straight back: the setter writes from viewModelScope and
         // DataStore completes the edit on its own dispatcher, so an immediate read races it. A

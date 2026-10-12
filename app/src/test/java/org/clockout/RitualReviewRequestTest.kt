@@ -10,6 +10,7 @@ import org.clockout.domain.usecase.LogMoodUseCase
 import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
+import org.clockout.testing.FakeSoundPlayer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertFalse
@@ -57,7 +58,7 @@ class RitualReviewRequestTest {
     }
 
     private fun viewModel() = RitualViewModel(
-        appContext = context,
+        audioPlayer = FakeSoundPlayer(),
         getTodayRitualUseCase = GetTodayRitualUseCase(repository),
         logMoodUseCase = LogMoodUseCase(repository),
         shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),

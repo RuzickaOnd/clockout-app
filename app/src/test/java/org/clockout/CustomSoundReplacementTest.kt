@@ -1,14 +1,16 @@
 package org.clockout
 
 import android.content.Context
-import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import org.clockout.data.local.CustomSoundStorage
-import org.clockout.data.local.SoundImportError
-import org.clockout.data.local.SoundImportResult
+import org.clockout.domain.model.SoundImportError
+import org.clockout.domain.model.SoundImportResult
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.SoundChoice
 import org.clockout.presentation.settings.SettingsViewModel
+import org.clockout.testing.FakeReminderScheduler
+import org.clockout.testing.FakeSoundFileStore
+import org.clockout.testing.FakeSoundPlayer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -64,7 +66,9 @@ class CustomSoundReplacementTest {
     /** Stands in for CustomSoundStorage, keeping its documented refusal once the library is full. */
     private fun viewModel() = SettingsViewModel(
         repository = repository(),
-        importSound = { _, _, existingCount ->
+        audioPlayer = FakeSoundPlayer(),
+        reminderScheduler = FakeReminderScheduler(),
+        soundFiles = FakeSoundFileStore { existingCount ->
             if (existingCount >= CustomSoundStorage.MAX_CUSTOM_SOUNDS) {
                 SoundImportResult.Failure(SoundImportError.LIMIT_REACHED)
             } else {
@@ -103,7 +107,7 @@ class CustomSoundReplacementTest {
     fun `the uploaded file takes over the id of the sound it replaces`() = runTest {
         preferences.addCustomSound(restored)
 
-        viewModel().replaceCustomSound(context, Uri.EMPTY, restored)
+        viewModel().replaceCustomSound("content://test/forest.mp3", restored)
 
         val sounds = awaitSounds { it.singleOrNull()?.displayName == "Forest" }
         assertEquals(restored.id, sounds.single().id)
@@ -115,7 +119,7 @@ class CustomSoundReplacementTest {
         preferences.addCustomSound(restored)
         preferences.setSelectedSoundId(restored.id)
 
-        viewModel().replaceCustomSound(context, Uri.EMPTY, restored)
+        viewModel().replaceCustomSound("content://test/forest.mp3", restored)
 
         awaitSounds { it.singleOrNull()?.displayName == "Forest" }
 
@@ -132,7 +136,7 @@ class CustomSoundReplacementTest {
         preferences.addCustomSound(restored)
 
         val viewModel = viewModel()
-        viewModel.replaceCustomSound(context, Uri.EMPTY, restored)
+        viewModel.replaceCustomSound("content://test/forest.mp3", restored)
 
         val sounds = awaitSounds { list -> list.any { it.id == restored.id && it.displayName == "Forest" } }
         assertNull(viewModel.state.value.soundImportError)

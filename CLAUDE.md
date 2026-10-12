@@ -58,7 +58,7 @@ Single Gradle module, `:app` (root project name `Padla`), package `org.clockout`
 | Package | Responsibility |
 |---|---|
 | `data/local`, `data/local/db`, `data/repository` | DataStore preferences, Room database, DAO and entity mappers, repository implementations, question resources, custom-sound storage, legacy-log migration |
-| `domain/model`, `domain/usecase` | Pure Kotlin models and use cases. **No `R` references, no androidx imports.** |
+| `domain/model`, `domain/usecase`, `domain/platform` | Pure Kotlin models, use cases and the ports to the platform (`ReminderScheduler`, `SoundPlayer`, `SoundFileStore`), implemented by `AlarmReminderScheduler`, `AmbientAudioPlayer` and `CustomSoundStorage` and handed out by `AppContainer`. **No `R` references, no androidx imports.** |
 | `presentation/{home,history,ritual,settings,path,sky}` | Compose screens with their state holders |
 | `presentation/components`, `presentation/util` | Shared composables, including the two breathing visuals and the closure bulb; localization provider and enum → resource mapping |
 | `notification`, `receiver` | Reminder scheduling and the broadcast receiver that fires it |
@@ -188,7 +188,7 @@ Surviving a *reinstall* is Android Auto Backup's job, and the two rule files spl
 
 Auto Backup allows 25 MB of cloud data per app and backs up **nothing at all** once that is exceeded, while `CustomSoundStorage` permits ten files of 25 MB each. Putting the audio in the cloud backup would therefore trade away the ritual history. Device-to-device transfer has no such ceiling, so the files ride along there. `backup_rules.xml` (API ≤ 30) lists no sounds either, because those releases have no device transfer and the file feeds only the cloud backup. `BackupRulesTest` pins all of it.
 
-A restored cloud backup consequently holds sound metadata whose file is gone. `RitualRepositoryImpl` resolves that on every read through its injected `soundFileExists` predicate — `PadlaApp` supplies the real file check — and stamps `CustomSound.isAvailable`, which is never serialized. `SoundChoice.fromId` treats an unavailable sound like a deleted one and falls back to the default style, so playback never silently fails. Settings keeps the entry visible under its old name, describes it as missing and opens the picker when tapped; `SettingsViewModel.replaceCustomSound` stores the new file under the **old id**, so an existing selection stays valid, and does not count the entry being replaced against the ten-sound limit.
+A restored cloud backup consequently holds sound metadata whose file is gone. `RitualRepositoryImpl` resolves that on every read through its injected `soundFileExists` predicate — `PadlaApp` supplies the real file check — and stamps `CustomSound.isAvailable`, which is never serialized. `SoundChoice.fromId` treats an unavailable sound like a deleted one and falls back to the default style, so playback never silently fails. Settings keeps the entry visible under its old name, describes it as missing and opens the picker when tapped; `SettingsViewModel.replaceCustomSound` (which reaches the files only through the `SoundFileStore` port, with the picked document as a URI string) stores the new file under the **old id**, so an existing selection stays valid, and does not count the entry being replaced against the ten-sound limit.
 
 Auto Backup is best effort: it needs backup enabled and a Google account, and runs roughly daily while charging on Wi-Fi. An update loses nothing; a reinstall restores only what a backup managed to capture.
 
@@ -227,6 +227,7 @@ All versions go through the version catalog at `gradle/libs.versions.toml` — n
 ## What NOT to do
 
 - Do not commit, stage, or push without explicit approval in the same turn.
+- Do not hand a `Context` or `Uri` to a ViewModel — go through the ports in `domain/platform`.
 - Do not remove the two `firebase_*_collection_enabled` meta-data entries from the manifest — the SDKs would then collect the first session of every install before the user has been asked.
 - Do not let `com.google.android.gms.permission.AD_ID` back into the manifest without flipping the Play Console advertising-ID declaration with it — Play rejects an artifact that contradicts the declaration either way round.
 - Do not clear `telemetry_consent` when clearing data and history — a wipe is not a withdrawal of consent, and the dialog would return on every wipe.

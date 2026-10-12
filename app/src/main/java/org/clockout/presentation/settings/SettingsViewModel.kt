@@ -1,20 +1,18 @@
 package org.clockout.presentation.settings
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import android.net.Uri
-import org.clockout.data.local.CustomSoundStorage
-import org.clockout.data.local.SoundImportResult
 import org.clockout.data.repository.RitualRepository
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.LanguageOption
 import org.clockout.domain.model.SoundChoice
+import org.clockout.domain.model.SoundImportResult
 import org.clockout.domain.model.TelemetryConsent
-import org.clockout.notification.NotificationScheduler
-import org.clockout.sound.AmbientAudioPlayer
+import org.clockout.domain.platform.ReminderScheduler
+import org.clockout.domain.platform.SoundFileStore
+import org.clockout.domain.platform.SoundPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,14 +23,14 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val repository: RitualRepository,
-    private val audioPlayer: AmbientAudioPlayer = AmbientAudioPlayer(),
+    private val audioPlayer: SoundPlayer,
+    private val reminderScheduler: ReminderScheduler,
     /**
-     * Copies a picked file into app storage, refusing once [CustomSoundStorage.MAX_CUSTOM_SOUNDS]
-     * slots are taken. A seam rather than a direct call, so a test can exercise the import and
-     * replace flows without a content provider and a decodable audio file.
+     * Copies a picked file into app storage, refusing once the slots are taken. A port rather than
+     * a direct call, so a test can exercise the import and replace flows without a content
+     * provider and a decodable audio file.
      */
-    private val importSound: suspend (Context, Uri, Int) -> SoundImportResult =
-        { context, uri, existingCount -> CustomSoundStorage(context).import(uri, existingCount) }
+    private val soundFiles: SoundFileStore
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsState())
@@ -130,38 +128,32 @@ class SettingsViewModel(
         }
     }
 
-    fun setNotificationEnabled(enabled: Boolean, context: Context? = null) {
+    fun setNotificationEnabled(enabled: Boolean) {
         viewModelScope.launch {
             repository.setNotificationEnabled(enabled)
-            if (context != null) {
-                if (enabled) {
-                    val currentState = _state.value
-                    NotificationScheduler.scheduleDailyNotification(
-                        context,
-                        currentState.notificationHour,
-                        currentState.notificationMinute
-                    )
-                } else {
-                    NotificationScheduler.cancelNotification(context)
-                }
+            if (enabled) {
+                val currentState = _state.value
+                reminderScheduler.schedule(currentState.notificationHour, currentState.notificationMinute)
+            } else {
+                reminderScheduler.cancel()
             }
         }
     }
 
-    fun setNotificationTime(hour: Int, minute: Int, context: Context? = null) {
+    fun setNotificationTime(hour: Int, minute: Int) {
         viewModelScope.launch {
             repository.setNotificationTime(hour, minute)
-            if (context != null && _state.value.isNotificationEnabled) {
-                NotificationScheduler.scheduleDailyNotification(context, hour, minute)
+            if (_state.value.isNotificationEnabled) {
+                reminderScheduler.schedule(hour, minute)
             }
         }
     }
 
-    fun setCustomNotificationTime(hour: Int, minute: Int, context: Context? = null) {
+    fun setCustomNotificationTime(hour: Int, minute: Int) {
         viewModelScope.launch {
             repository.setCustomNotificationTime(hour, minute)
-            if (context != null && _state.value.isNotificationEnabled) {
-                NotificationScheduler.scheduleDailyNotification(context, hour, minute)
+            if (_state.value.isNotificationEnabled) {
+                reminderScheduler.schedule(hour, minute)
             }
         }
     }
@@ -196,13 +188,13 @@ class SettingsViewModel(
         }
     }
 
-    fun togglePreviewSound(choice: SoundChoice, context: Context) {
+    fun togglePreviewSound(choice: SoundChoice) {
         if (_state.value.isPreviewPlaying) {
             audioPlayer.stopAmbient()
             _state.update { it.copy(isPreviewPlaying = false) }
         } else {
             _state.update { it.copy(isPreviewPlaying = true) }
-            audioPlayer.playPreview(context.applicationContext, choice) {
+            audioPlayer.playPreview(choice) {
                 _state.update { it.copy(isPreviewPlaying = false) }
             }
         }
@@ -212,14 +204,13 @@ class SettingsViewModel(
      * Copies the picked audio file into app storage, registers it and selects it
      * right away so the user hears their own sound on the next ritual.
      */
-    fun importCustomSound(context: Context, uri: Uri?) {
-        if (uri == null) return
-        val appContext = context.applicationContext
+    fun importCustomSound(source: String?) {
+        if (source == null) return
         viewModelScope.launch {
             audioPlayer.stopAmbient()
             _state.update { it.copy(isImportingSound = true, isPreviewPlaying = false, soundImportError = null) }
 
-            val result = importSound(appContext, uri, _state.value.customSounds.size)
+            val result = soundFiles.import(source, _state.value.customSounds.size)
             when (result) {
                 is SoundImportResult.Success -> {
                     repository.addCustomSound(result.sound)
@@ -239,18 +230,17 @@ class SettingsViewModel(
      * behind. Keeping the id matters: preferences store the selected sound by id, so a new one
      * would strand that selection a second time.
      */
-    fun replaceCustomSound(context: Context, uri: Uri?, replaced: CustomSound) {
-        if (uri == null) return
-        val appContext = context.applicationContext
+    fun replaceCustomSound(source: String?, replaced: CustomSound) {
+        if (source == null) return
         viewModelScope.launch {
             audioPlayer.stopAmbient()
             _state.update { it.copy(isImportingSound = true, isPreviewPlaying = false, soundImportError = null) }
 
             // The entry being replaced holds no slot of its own - its file is what is missing.
             val occupiedSlots = repository.getCustomSounds().first().count { it.id != replaced.id }
-            when (val result = importSound(appContext, uri, occupiedSlots)) {
+            when (val result = soundFiles.import(source, occupiedSlots)) {
                 is SoundImportResult.Success -> {
-                    CustomSoundStorage(appContext).delete(replaced)
+                    soundFiles.delete(replaced)
                     repository.addCustomSound(result.sound.copy(id = replaced.id))
                     _state.update { it.copy(isImportingSound = false, soundImportError = null) }
                 }
@@ -262,13 +252,12 @@ class SettingsViewModel(
         }
     }
 
-    fun deleteCustomSound(context: Context, sound: CustomSound) {
-        val appContext = context.applicationContext
+    fun deleteCustomSound(sound: CustomSound) {
         viewModelScope.launch {
             audioPlayer.stopAmbient()
             _state.update { it.copy(isPreviewPlaying = false) }
 
-            CustomSoundStorage(appContext).delete(sound)
+            soundFiles.delete(sound)
             repository.removeCustomSound(sound.id)
             if (_state.value.soundChoice.id == sound.id) {
                 repository.setSoundChoice(SoundChoice.Default)

@@ -47,7 +47,7 @@ class NotificationReceiver : BroadcastReceiver() {
                 )
 
                 if (outcome == ReminderOutcome.CANCEL) {
-                    NotificationScheduler.cancelNotification(context)
+                    context.appContainer.reminderScheduler.cancel()
                     return@launch
                 }
 
@@ -56,9 +56,9 @@ class NotificationReceiver : BroadcastReceiver() {
                         showNotification(context, language)
                     }
                     // Reschedule for next day even on a skipped day, so the alarm survives the weekend
-                    NotificationScheduler.scheduleDailyNotification(context, hour, minute)
+                    context.appContainer.reminderScheduler.schedule(hour, minute)
                 } else if (action == Intent.ACTION_BOOT_COMPLETED) {
-                    NotificationScheduler.scheduleDailyNotification(context, hour, minute)
+                    context.appContainer.reminderScheduler.schedule(hour, minute)
                 }
             } catch (_: Exception) {
                 // Ignore background notification failure

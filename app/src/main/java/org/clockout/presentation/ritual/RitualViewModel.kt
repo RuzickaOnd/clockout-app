@@ -1,6 +1,5 @@
 package org.clockout.presentation.ritual
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import org.clockout.data.repository.RitualRepository
@@ -13,6 +12,7 @@ import org.clockout.domain.model.SkyData
 import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.RitualStep
 import org.clockout.domain.model.SkyPolicy
+import org.clockout.domain.platform.SoundPlayer
 import org.clockout.domain.model.mondayOfWeek
 import org.clockout.domain.usecase.GetTodayRitualUseCase
 import org.clockout.domain.usecase.LogMoodUseCase
@@ -21,7 +21,6 @@ import org.clockout.domain.telemetry.AnalyticsEvent
 import org.clockout.domain.telemetry.AnalyticsTracker
 import org.clockout.domain.telemetry.NoOpAnalyticsTracker
 import org.clockout.domain.telemetry.analyticsId
-import org.clockout.sound.AmbientAudioPlayer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -36,12 +35,11 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class RitualViewModel(
-    private val appContext: Context,
     private val getTodayRitualUseCase: GetTodayRitualUseCase,
     private val logMoodUseCase: LogMoodUseCase,
     private val shouldRequestReviewUseCase: ShouldRequestReviewUseCase,
     private val ritualRepository: RitualRepository,
-    private val audioPlayer: AmbientAudioPlayer = AmbientAudioPlayer(),
+    private val audioPlayer: SoundPlayer,
     private val analyticsTracker: AnalyticsTracker = NoOpAnalyticsTracker
 ) : ViewModel() {
 
@@ -155,7 +153,7 @@ class RitualViewModel(
                 )
                 startBreathingTimer()
                 if (!_state.value.isSoundMuted) {
-                    audioPlayer.startAmbient(appContext, _state.value.soundChoice, true)
+                    audioPlayer.startAmbient(_state.value.soundChoice)
                 }
             }
             is RitualIntent.ToggleSound -> {
@@ -165,7 +163,7 @@ class RitualViewModel(
                     audioPlayer.stopAmbient()
                 } else {
                     if (_state.value.currentStep is RitualStep.Breathing) {
-                        audioPlayer.startAmbient(appContext, _state.value.soundChoice, true)
+                        audioPlayer.startAmbient(_state.value.soundChoice)
                     }
                 }
             }

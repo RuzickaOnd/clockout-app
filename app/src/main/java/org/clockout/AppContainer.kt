@@ -7,6 +7,11 @@ import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.data.repository.RitualRepository
 import org.clockout.data.repository.RitualRepositoryImpl
+import org.clockout.domain.platform.ReminderScheduler
+import org.clockout.domain.platform.SoundFileStore
+import org.clockout.domain.platform.SoundPlayer
+import org.clockout.notification.AlarmReminderScheduler
+import org.clockout.sound.AmbientAudioPlayer
 import org.clockout.util.todayFlow
 import java.time.LocalDate
 
@@ -26,6 +31,8 @@ class AppContainer(
         CustomSoundStorage.resolveFile(context.applicationContext, fileName).exists()
     }
 ) {
+    private val appContext = context.applicationContext
+
     val ritualRepository: RitualRepository = RitualRepositoryImpl(
         preferences = preferences,
         ritualLogDao = database.ritualLogDao(),
@@ -33,6 +40,12 @@ class AppContainer(
         todayFlow = todayFlow,
         soundFileExists = soundFileExists
     )
+
+    val reminderScheduler: ReminderScheduler = AlarmReminderScheduler(appContext)
+    val soundFileStore: SoundFileStore = CustomSoundStorage(appContext)
+
+    /** A fresh player per screen: each view model stops its own in onCleared. */
+    fun newSoundPlayer(): SoundPlayer = AmbientAudioPlayer(appContext)
 }
 
 val Context.appContainer: AppContainer

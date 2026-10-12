@@ -109,7 +109,8 @@ fun PadlaApp(
     overlay: @Composable BoxScope.() -> Unit = {}
 ) {
     val context = LocalContext.current
-    val repository = appContainer().ritualRepository
+    val container = appContainer()
+    val repository = container.ritualRepository
     val analyticsTracker = rememberAnalyticsTracker(context)
     val scope = rememberCoroutineScope()
 
@@ -237,11 +238,11 @@ fun PadlaApp(
                             // fold in the middle of the ritual does not throw away the answer and the timer.
                             val ritualViewModel: RitualViewModel = viewModel {
                                 RitualViewModel(
-                                    context.applicationContext,
                                     getTodayRitualUseCase,
                                     logMoodUseCase,
                                     shouldRequestReviewUseCase,
                                     repository,
+                                    audioPlayer = container.newSoundPlayer(),
                                     analyticsTracker = analyticsTracker
                                 )
                             }
@@ -287,7 +288,12 @@ fun PadlaApp(
                         }
                         is Screen.Settings -> {
                             val settingsViewModel: SettingsViewModel = viewModel {
-                                SettingsViewModel(repository)
+                                SettingsViewModel(
+                                    repository = repository,
+                                    audioPlayer = container.newSoundPlayer(),
+                                    reminderScheduler = container.reminderScheduler,
+                                    soundFiles = container.soundFileStore
+                                )
                             }
                             val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
 
@@ -295,17 +301,17 @@ fun PadlaApp(
                                 state = settingsState,
                                 onBack = { currentScreen = Screen.Home },
                                 onLanguageOptionSelected = { settingsViewModel.setLanguageOption(it) },
-                                onNotificationToggled = { enabled -> settingsViewModel.setNotificationEnabled(enabled, context) },
-                                onTimeSelected = { h, m -> settingsViewModel.setNotificationTime(h, m, context) },
-                                onCustomTimeSelected = { h, m -> settingsViewModel.setCustomNotificationTime(h, m, context) },
+                                onNotificationToggled = { enabled -> settingsViewModel.setNotificationEnabled(enabled) },
+                                onTimeSelected = { h, m -> settingsViewModel.setNotificationTime(h, m) },
+                                onCustomTimeSelected = { h, m -> settingsViewModel.setCustomNotificationTime(h, m) },
                                 onTestModeToggled = { settingsViewModel.setTestMode(it) },
                                 onIncludeWeekendsToggled = { settingsViewModel.setIncludeWeekends(it) },
                                 onSoundToggled = { settingsViewModel.setSoundEnabled(it) },
                                 onSoundChoiceSelected = { settingsViewModel.setSoundChoice(it) },
-                                onTogglePreviewSound = { settingsViewModel.togglePreviewSound(it, context) },
-                                onUploadCustomSound = { uri -> settingsViewModel.importCustomSound(context, uri) },
-                                onReplaceCustomSound = { uri, sound -> settingsViewModel.replaceCustomSound(context, uri, sound) },
-                                onDeleteCustomSound = { item -> settingsViewModel.deleteCustomSound(context, item) },
+                                onTogglePreviewSound = { settingsViewModel.togglePreviewSound(it) },
+                                onUploadCustomSound = { uri -> settingsViewModel.importCustomSound(uri?.toString()) },
+                                onReplaceCustomSound = { uri, sound -> settingsViewModel.replaceCustomSound(uri?.toString(), sound) },
+                                onDeleteCustomSound = { item -> settingsViewModel.deleteCustomSound(item) },
                                 onDismissSoundImportError = { settingsViewModel.dismissSoundImportError() },
                                 onOpenBreathingStyle = {
                                     context.startActivity(Intent(context, BreathingStyleActivity::class.java))
