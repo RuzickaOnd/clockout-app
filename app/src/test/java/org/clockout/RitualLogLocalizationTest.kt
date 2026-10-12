@@ -1,6 +1,6 @@
 package org.clockout
 
-import org.clockout.data.local.QuestionsData
+import org.clockout.domain.model.QuestionCatalog
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualLogEntry
@@ -46,7 +46,7 @@ class RitualLogLocalizationTest {
 
     @Test
     fun `every catalog phrase survives a round trip through both languages`() {
-        QuestionsData.questions.forEach { question ->
+        QuestionCatalog.questions.forEach { question ->
             AppLanguage.entries.forEach { stored ->
                 AppLanguage.entries.forEach { shown ->
                     val log = entry(question.text(stored), question.suggestedAnswers(stored).first())
@@ -66,7 +66,7 @@ class RitualLogLocalizationTest {
 
     @Test
     fun `an answer keeps its own question's wording rather than the first match`() {
-        val letGo = QuestionsData.questions.first { it.id == "q_let_go" }
+        val letGo = QuestionCatalog.questions.first { it.id == "q_let_go" }
         val log = entry(letGo.textCs, letGo.suggestedAnswersCs[2])
 
         assertEquals(letGo.suggestedAnswersEn[2], log.localizedAnswer(AppLanguage.ENGLISH))

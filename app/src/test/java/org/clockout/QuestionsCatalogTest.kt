@@ -1,6 +1,6 @@
 package org.clockout
 
-import org.clockout.data.local.QuestionsData
+import org.clockout.domain.model.QuestionCatalog
 import org.clockout.domain.model.AppLanguage
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -19,7 +19,7 @@ import org.robolectric.annotation.Config
 @Config(sdk = [36])
 class QuestionsCatalogTest {
 
-    private val questions = QuestionsData.questions
+    private val questions = QuestionCatalog.questions
 
     @Test
     fun `the pool is large enough to last weeks of workdays`() {
@@ -69,15 +69,15 @@ class QuestionsCatalogTest {
     @Test
     fun `the same day always resolves to the same question`() {
         assertEquals(
-            QuestionsData.getTodayQuestion(dayOfYear = 61, year = 2026).id,
-            QuestionsData.getTodayQuestion(dayOfYear = 61, year = 2026).id
+            QuestionCatalog.getTodayQuestion(dayOfYear = 61, year = 2026).id,
+            QuestionCatalog.getTodayQuestion(dayOfYear = 61, year = 2026).id
         )
     }
 
     @Test
     fun `a full cycle uses every question exactly once`() {
         val cycle = (1..questions.size).map {
-            QuestionsData.getTodayQuestion(dayOfYear = it, year = 2026).id
+            QuestionCatalog.getTodayQuestion(dayOfYear = it, year = 2026).id
         }
 
         assertEquals(questions.size, cycle.distinct().size)
@@ -86,7 +86,7 @@ class QuestionsCatalogTest {
     @Test
     fun `consecutive days do not simply walk down the declared list`() {
         val cycle = (1..questions.size).map {
-            QuestionsData.getTodayQuestion(dayOfYear = it, year = 2026).id
+            QuestionCatalog.getTodayQuestion(dayOfYear = it, year = 2026).id
         }
 
         assertNotEquals(questions.map { it.id }, cycle)
@@ -95,7 +95,7 @@ class QuestionsCatalogTest {
     @Test
     fun `each year shuffles the pool differently`() {
         fun cycleOf(year: Int) = (1..questions.size).map {
-            QuestionsData.getTodayQuestion(dayOfYear = it, year = year).id
+            QuestionCatalog.getTodayQuestion(dayOfYear = it, year = year).id
         }
 
         assertNotEquals(cycleOf(2026), cycleOf(2027))
@@ -104,8 +104,8 @@ class QuestionsCatalogTest {
 
     @Test
     fun `a day of year outside the calendar still resolves`() {
-        QuestionsData.getTodayQuestion(dayOfYear = 0, year = 2026)
-        QuestionsData.getTodayQuestion(dayOfYear = -5, year = 2026)
-        QuestionsData.getTodayQuestion(dayOfYear = 366, year = 2026)
+        QuestionCatalog.getTodayQuestion(dayOfYear = 0, year = 2026)
+        QuestionCatalog.getTodayQuestion(dayOfYear = -5, year = 2026)
+        QuestionCatalog.getTodayQuestion(dayOfYear = 366, year = 2026)
     }
 }

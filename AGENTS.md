@@ -55,7 +55,7 @@ Single Gradle module, `:app` (root project name `Padla`), package `org.clockout`
 
 | Package | Responsibility |
 |---|---|
-| `data/local`, `data/local/db`, `data/repository` | DataStore preferences, Room database, DAO and entity mappers, repository implementations, question catalog, custom-sound storage, legacy-log migration |
+| `data/local`, `data/local/db`, `data/repository` | DataStore preferences, Room database, DAO and entity mappers, repository implementations, question resources, custom-sound storage, legacy-log migration |
 | `domain/model`, `domain/usecase` | Pure Kotlin models and use cases. **No `R` references, no androidx imports.** |
 | `presentation/{home,history,ritual,settings,path,sky}` | Compose screens with their state holders |
 | `presentation/components`, `presentation/util` | Shared composables, including the two breathing visuals and the closure bulb; localization provider and enum → resource mapping |
@@ -116,7 +116,7 @@ A test that measures **text** needs `@GraphicsMode(GraphicsMode.Mode.NATIVE)` as
 The app switches language **in-app, independently of the system locale**. All user-facing text lives in `res/values/strings.xml` and `res/values-cs/strings.xml`, and both files always hold the same key set.
 
 - **`AppLocalization` (`presentation/util/Localization.kt`) provides `LocalResources`, never `LocalContext`.** This is load-bearing: `stringResource()` reads `LocalResources`, which merely defaults to `LocalContext.current.resources`. Overriding `LocalContext` with a `createConfigurationContext` result detaches the Activity from the context chain and silently breaks `rememberLauncherForActivityResult`, `LocalActivity`, and `androidx.window` fold detection — that last one tests `context is Activity` and does not unwrap a `ContextWrapper`, so even wrapping does not save it. Do not reintroduce a `LocalContext` override.
-- Outside Compose (`QuestionsData`, `NotificationReceiver`) use `Context.localizedFor(language)` from `util/LocalizedContext.kt`.
+- Outside Compose (`QuestionResources`, `NotificationReceiver`) use `Context.localizedFor(language)` from `util/LocalizedContext.kt`.
 - **Static `R.string.*` / `R.array.*` / `R.plurals.*` only.** The release build runs R8 with `isShrinkResources = true`, so anything reached through `Resources.getIdentifier` or a name → id map is stripped and crashes at runtime.
 - **`bundle { language { enableSplit = false } }` must stay in `app/build.gradle.kts`.** AGP splits AABs by language by default; Play would install only the device-locale split and the in-app switcher would silently do nothing.
 - Domain enums (`MoodTag`, `MeditationSoundStyle`, `SoundChoice`, `LanguageOption`) hold **no strings and no `R` references**. The enum → resource-id mapping lives in `presentation/util/Localization.kt`.
@@ -146,7 +146,7 @@ The label in the middle of the pill (`breath_label`) shrinks to fit rather than 
 
 `AppContainer` (`org.clockout`) is the app's object graph — `RitualPreferences`, the Room database and the `RitualRepository` — built once per process, lazily, by `ClockoutApplication.container` from the application context, which `AppLocalization` never overrides. Activities and composables read it through `appContainer()` / `Context.appContainer`, and `NotificationReceiver` takes its preferences from it. Tests build the same graph over an in-memory database and a DataStore of their own with `testAppContainer(folder)` (`src/test/.../testing`). `PadlaApp` owns navigation and exposes an `overlay` slot where `MainActivity` injects `AppUpdateBanner`.
 
-`QuestionsData` loads the entire question catalog for **both** languages at startup from string arrays; `getTodayQuestion(dayOfYear, year)` then walks a permutation reshuffled once per year, so the day's question is stable and the whole pool is used before anything repeats.
+`QuestionResources.load` (`data/local`) reads the entire question catalog for **both** languages at startup from string arrays and hands it to `QuestionCatalog` (`domain/model`), which owns the rotation and the reverse lookups over it; `getTodayQuestion(dayOfYear, year)` walks a permutation reshuffled once per year, so the day's question is stable and the whole pool is used before anything repeats.
 
 Reminders are scheduled with `AlarmManager.setAndAllowWhileIdle` — inexact, but it fires in Doze — and are re-registered after reboot. `ReminderPolicy` and `RitualDayPolicy` decide whether a given day takes part, honouring the weekend setting.
 

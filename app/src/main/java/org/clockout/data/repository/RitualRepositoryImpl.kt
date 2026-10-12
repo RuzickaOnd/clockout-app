@@ -1,6 +1,6 @@
 package org.clockout.data.repository
 
-import org.clockout.data.local.QuestionsData
+import org.clockout.domain.model.QuestionCatalog
 import org.clockout.data.local.RitualLogMigrator
 import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.PracticeDayDao
@@ -72,7 +72,7 @@ class RitualRepositoryImpl(
 
     override fun getTodayQuestion(): RitualQuestion {
         val calendar = Calendar.getInstance()
-        return QuestionsData.getTodayQuestion(
+        return QuestionCatalog.getTodayQuestion(
             dayOfYear = calendar.get(Calendar.DAY_OF_YEAR),
             year = calendar.get(Calendar.YEAR)
         )

@@ -1,6 +1,6 @@
 package org.clockout.presentation.util
 
-import org.clockout.data.local.QuestionsData
+import org.clockout.domain.model.QuestionCatalog
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.RitualLogEntry
 
@@ -11,7 +11,7 @@ import org.clockout.domain.model.RitualLogEntry
  * wording the catalog no longer carries, is shown exactly as it was saved.
  */
 fun RitualLogEntry.localizedQuestionText(language: AppLanguage): String =
-    QuestionsData.localizeQuestionText(questionText, language)
+    QuestionCatalog.localizeQuestionText(questionText, language)
 
 fun RitualLogEntry.localizedAnswer(language: AppLanguage): String? =
-    selectedAnswer?.let { QuestionsData.localizeAnswer(it, questionText, language) }
+    selectedAnswer?.let { QuestionCatalog.localizeAnswer(it, questionText, language) }
