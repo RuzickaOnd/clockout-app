@@ -16,6 +16,7 @@ import org.clockout.domain.usecase.CompleteRitualUseCase
 import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
+import org.clockout.testing.ViewModelScopes
 import org.clockout.testing.FakeSoundPlayer
 import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
@@ -48,6 +49,7 @@ import java.time.temporal.TemporalAdjusters
 class RitualPathCelebrationTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
+    private val viewModels = ViewModelScopes()
 
     private val dispatcher = UnconfinedTestDispatcher()
     private lateinit var context: Context
@@ -68,17 +70,17 @@ class RitualPathCelebrationTest {
 
     @After
     fun tearDown() {
+        viewModels.cancelAll()
         database.close()
         Dispatchers.resetMain()
     }
 
-    private fun viewModel() = RitualViewModel(
+    private fun viewModel() = viewModels.track(RitualViewModel(
         audioPlayer = FakeSoundPlayer(),
-        logs = repository,
         settings = container.settings,
         sounds = container.sounds,
         completeRitual = container.completeRitual
-    )
+    ))
 
     private suspend fun finishRitual(): RitualViewModel = viewModel().also { vm ->
         vm.onIntent(RitualIntent.MoodSelected(MoodTag.CALM))
@@ -167,13 +169,12 @@ class RitualPathCelebrationTest {
         val brokenSky = object : ProgressRepository by container.progress {
             override fun getSky(): Flow<SkyData> = flow { throw IllegalStateException("sky broke") }
         }
-        val viewModel = RitualViewModel(
+        val viewModel = viewModels.track(RitualViewModel(
             audioPlayer = FakeSoundPlayer(),
-            logs = repository,
             settings = container.settings,
             sounds = container.sounds,
             completeRitual = CompleteRitualUseCase(repository, brokenSky, ShouldRequestReviewUseCase(repository))
-        )
+        ))
 
         viewModel.onIntent(RitualIntent.MoodSelected(MoodTag.CALM))
         viewModel.state.first { it.isCompletedAndSaved }

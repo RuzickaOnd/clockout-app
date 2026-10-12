@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
+import org.clockout.testing.ViewModelScopes
 import org.clockout.testing.FakeSoundPlayer
 import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
@@ -30,6 +31,7 @@ import java.time.LocalDate
 class RitualSessionSurvivalTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
+    private val viewModels = ViewModelScopes()
 
     private lateinit var context: Context
     private lateinit var container: TestAppContainer
@@ -43,6 +45,7 @@ class RitualSessionSurvivalTest {
 
     @After
     fun tearDown() {
+        viewModels.cancelAll()
         container.database.close()
     }
 
@@ -54,14 +57,12 @@ class RitualSessionSurvivalTest {
             database = container.database,
             todayFlow = flowOf(LocalDate.now())
         )
-        val repository = graph.ritualLogs
-        return RitualViewModel(
+        return viewModels.track(RitualViewModel(
             audioPlayer = FakeSoundPlayer(),
-            logs = repository,
             settings = graph.settings,
             sounds = graph.sounds,
             completeRitual = graph.completeRitual
-        )
+        ))
     }
 
     @Test

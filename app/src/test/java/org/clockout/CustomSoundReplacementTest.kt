@@ -8,6 +8,7 @@ import org.clockout.domain.model.SoundImportResult
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.SoundChoice
 import org.clockout.presentation.settings.SettingsViewModel
+import org.clockout.testing.ViewModelScopes
 import org.clockout.testing.FakeReminderScheduler
 import org.clockout.testing.FakeSoundFileStore
 import org.clockout.testing.FakeSoundPlayer
@@ -41,6 +42,7 @@ import kotlinx.coroutines.test.setMain
 class CustomSoundReplacementTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
+    private val viewModels = ViewModelScopes()
 
     private lateinit var context: Context
     private lateinit var container: TestAppContainer
@@ -65,7 +67,7 @@ class CustomSoundReplacementTest {
     private fun repository() = container.sounds
 
     /** Stands in for CustomSoundStorage, keeping its documented refusal once the library is full. */
-    private fun viewModel() = SettingsViewModel(
+    private fun viewModel() = viewModels.track(SettingsViewModel(
         settings = container.settings,
         sounds = container.sounds,
         logs = container.ritualLogs,
@@ -78,7 +80,7 @@ class CustomSoundReplacementTest {
                 SoundImportResult.Success(uploaded)
             }
         }
-    )
+    ))
 
     @Before
     fun setUp() {
@@ -95,6 +97,7 @@ class CustomSoundReplacementTest {
 
     @After
     fun tearDown() {
+        viewModels.cancelAll()
         container.database.close()
         Dispatchers.resetMain()
     }

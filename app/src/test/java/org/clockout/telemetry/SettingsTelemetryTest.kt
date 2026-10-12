@@ -6,6 +6,7 @@ import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.domain.repository.SettingsRepository
 import org.clockout.domain.model.TelemetryConsent
 import org.clockout.presentation.settings.SettingsViewModel
+import org.clockout.testing.ViewModelScopes
 import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.clockout.domain.model.SoundImportError
@@ -35,6 +36,7 @@ import kotlinx.coroutines.test.setMain
 class SettingsTelemetryTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
+    private val viewModels = ViewModelScopes()
 
     private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
@@ -52,20 +54,21 @@ class SettingsTelemetryTest {
 
     @After
     fun tearDown() {
+        viewModels.cancelAll()
         database.close()
         Dispatchers.resetMain()
     }
 
     @Test
     fun `the switch grants and withdraws`() = runTest {
-        val model = SettingsViewModel(
+        val model = viewModels.track(SettingsViewModel(
             settings = repository,
             sounds = container.sounds,
             logs = container.ritualLogs,
             audioPlayer = FakeSoundPlayer(),
             reminderScheduler = FakeReminderScheduler(),
             soundFiles = FakeSoundFileStore { SoundImportResult.Failure(SoundImportError.READ_FAILED) }
-        )
+        ))
 
         // Awaited rather than read straight back: the setter writes from viewModelScope and
         // DataStore completes the edit on its own dispatcher, so an immediate read races it. A

@@ -71,8 +71,12 @@ class DefaultAppContainer(
 
     override val settings: SettingsRepository = SettingsRepositoryImpl(preferences)
     override val sounds: SoundRepository = SoundRepositoryImpl(preferences, soundFileExists)
-    override val ritualLogs: RitualLogRepository =
-        RitualLogRepositoryImpl(preferences, database.ritualLogDao(), logMigrator)
+    override val ritualLogs: RitualLogRepository = RitualLogRepositoryImpl(
+        preferences = preferences,
+        ritualLogDao = database.ritualLogDao(),
+        logMigrator = logMigrator,
+        includeWeekends = settings.getIncludeWeekends()
+    )
     override val progress: ProgressRepository = ProgressRepositoryImpl(
         practiceDayDao = database.practiceDayDao(),
         logMigrator = logMigrator,

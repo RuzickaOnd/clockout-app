@@ -7,6 +7,7 @@ import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
+import org.clockout.testing.ViewModelScopes
 import org.clockout.testing.FakeSoundPlayer
 import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
@@ -33,6 +34,7 @@ import kotlinx.coroutines.test.setMain
 class RitualReviewRequestTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
+    private val viewModels = ViewModelScopes()
 
     private val dispatcher = UnconfinedTestDispatcher()
     private lateinit var context: Context
@@ -51,17 +53,17 @@ class RitualReviewRequestTest {
 
     @After
     fun tearDown() {
+        viewModels.cancelAll()
         database.close()
         Dispatchers.resetMain()
     }
 
-    private fun viewModel() = RitualViewModel(
+    private fun viewModel() = viewModels.track(RitualViewModel(
         audioPlayer = FakeSoundPlayer(),
-        logs = repository,
         settings = container.settings,
         sounds = container.sounds,
         completeRitual = container.completeRitual
-    )
+    ))
 
     /** Nine rituals already behind the user, so the next one is the tenth. */
     private suspend fun nineRitualsAlreadyDone() {

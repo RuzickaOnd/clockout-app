@@ -3,11 +3,11 @@ package org.clockout.telemetry
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.telemetry.AnalyticsEvent
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
+import org.clockout.testing.ViewModelScopes
 import org.clockout.testing.FakeSoundPlayer
 import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
@@ -32,22 +32,21 @@ import kotlinx.coroutines.test.runTest
 class RitualTelemetryTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
+    private val viewModels = ViewModelScopes()
 
     private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
-    private lateinit var repository: RitualLogRepository
     private lateinit var tracker: RecordingAnalyticsTracker
 
     private fun viewModel(): RitualViewModel {
         val context: Context = ApplicationProvider.getApplicationContext()
-        return RitualViewModel(
+        return viewModels.track(RitualViewModel(
             audioPlayer = FakeSoundPlayer(),
-            logs = repository,
             settings = container.settings,
             sounds = container.sounds,
             completeRitual = container.completeRitual,
             analyticsTracker = tracker
-        )
+        ))
     }
 
     @Before
@@ -55,12 +54,12 @@ class RitualTelemetryTest {
         val context: Context = ApplicationProvider.getApplicationContext()
         container = testAppContainer(preferencesFolder)
         database = container.database
-        repository = container.ritualLogs
         tracker = RecordingAnalyticsTracker()
     }
 
     @After
     fun tearDown() {
+        viewModels.cancelAll()
         database.close()
     }
 

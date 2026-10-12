@@ -13,12 +13,11 @@ import org.clockout.data.local.db.toDomain
 import org.clockout.data.local.db.toEntity
 import org.clockout.domain.model.DayStatus
 import org.clockout.domain.model.MoodTag
-import org.clockout.domain.model.QuestionCatalog
 import org.clockout.domain.model.RitualLogEntry
-import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
 import org.clockout.domain.repository.RitualLogRepository
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
@@ -27,7 +26,9 @@ import java.util.Locale
 class RitualLogRepositoryImpl(
     private val preferences: RitualPreferences,
     private val ritualLogDao: RitualLogDao,
-    private val logMigrator: RitualLogMigrator
+    private val logMigrator: RitualLogMigrator,
+    /** The same weekend setting the sky reads, handed in so the two can never disagree about it. */
+    private val includeWeekends: Flow<Boolean>
 ) : RitualLogRepository {
 
     /**
@@ -46,14 +47,6 @@ class RitualLogRepositoryImpl(
         emitAll(ritualLogDao.observeAll().map { entities -> entities.map { it.toDomain() } })
     }
 
-    override fun getTodayQuestion(): RitualQuestion {
-        val calendar = Calendar.getInstance()
-        return QuestionCatalog.getTodayQuestion(
-            dayOfYear = calendar.get(Calendar.DAY_OF_YEAR),
-            year = calendar.get(Calendar.YEAR)
-        )
-    }
-
     override fun getLogs(): Flow<List<RitualLogEntry>> = logsFlow
 
     override fun getTodayDateString(): String {
@@ -61,7 +54,7 @@ class RitualLogRepositoryImpl(
     }
 
     override fun getStreakInfo(): Flow<RitualStreakInfo> {
-        return logsFlow.combine(preferences.includeWeekendsFlow) { entries, includeWeekends ->
+        return logsFlow.combine(includeWeekends) { entries, includeWeekends ->
             calculateStreakInfo(entries, includeWeekends)
         }
     }
@@ -122,7 +115,7 @@ class RitualLogRepositoryImpl(
         )
     }
 
-    override suspend fun logRitual(selectedAnswer: String?, mood: MoodTag, questionText: String) {
+    override suspend fun logRitual(selectedAnswer: String?, mood: MoodTag, questionText: String): LocalDate {
         // One reading of the clock for both rows: read twice, a ritual saved at midnight could
         // land in the history on one day and on the path on the next.
         val now = Date()
@@ -138,6 +131,7 @@ class RitualLogRepositoryImpl(
         logMigrator.ensureMigrated()
         ritualLogDao.logDay(entry.toEntity(), PracticeDayEntity(practiceDay.toString()))
         preferences.incrementCompletedRitualCount()
+        return practiceDay
     }
 
     override suspend fun getCompletedRitualCount(): Int = preferences.getCompletedRitualCount()

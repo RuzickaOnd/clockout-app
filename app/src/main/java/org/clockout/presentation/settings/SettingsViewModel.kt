@@ -136,8 +136,10 @@ class SettingsViewModel(
         viewModelScope.launch {
             settings.setNotificationEnabled(enabled)
             if (enabled) {
-                val currentState = _state.value
-                reminderScheduler.schedule(currentState.notificationHour, currentState.notificationMinute)
+                // The stored time, not the screen's: before the settings have loaded, the state
+                // still holds the 17:30 default and would schedule the wrong alarm.
+                val (hour, minute) = settings.getNotificationTime().first()
+                reminderScheduler.schedule(hour, minute)
             } else {
                 reminderScheduler.cancel()
             }

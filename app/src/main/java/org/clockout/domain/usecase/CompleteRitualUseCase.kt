@@ -11,7 +11,6 @@ import org.clockout.domain.model.SkyTeaser
 import org.clockout.domain.model.mondayOfWeek
 import org.clockout.domain.repository.ProgressRepository
 import org.clockout.domain.repository.RitualLogRepository
-import java.time.LocalDate
 
 /**
  * Writes a finished ritual and works out what it changed: a new stage on the path, a constellation
@@ -21,8 +20,7 @@ import java.time.LocalDate
 class CompleteRitualUseCase(
     private val logs: RitualLogRepository,
     private val progress: ProgressRepository,
-    private val shouldRequestReview: ShouldRequestReviewUseCase,
-    private val today: () -> LocalDate = LocalDate::now
+    private val shouldRequestReview: ShouldRequestReviewUseCase
 ) {
     /**
      * [moodWasChosen] is false when the user skipped the step. Skipping still logs [MoodTag.CALM],
@@ -36,9 +34,11 @@ class CompleteRitualUseCase(
         moodWasChosen: Boolean
     ): RitualCompletion {
         val before = progressSnapshot()
-        logs.logRitual(answer, mood, questionText)
+        val loggedDay = logs.logRitual(answer, mood, questionText)
         val after = progressSnapshot()
-        val thisMonday = today().mondayOfWeek()
+        // The week the ritual was written into, not the one the clock shows now: saved just before
+        // midnight on a Sunday, the snapshots can already be reading Monday.
+        val ritualWeek = loggedDay.mondayOfWeek()
         return RitualCompletion(
             reachedStage = if (before != null && after != null) {
                 after.path.stage.takeIf { it != before.path.stage }
@@ -48,9 +48,9 @@ class CompleteRitualUseCase(
             // Announced when this week's figure first gets a line, not merely when the week
             // reaches its rhythm: a first, partial week can be in rhythm on a lone star.
             litConstellationNumber = if (before != null && after != null) {
-                SkyPolicy.constellationNumber(thisMonday).takeIf {
-                    SkyPolicy.isLit(thisMonday, after.sky.days, after.sky.rhythmWeeks) &&
-                        !SkyPolicy.isLit(thisMonday, before.sky.days, before.sky.rhythmWeeks)
+                SkyPolicy.constellationNumber(ritualWeek).takeIf {
+                    SkyPolicy.isLit(ritualWeek, after.sky.days, after.sky.rhythmWeeks) &&
+                        !SkyPolicy.isLit(ritualWeek, before.sky.days, before.sky.rhythmWeeks)
                 }
             } else {
                 null

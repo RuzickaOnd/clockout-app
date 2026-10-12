@@ -2,7 +2,6 @@ package org.clockout.presentation.ritual
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.repository.SettingsRepository
 import org.clockout.domain.repository.SoundRepository
 import org.clockout.domain.model.BreathingStyle
@@ -13,6 +12,7 @@ import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.RitualStep
 import org.clockout.domain.platform.SoundPlayer
 import org.clockout.domain.usecase.CompleteRitualUseCase
+import org.clockout.domain.usecase.GetTodayQuestionUseCase
 import org.clockout.domain.telemetry.AnalyticsEvent
 import org.clockout.domain.telemetry.AnalyticsTracker
 import org.clockout.domain.telemetry.NoOpAnalyticsTracker
@@ -28,16 +28,16 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class RitualViewModel(
-    private val logs: RitualLogRepository,
     private val settings: SettingsRepository,
     private val sounds: SoundRepository,
     private val completeRitual: CompleteRitualUseCase,
     private val audioPlayer: SoundPlayer,
-    private val analyticsTracker: AnalyticsTracker = NoOpAnalyticsTracker
+    private val analyticsTracker: AnalyticsTracker = NoOpAnalyticsTracker,
+    private val getTodayQuestion: GetTodayQuestionUseCase = GetTodayQuestionUseCase()
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
-        RitualState(question = logs.getTodayQuestion())
+        RitualState(question = getTodayQuestion())
     )
     val state: StateFlow<RitualState> = _state.asStateFlow()
 
@@ -64,7 +64,7 @@ class RitualViewModel(
         audioPlayer.stopAmbient()
         _state.update { current ->
             RitualState(
-                question = logs.getTodayQuestion(),
+                question = getTodayQuestion(),
                 // Everything a preference feeds has to be carried over by hand: the flows only
                 // re-emit when the stored value changes, so a fresh RitualState would otherwise
                 // start the ritual on the defaults until the user next edits Settings.

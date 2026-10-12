@@ -229,7 +229,6 @@ fun PadlaApp(
                             // fold in the middle of the ritual does not throw away the answer and the timer.
                             val ritualViewModel: RitualViewModel = viewModel {
                                 RitualViewModel(
-                                    container.ritualLogs,
                                     container.settings,
                                     container.sounds,
                                     container.completeRitual,

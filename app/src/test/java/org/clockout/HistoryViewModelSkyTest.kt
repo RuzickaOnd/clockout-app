@@ -7,6 +7,7 @@ import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.presentation.history.HistoryViewModel
+import org.clockout.testing.ViewModelScopes
 import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
@@ -32,6 +33,7 @@ import kotlinx.coroutines.test.setMain
 class HistoryViewModelSkyTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
+    private val viewModels = ViewModelScopes()
 
     private val dispatcher = UnconfinedTestDispatcher()
     private lateinit var container: TestAppContainer
@@ -48,6 +50,7 @@ class HistoryViewModelSkyTest {
 
     @After
     fun tearDown() {
+        viewModels.cancelAll()
         database.close()
         Dispatchers.resetMain()
     }
@@ -63,7 +66,7 @@ class HistoryViewModelSkyTest {
             }
         }
 
-        val viewModel = HistoryViewModel(counting, container.settings, container.progress)
+        val viewModel = viewModels.track(HistoryViewModel(counting, container.settings, container.progress))
         val state = viewModel.state.first { it.sky != null && it.logs.isNotEmpty() }
 
         assertEquals(0, logReads)

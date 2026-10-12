@@ -6,6 +6,7 @@ import org.clockout.domain.model.WorkdayCloseWindow
 import org.clockout.domain.repository.ProgressRepository
 import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.repository.SettingsRepository
+import org.clockout.domain.usecase.GetTodayQuestionUseCase
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.RitualDayPolicy
 import org.clockout.domain.model.RitualStreakInfo
@@ -27,7 +28,8 @@ class HomeViewModel(
     private val logs: RitualLogRepository,
     private val settings: SettingsRepository,
     private val progress: ProgressRepository,
-    private val isWithinWindow: () -> Boolean = WorkdayCloseWindow::isOpenNow
+    private val isWithinWindow: () -> Boolean = WorkdayCloseWindow::isOpenNow,
+    private val getTodayQuestion: GetTodayQuestionUseCase = GetTodayQuestionUseCase()
 ) : ViewModel() {
 
     /** Last value seen from settings, so a plain refresh can re-evaluate today's rest day. */
@@ -35,7 +37,7 @@ class HomeViewModel(
 
     private val _state = MutableStateFlow(
         HomeState(
-            todayQuestion = logs.getTodayQuestion(),
+            todayQuestion = getTodayQuestion(),
             isWithinWindow = isWithinWindow(),
             isRitualDay = RitualDayPolicy.isTodayRitualDay(includeWeekends)
         )

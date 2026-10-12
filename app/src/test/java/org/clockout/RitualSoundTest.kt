@@ -8,6 +8,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
+import org.clockout.testing.ViewModelScopes
 import org.clockout.testing.FakeSoundPlayer
 import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
@@ -27,6 +28,7 @@ import org.robolectric.annotation.Config
 class RitualSoundTest {
 
     @get:Rule val folder = TemporaryFolder()
+    private val viewModels = ViewModelScopes()
     private val dispatcher = UnconfinedTestDispatcher()
     private val player = FakeSoundPlayer()
     private lateinit var container: TestAppContainer
@@ -37,19 +39,18 @@ class RitualSoundTest {
     }
 
     @After fun tearDown() {
+        viewModels.cancelAll()
         container.database.close()
         Dispatchers.resetMain()
     }
 
     private fun viewModel(): RitualViewModel {
-        val repository = container.ritualLogs
-        return RitualViewModel(
-            logs = repository,
+        return viewModels.track(RitualViewModel(
             settings = container.settings,
             sounds = container.sounds,
             completeRitual = container.completeRitual,
             audioPlayer = player
-        ).also { it.startSession(1) }
+        )).also { it.startSession(1) }
     }
 
     @Test

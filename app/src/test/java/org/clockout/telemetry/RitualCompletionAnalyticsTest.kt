@@ -16,6 +16,7 @@ import org.clockout.domain.usecase.CompleteRitualUseCase
 import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
+import org.clockout.testing.ViewModelScopes
 import org.clockout.testing.FakeSoundPlayer
 import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
@@ -37,6 +38,7 @@ import java.io.IOException
 class RitualCompletionAnalyticsTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
+    private val viewModels = ViewModelScopes()
 
     private val dispatcher = UnconfinedTestDispatcher()
     private lateinit var container: TestAppContainer
@@ -50,18 +52,18 @@ class RitualCompletionAnalyticsTest {
 
     @After
     fun tearDown() {
+        viewModels.cancelAll()
         container.database.close()
         Dispatchers.resetMain()
     }
 
-    private fun viewModel(completeRitual: CompleteRitualUseCase = container.completeRitual) = RitualViewModel(
-        logs = container.ritualLogs,
+    private fun viewModel(completeRitual: CompleteRitualUseCase = container.completeRitual) = viewModels.track(RitualViewModel(
         settings = container.settings,
         sounds = container.sounds,
         completeRitual = completeRitual,
         audioPlayer = FakeSoundPlayer(),
         analyticsTracker = tracker
-    )
+    ))
 
     @Test
     fun `the completion event counts today among the week's closed days`() = runTest(dispatcher) {

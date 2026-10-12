@@ -8,7 +8,6 @@ import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathProgress
 import org.clockout.domain.model.RitualLogEntry
-import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStreakInfo
 import org.clockout.domain.model.SkyData
 import org.clockout.domain.model.SoundChoice
@@ -50,13 +49,13 @@ class FakeSoundFileStore(
 }
 
 class FakeRitualLogRepository(
-    private val question: RitualQuestion,
+    /** The day [logRitual] reports having written under. */
+    var loggedDay: LocalDate = LocalDate.now(),
     var completedCount: Int = 0,
     var reviewShown: Boolean = false
 ) : RitualLogRepository {
     val logged = mutableListOf<Triple<String?, MoodTag, String>>()
     private val logs = MutableStateFlow<List<RitualLogEntry>>(emptyList())
-    override fun getTodayQuestion() = question
     override fun getTodayDateString() = LocalDate.now().toString()
     override fun getLogs(): Flow<List<RitualLogEntry>> = logs
     override fun getStreakInfo(): Flow<RitualStreakInfo> = flowOf(
@@ -68,9 +67,10 @@ class FakeRitualLogRepository(
             weekDays = emptyList()
         )
     )
-    override suspend fun logRitual(selectedAnswer: String?, mood: MoodTag, questionText: String) {
+    override suspend fun logRitual(selectedAnswer: String?, mood: MoodTag, questionText: String): LocalDate {
         logged += Triple(selectedAnswer, mood, questionText)
         completedCount++
+        return loggedDay
     }
     override suspend fun getCompletedRitualCount() = completedCount
     override suspend fun isReviewPromptShown() = reviewShown
