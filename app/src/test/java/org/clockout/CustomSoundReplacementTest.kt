@@ -11,6 +11,7 @@ import org.clockout.presentation.settings.SettingsViewModel
 import org.clockout.testing.FakeReminderScheduler
 import org.clockout.testing.FakeSoundFileStore
 import org.clockout.testing.FakeSoundPlayer
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -42,7 +43,7 @@ class CustomSoundReplacementTest {
     @get:Rule val preferencesFolder = TemporaryFolder()
 
     private lateinit var context: Context
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
     private val preferences get() = container.preferences
 
     private val restored = CustomSound(

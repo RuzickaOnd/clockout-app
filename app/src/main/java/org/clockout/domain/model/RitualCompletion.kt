@@ -9,5 +9,6 @@ data class RitualCompletion(
     val litConstellationNumber: Int?,
     val skyTeaser: SkyTeaser?,
     val shouldRequestReview: Boolean,
-    val daysClosedThisWeek: Int
+    /** For the completion event alone; null when it could not be read, which costs that event only. */
+    val daysClosedThisWeek: Int?
 )

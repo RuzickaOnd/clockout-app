@@ -34,12 +34,14 @@ class NotificationReceiver : BroadcastReceiver() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val preferences = context.appContainer.preferences
-                val isEnabled = preferences.notificationEnabledFlow.first()
-                val hour = preferences.notificationHourFlow.first()
-                val minute = preferences.notificationMinuteFlow.first()
-                val language = preferences.languageFlow.first()
-                val includeWeekends = preferences.includeWeekendsFlow.first()
+                val container = context.appContainer
+                val settings = container.settings
+                val isEnabled = settings.getNotificationEnabled().first()
+                // Hour and minute from one snapshot: read apart, a change landing in between could
+                // schedule a time the user never picked.
+                val (hour, minute) = settings.getNotificationTime().first()
+                val language = settings.getLanguage().first()
+                val includeWeekends = settings.getIncludeWeekends().first()
 
                 val outcome = ReminderPolicy.outcomeFor(
                     isEnabled = isEnabled,
@@ -47,7 +49,7 @@ class NotificationReceiver : BroadcastReceiver() {
                 )
 
                 if (outcome == ReminderOutcome.CANCEL) {
-                    context.appContainer.reminderScheduler.cancel()
+                    container.reminderScheduler.cancel()
                     return@launch
                 }
 
@@ -56,9 +58,9 @@ class NotificationReceiver : BroadcastReceiver() {
                         showNotification(context, language)
                     }
                     // Reschedule for next day even on a skipped day, so the alarm survives the weekend
-                    context.appContainer.reminderScheduler.schedule(hour, minute)
+                    container.reminderScheduler.schedule(hour, minute)
                 } else if (action == Intent.ACTION_BOOT_COMPLETED) {
-                    context.appContainer.reminderScheduler.schedule(hour, minute)
+                    container.reminderScheduler.schedule(hour, minute)
                 }
             } catch (_: Exception) {
                 // Ignore background notification failure

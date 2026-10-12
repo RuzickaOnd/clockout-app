@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.SoundChoice
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -33,7 +34,7 @@ class CustomSoundAvailabilityTest {
     @get:Rule val preferencesFolder = TemporaryFolder()
 
     private lateinit var context: Context
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
     private val preferences get() = container.preferences
 
     private val restored = CustomSound(
@@ -53,7 +54,7 @@ class CustomSoundAvailabilityTest {
     )
 
     /** A new graph over the same storage, so each call can have its own idea of what is on disk. */
-    private fun repository(soundFileExists: (String) -> Boolean) = AppContainer(
+    private fun repository(soundFileExists: (String) -> Boolean) = TestAppContainer(
         context = context,
         preferences = container.preferences,
         database = container.database,

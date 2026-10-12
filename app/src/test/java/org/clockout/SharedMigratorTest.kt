@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.runTest
 import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.domain.model.MoodTag
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -27,7 +28,7 @@ import java.time.LocalDate
 
 /**
  * The history and the path share one `RitualLogMigrator`, whose flag and mutex are per instance.
- * That rule is enforced by [AppContainer]'s wiring, not by these tests; they pin the observable
+ * That rule is enforced by [org.clockout.DefaultAppContainer]'s wiring, not by these tests; they pin the observable
  * outcome of it.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -35,7 +36,7 @@ import java.time.LocalDate
 class SharedMigratorTest {
 
     @get:Rule val folder = TemporaryFolder()
-    private var container: AppContainer? = null
+    private var container: TestAppContainer? = null
 
     @After fun tearDown() { container?.database?.close() }
 
@@ -55,7 +56,7 @@ class SharedMigratorTest {
         val dataStore = PreferenceDataStoreFactory.create { folder.newFile("legacy.preferences_pb").apply { delete() } }
         val legacyJson = """[{"date":"2026-09-07","questionText":"Q","selectedAnswer":"A","moodTag":"CALM","timestamp":1}]"""
         dataStore.edit { it[stringPreferencesKey("ritual_logs_json")] = legacyJson }
-        val container = AppContainer(
+        val container = TestAppContainer(
             context = context,
             preferences = RitualPreferences(dataStore),
             database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build(),

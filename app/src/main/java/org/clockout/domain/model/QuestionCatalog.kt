@@ -42,6 +42,8 @@ object QuestionCatalog {
             "QuestionCatalog has not been installed; call QuestionCatalog.install(questions) first."
         )
 
+    val isInstalled: Boolean get() = index != null
+
     fun install(questions: List<RitualQuestion>) {
         index = Index(questions)
     }

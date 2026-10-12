@@ -2,11 +2,11 @@ package org.clockout.telemetry
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import org.clockout.AppContainer
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.domain.repository.SettingsRepository
 import org.clockout.domain.model.TelemetryConsent
 import org.clockout.presentation.settings.SettingsViewModel
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.clockout.domain.model.SoundImportError
 import org.clockout.domain.model.SoundImportResult
@@ -36,7 +36,7 @@ class SettingsTelemetryTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
 
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var repository: SettingsRepository
 

@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
 import org.clockout.testing.FakeSoundPlayer
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -31,7 +32,7 @@ class RitualSessionSurvivalTest {
     @get:Rule val preferencesFolder = TemporaryFolder()
 
     private lateinit var context: Context
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
     private val database get() = container.database
 
     @Before
@@ -47,7 +48,7 @@ class RitualSessionSurvivalTest {
 
     private fun viewModel(): RitualViewModel {
         // A new graph over the same storage: the view model is rebuilt the way a new process would.
-        val graph = AppContainer(
+        val graph = TestAppContainer(
             context = context,
             preferences = container.preferences,
             database = container.database,

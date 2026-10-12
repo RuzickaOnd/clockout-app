@@ -7,6 +7,7 @@ import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.usecase.ShouldRequestReviewUseCase
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertFalse
@@ -33,7 +34,7 @@ class ReviewPromptFlowTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
 
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var repository: RitualLogRepository
     private lateinit var shouldRequestReview: ShouldRequestReviewUseCase

@@ -7,6 +7,7 @@ import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.repository.SettingsRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.TelemetryConsent
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -31,7 +32,7 @@ class TelemetryConsentPersistenceTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
 
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var settings: SettingsRepository
     private lateinit var logs: RitualLogRepository

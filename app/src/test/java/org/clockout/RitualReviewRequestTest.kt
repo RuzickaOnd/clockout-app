@@ -8,6 +8,7 @@ import org.clockout.domain.model.MoodTag
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
 import org.clockout.testing.FakeSoundPlayer
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertFalse
@@ -35,7 +36,7 @@ class RitualReviewRequestTest {
 
     private val dispatcher = UnconfinedTestDispatcher()
     private lateinit var context: Context
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var repository: RitualLogRepository
 

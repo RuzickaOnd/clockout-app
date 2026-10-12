@@ -3,6 +3,7 @@ package org.clockout
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.clockout.domain.model.MoodTag
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -30,10 +31,10 @@ class RitualRepositoryLogPersistenceTest {
     @get:Rule val preferencesFolder = TemporaryFolder()
 
     private lateinit var context: Context
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
 
     /** A new graph over the same storage, standing in for a repository built after the first one. */
-    private fun repository() = AppContainer(
+    private fun repository() = TestAppContainer(
         context = context,
         preferences = container.preferences,
         database = container.database,

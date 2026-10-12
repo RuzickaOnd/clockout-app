@@ -2,7 +2,6 @@ package org.clockout.telemetry
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import org.clockout.AppContainer
 import org.clockout.data.local.db.ClockoutDatabase
 import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
@@ -10,6 +9,7 @@ import org.clockout.domain.telemetry.AnalyticsEvent
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
 import org.clockout.testing.FakeSoundPlayer
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -33,7 +33,7 @@ class RitualTelemetryTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
 
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var repository: RitualLogRepository
     private lateinit var tracker: RecordingAnalyticsTracker

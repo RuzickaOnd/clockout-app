@@ -7,6 +7,7 @@ import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.presentation.history.HistoryViewModel
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -33,7 +34,7 @@ class HistoryViewModelSkyTest {
     @get:Rule val preferencesFolder = TemporaryFolder()
 
     private val dispatcher = UnconfinedTestDispatcher()
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var repository: RitualLogRepository
 

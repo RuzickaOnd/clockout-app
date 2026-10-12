@@ -1,5 +1,6 @@
 package org.clockout
 
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -23,7 +24,7 @@ class RitualWeekOverviewTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
 
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
     private val preferences get() = container.preferences
 
     private fun repository() = container.ritualLogs

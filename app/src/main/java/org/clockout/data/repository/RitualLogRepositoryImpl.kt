@@ -30,7 +30,12 @@ class RitualLogRepositoryImpl(
     private val logMigrator: RitualLogMigrator
 ) : RitualLogRepository {
 
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    /**
+     * A new formatter on every use: this repository lives as long as the process, SimpleDateFormat
+     * is not thread-safe, and the stored dates follow the system locale's digits, which can change
+     * while the process runs.
+     */
+    private fun dateFormat() = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
     /**
      * Ritual logs from the Room table. The legacy DataStore import is awaited before the table is
@@ -52,7 +57,7 @@ class RitualLogRepositoryImpl(
     override fun getLogs(): Flow<List<RitualLogEntry>> = logsFlow
 
     override fun getTodayDateString(): String {
-        return dateFormat.format(Date())
+        return dateFormat().format(Date())
     }
 
     override fun getStreakInfo(): Flow<RitualStreakInfo> {
@@ -84,6 +89,7 @@ class RitualLogRepositoryImpl(
         val weekDays = mutableListOf<DayStatus>()
         var completedCountThisWeek = 0
 
+        val dateFormat = dateFormat()
         for (i in 0 until offeredDayCount) {
             val dateStr = dateFormat.format(calendar.time)
             val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
@@ -121,7 +127,7 @@ class RitualLogRepositoryImpl(
         // land in the history on one day and on the path on the next.
         val now = Date()
         val entry = RitualLogEntry(
-            date = dateFormat.format(now),
+            date = dateFormat().format(now),
             questionText = questionText,
             selectedAnswer = selectedAnswer,
             moodTag = mood,

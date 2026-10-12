@@ -57,9 +57,21 @@ class CompleteRitualUseCase(
             },
             skyTeaser = after?.sky?.daysToFirstConstellation?.let { SkyTeaser(after.sky.summary.stars, it) },
             shouldRequestReview = moodWasChosen && shouldRequestReview(mood),
-            // Read after the log is written, so the count includes today.
-            daysClosedThisWeek = logs.getStreakInfo().first().completedThisWeekCount
+            daysClosedThisWeek = closedDaysThisWeek()
         )
+    }
+
+    /**
+     * Read after the log is written, so the count includes today. It feeds nothing but the
+     * completion event, so a failure here - like one reading the path or the sky - must not cost
+     * the completion itself.
+     */
+    private suspend fun closedDaysThisWeek(): Int? = try {
+        logs.getStreakInfo().first().completedThisWeekCount
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (failure: Exception) {
+        null
     }
 
     private class ProgressSnapshot(val path: PathProgress, val sky: SkyData)

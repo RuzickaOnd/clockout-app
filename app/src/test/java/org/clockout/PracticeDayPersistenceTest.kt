@@ -11,6 +11,7 @@ import org.clockout.domain.repository.ProgressRepository
 import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathStage
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -35,7 +36,7 @@ class PracticeDayPersistenceTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
 
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
     private lateinit var preferences: RitualPreferences
     private lateinit var logRepository: RitualLogRepository
@@ -109,7 +110,7 @@ class PracticeDayPersistenceTest {
         val original = Locale.getDefault()
         Locale.setDefault(Locale.forLanguageTag("fa-IR"))
         try {
-            val persianRepository = AppContainer(
+            val persianRepository = TestAppContainer(
                 context = ApplicationProvider.getApplicationContext(),
                 preferences = RitualPreferences(
                     PreferenceDataStoreFactory.create {
@@ -151,7 +152,7 @@ class PracticeDayPersistenceTest {
     @Test
     fun `the sky and the path move on at midnight without a new ritual`() = runTest {
         val today = MutableStateFlow(LocalDate.of(2026, 10, 9))
-        val clocked = AppContainer(
+        val clocked = TestAppContainer(
             context = ApplicationProvider.getApplicationContext(),
             preferences = RitualPreferences(
                 PreferenceDataStoreFactory.create {

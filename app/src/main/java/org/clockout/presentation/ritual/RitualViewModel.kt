@@ -240,9 +240,11 @@ class RitualViewModel(
                 )
             }
             analyticsTracker.track(AnalyticsEvent.RitualStepCompleted(RitualStep.Log.analyticsId()))
-            analyticsTracker.track(
-                AnalyticsEvent.RitualCompleted(mood = mood.id, daysClosedThisWeek = completion.daysClosedThisWeek)
-            )
+            completion.daysClosedThisWeek?.let { daysClosedThisWeek ->
+                analyticsTracker.track(
+                    AnalyticsEvent.RitualCompleted(mood = mood.id, daysClosedThisWeek = daysClosedThisWeek)
+                )
+            }
         }
     }
 

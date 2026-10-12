@@ -13,7 +13,7 @@ import org.clockout.domain.model.QuestionCatalog
 class ClockoutApplication : Application() {
 
     /** Built on first use, by whichever entry point — an Activity or the reminder receiver — gets there first. */
-    val container: AppContainer by lazy { AppContainer(this) }
+    val container: AppContainer by lazy { DefaultAppContainer(this) }
 
     override fun onCreate() {
         super.onCreate()

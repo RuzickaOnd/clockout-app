@@ -9,6 +9,7 @@ import kotlinx.coroutines.test.setMain
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
 import org.clockout.testing.FakeSoundPlayer
+import org.clockout.testing.TestAppContainer
 import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertNotNull
@@ -28,7 +29,7 @@ class RitualSoundTest {
     @get:Rule val folder = TemporaryFolder()
     private val dispatcher = UnconfinedTestDispatcher()
     private val player = FakeSoundPlayer()
-    private lateinit var container: AppContainer
+    private lateinit var container: TestAppContainer
 
     @Before fun setUp() {
         Dispatchers.setMain(dispatcher)
