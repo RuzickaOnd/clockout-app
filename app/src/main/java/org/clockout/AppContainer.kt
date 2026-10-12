@@ -3,9 +3,13 @@ package org.clockout
 import android.content.Context
 import kotlinx.coroutines.flow.Flow
 import org.clockout.data.local.CustomSoundStorage
+import org.clockout.data.local.RitualLogMigrator
 import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepositoryImpl
+import org.clockout.data.repository.ProgressRepositoryImpl
+import org.clockout.data.repository.RitualLogRepositoryImpl
+import org.clockout.data.repository.SettingsRepositoryImpl
+import org.clockout.data.repository.SoundRepositoryImpl
 import org.clockout.domain.platform.ReminderScheduler
 import org.clockout.domain.platform.SoundFileStore
 import org.clockout.domain.platform.SoundPlayer
@@ -36,18 +40,20 @@ class AppContainer(
 ) {
     private val appContext = context.applicationContext
 
-    private val ritualRepository = RitualRepositoryImpl(
-        preferences = preferences,
-        ritualLogDao = database.ritualLogDao(),
-        practiceDayDao = database.practiceDayDao(),
-        todayFlow = todayFlow,
-        soundFileExists = soundFileExists
-    )
+    /** The one migrator: its flag and mutex are per instance, so a second would import the legacy blob twice. */
+    val logMigrator = RitualLogMigrator(preferences, database.ritualLogDao(), database.practiceDayDao())
 
-    val settings: SettingsRepository = ritualRepository
-    val sounds: SoundRepository = ritualRepository
-    val ritualLogs: RitualLogRepository = ritualRepository
-    val progress: ProgressRepository = ritualRepository
+    val settings: SettingsRepository = SettingsRepositoryImpl(preferences)
+    val sounds: SoundRepository = SoundRepositoryImpl(preferences, soundFileExists)
+    val ritualLogs: RitualLogRepository =
+        RitualLogRepositoryImpl(preferences, database.ritualLogDao(), logMigrator)
+    val progress: ProgressRepository = ProgressRepositoryImpl(
+        practiceDayDao = database.practiceDayDao(),
+        logMigrator = logMigrator,
+        logs = ritualLogs,
+        includeWeekends = settings.getIncludeWeekends(),
+        todayFlow = todayFlow
+    )
 
     val reminderScheduler: ReminderScheduler = AlarmReminderScheduler(appContext)
     val soundFileStore: SoundFileStore = CustomSoundStorage(appContext)
