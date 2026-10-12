@@ -86,7 +86,10 @@ class SettingsReminderSchedulingTest {
 
         vm.setNotificationTime(19, 0)
 
-        container.ritualRepository.getNotificationTime().first { it == 19 to 0 }
+        // Both launches queue behind the same DataStore write, so once the cancel has landed the
+        // time setter has already passed its isNotificationEnabled check.
+        vm.setNotificationEnabled(false)
+        awaitScheduler { scheduler.cancelCount > 0 }
         assertTrue(scheduler.scheduled.isEmpty())
     }
 }
