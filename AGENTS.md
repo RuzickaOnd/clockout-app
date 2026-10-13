@@ -45,7 +45,7 @@ Padla (Czech) / ClockOut (English) — an Android app for closing the workday wi
 
 Released on Google Play as <https://play.google.com/store/apps/details?id=org.clockout>.
 
-Version 1.3.0 (`versionCode` 1030001). `minSdk` 26, `targetSdk` 37, `compileSdk` 37.1. AGP 9.4.1, Kotlin 2.4.21, Compose BOM 2026.09.00, Room 2.8.5 (with `room-testing` for migration tests), Robolectric 4.17, Roborazzi 1.76.0, Play App Update 2.1.0, Play Review 2.0.2, Firebase BOM 34.19.0, Crashlytics plugin 3.0.8.
+Version 1.3.0 (`versionCode` 1030002). `minSdk` 26, `targetSdk` 37, `compileSdk` 37.1. AGP 9.4.1, Kotlin 2.4.21, Compose BOM 2026.09.00, Room 2.8.5 (with `room-testing` for migration tests), Robolectric 4.17, Roborazzi 1.76.0, Play App Update 2.1.0, Play Review 2.0.2, Firebase BOM 34.19.0, Crashlytics plugin 3.0.8.
 
 Ritual logs and preferences stay on the device — Room for the logs, DataStore for the preferences. No accounts, no cloud sync, no ads. The app does carry the `INTERNET` permission, for Firebase Crashlytics and Analytics, but **both start disabled and stay disabled until the user opts in** — see *Telemetry*. Play In-App Update and Play In-App Review still reach the Play Store over IPC rather than over the network, and the "Rate the app" button hands a `market://` intent to the Play app (or a browser) rather than fetching anything itself.
 
