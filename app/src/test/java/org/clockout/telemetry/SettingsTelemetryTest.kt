@@ -61,6 +61,11 @@ class SettingsTelemetryTest {
 
     @Test
     fun `the switch grants and withdraws`() = runTest {
+        // A known answer the view model has to show first: once it does, its collector is past
+        // DataStore's initial read. A write landing during that read can be lost to it for good in
+        // DataStore 1.2.1 (see CustomSoundReplacementTest.awaitReplacement), so the switch is only
+        // flipped after that.
+        repository.setTelemetryConsent(TelemetryConsent.DENIED)
         val model = viewModels.track(SettingsViewModel(
             settings = repository,
             sounds = container.sounds,
@@ -69,6 +74,8 @@ class SettingsTelemetryTest {
             reminderScheduler = FakeReminderScheduler(),
             soundFiles = FakeSoundFileStore { SoundImportResult.Failure(SoundImportError.READ_FAILED) }
         ))
+
+        model.state.first { it.telemetryConsent == TelemetryConsent.DENIED }
 
         // Awaited rather than read straight back: the setter writes from viewModelScope and
         // DataStore completes the edit on its own dispatcher, so an immediate read races it. A

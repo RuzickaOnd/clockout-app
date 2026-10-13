@@ -103,19 +103,29 @@ class CustomSoundReplacementTest {
     }
 
     /**
-     * The DataStore backed flow re-emits on every write, so collecting until the replacement shows
-     * up is what waits for the import coroutine - no arbitrary delay needed.
+     * Waits for the view model to finish the replacement, then reads the sounds once.
+     *
+     * The view model flags the import before its first suspension and clears the flag only after
+     * DataStore has acknowledged the write, so once the flag is down the new list is on disk and in
+     * DataStore's cache. Collecting DataStore while the write is still in flight is not safe: in
+     * DataStore 1.2.1 a collector that starts between the write bumping the version and updating
+     * the cache can read the old data stamped with the new version, and then drops the real update
+     * as stale - the test waited forever for an emission that never came.
      */
-    private suspend fun awaitSounds(predicate: (List<CustomSound>) -> Boolean): List<CustomSound> =
-        repository().getCustomSounds().first(predicate)
+    private suspend fun awaitReplacement(viewModel: SettingsViewModel): List<CustomSound> {
+        viewModel.state.first { !it.isImportingSound }
+        return repository().getCustomSounds().first()
+    }
 
     @Test
     fun `the uploaded file takes over the id of the sound it replaces`() = runTest {
         preferences.addCustomSound(restored)
 
-        viewModel().replaceCustomSound("content://test/forest.mp3", restored)
+        val viewModel = viewModel()
+        viewModel.replaceCustomSound("content://test/forest.mp3", restored)
 
-        val sounds = awaitSounds { it.singleOrNull()?.displayName == "Forest" }
+        val sounds = awaitReplacement(viewModel)
+        assertEquals("Forest", sounds.single().displayName)
         assertEquals(restored.id, sounds.single().id)
         assertTrue(sounds.single().isAvailable)
     }
@@ -125,9 +135,10 @@ class CustomSoundReplacementTest {
         preferences.addCustomSound(restored)
         preferences.setSelectedSoundId(restored.id)
 
-        viewModel().replaceCustomSound("content://test/forest.mp3", restored)
+        val viewModel = viewModel()
+        viewModel.replaceCustomSound("content://test/forest.mp3", restored)
 
-        awaitSounds { it.singleOrNull()?.displayName == "Forest" }
+        awaitReplacement(viewModel)
 
         val choice = repository().getSoundChoice().first()
         assertEquals(restored.id, choice.id)
@@ -144,8 +155,9 @@ class CustomSoundReplacementTest {
         val viewModel = viewModel()
         viewModel.replaceCustomSound("content://test/forest.mp3", restored)
 
-        val sounds = awaitSounds { list -> list.any { it.id == restored.id && it.displayName == "Forest" } }
+        val sounds = awaitReplacement(viewModel)
         assertNull(viewModel.state.value.soundImportError)
+        assertTrue(sounds.any { it.id == restored.id && it.displayName == "Forest" })
         assertEquals(CustomSoundStorage.MAX_CUSTOM_SOUNDS, sounds.size)
     }
 }
