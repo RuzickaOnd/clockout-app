@@ -149,18 +149,24 @@ class SettingsViewModel(
     fun setNotificationTime(hour: Int, minute: Int) {
         viewModelScope.launch {
             settings.setNotificationTime(hour, minute)
-            if (_state.value.isNotificationEnabled) {
-                reminderScheduler.schedule(hour, minute)
-            }
+            rescheduleIfEnabled(hour, minute)
         }
     }
 
     fun setCustomNotificationTime(hour: Int, minute: Int) {
         viewModelScope.launch {
             settings.setCustomNotificationTime(hour, minute)
-            if (_state.value.isNotificationEnabled) {
-                reminderScheduler.schedule(hour, minute)
-            }
+            rescheduleIfEnabled(hour, minute)
+        }
+    }
+
+    /**
+     * Asks the store, not the screen: until the settings have loaded, the state says reminders are
+     * off and a new time would leave the alarm on the old one.
+     */
+    private suspend fun rescheduleIfEnabled(hour: Int, minute: Int) {
+        if (settings.getNotificationEnabled().first()) {
+            reminderScheduler.schedule(hour, minute)
         }
     }
 

@@ -98,6 +98,23 @@ class SettingsReminderSchedulingTest {
     }
 
     @Test
+    fun `a new time before the settings have loaded reschedules reminders that are on`() = runTest(dispatcher) {
+        container.settings.setNotificationEnabled(true)
+        // The screen's state still says reminders are off, its default until DataStore emits.
+        val stillLoading = object : SettingsRepository by container.settings {
+            override fun getCustomNotificationTime(): Flow<Pair<Int, Int>?> = flow { awaitCancellation() }
+        }
+        val vm = viewModel(settings = stillLoading)
+        assertTrue(!vm.state.value.isNotificationEnabled)
+
+        vm.setNotificationTime(19, 0)
+        vm.setCustomNotificationTime(18, 40)
+
+        awaitScheduler { scheduler.scheduled.size == 2 }
+        assertEquals(listOf(19 to 0, 18 to 40), scheduler.scheduled)
+    }
+
+    @Test
     fun `switching reminders off cancels the alarm`() = runTest(dispatcher) {
         viewModel().setNotificationEnabled(false)
 
@@ -114,7 +131,7 @@ class SettingsReminderSchedulingTest {
         vm.setNotificationTime(19, 0)
 
         // Both launches queue behind the same DataStore write, so once the cancel has landed the
-        // time setter has already passed its isNotificationEnabled check.
+        // time setter has already read that reminders are off.
         vm.setNotificationEnabled(false)
         awaitScheduler { scheduler.cancelCount > 0 }
         assertTrue(scheduler.scheduled.isEmpty())
