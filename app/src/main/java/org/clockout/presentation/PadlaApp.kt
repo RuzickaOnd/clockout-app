@@ -21,8 +21,8 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaul
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,10 +46,6 @@ import org.clockout.R
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.TelemetryConsent
 import org.clockout.domain.telemetry.UserProperty
-import org.clockout.domain.usecase.GetStreakUseCase
-import org.clockout.domain.usecase.GetTodayRitualUseCase
-import org.clockout.domain.usecase.LogMoodUseCase
-import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.history.HistoryScreen
 import org.clockout.presentation.history.HistoryViewModel
 import org.clockout.presentation.home.HomeScreen
@@ -109,22 +105,18 @@ fun PadlaApp(
     overlay: @Composable BoxScope.() -> Unit = {}
 ) {
     val context = LocalContext.current
-    val repository = rememberRitualRepository(context)
+    val container = appContainer()
     val analyticsTracker = rememberAnalyticsTracker(context)
     val scope = rememberCoroutineScope()
 
     // Null until DataStore has actually emitted. Starting at UNKNOWN instead would flash the opt-in
     // dialog on every launch for users who answered it long ago, the same trap
     // HomeState.isTestModeEnabled documents.
-    val consent by repository.getTelemetryConsent().collectAsState(initial = null)
+    val consent by container.settings.getTelemetryConsent().collectAsStateWithLifecycle(initialValue = null)
 
     LaunchedEffect(consent) {
         analyticsTracker.setCollectionEnabled(consent == TelemetryConsent.GRANTED)
     }
-    val getTodayRitualUseCase = remember { GetTodayRitualUseCase(repository) }
-    val logMoodUseCase = remember { LogMoodUseCase(repository) }
-    val shouldRequestReviewUseCase = remember { ShouldRequestReviewUseCase(repository) }
-    val getStreakUseCase = remember { GetStreakUseCase(repository) }
 
     var currentScreen by rememberSaveable(stateSaver = ScreenSaver) {
         mutableStateOf<Screen>(Screen.Home)
@@ -139,13 +131,13 @@ fun PadlaApp(
         currentScreen = Screen.Home
     }
 
-    val language by repository.getLanguage().collectAsState(initial = AppLanguage.ENGLISH)
+    val language by container.settings.getLanguage().collectAsStateWithLifecycle(initialValue = AppLanguage.ENGLISH)
 
     // Reported from here rather than from the Application class: consent may arrive long after
     // startup, and these have to be sent when it does, not only when a setting next changes.
-    val breathingStyle by repository.getBreathingStyle().collectAsState(initial = null)
-    val soundEnabled by repository.getSoundEnabled().collectAsState(initial = null)
-    val includeWeekends by repository.getIncludeWeekends().collectAsState(initial = null)
+    val breathingStyle by container.settings.getBreathingStyle().collectAsStateWithLifecycle(initialValue = null)
+    val soundEnabled by container.sounds.getSoundEnabled().collectAsStateWithLifecycle(initialValue = null)
+    val includeWeekends by container.settings.getIncludeWeekends().collectAsStateWithLifecycle(initialValue = null)
 
     LaunchedEffect(consent, breathingStyle, soundEnabled, includeWeekends, language) {
         if (consent != TelemetryConsent.GRANTED) return@LaunchedEffect
@@ -214,9 +206,9 @@ fun PadlaApp(
                     when (screen) {
                         is Screen.Home -> {
                             val homeViewModel: HomeViewModel = viewModel {
-                                HomeViewModel(repository, getTodayRitualUseCase, getStreakUseCase)
+                                HomeViewModel(container.ritualLogs, container.settings, container.progress)
                             }
-                            val homeState by homeViewModel.state.collectAsState()
+                            val homeState by homeViewModel.state.collectAsStateWithLifecycle()
 
                             HomeScreen(
                                 state = homeState,
@@ -237,17 +229,16 @@ fun PadlaApp(
                             // fold in the middle of the ritual does not throw away the answer and the timer.
                             val ritualViewModel: RitualViewModel = viewModel {
                                 RitualViewModel(
-                                    context.applicationContext,
-                                    getTodayRitualUseCase,
-                                    logMoodUseCase,
-                                    shouldRequestReviewUseCase,
-                                    repository,
+                                    container.settings,
+                                    container.sounds,
+                                    container.completeRitual,
+                                    audioPlayer = container.newSoundPlayer(),
                                     analyticsTracker = analyticsTracker
                                 )
                             }
                             // Resets the ritual only when the user actually started it again.
                             LaunchedEffect(ritualSession) { ritualViewModel.startSession(ritualSession) }
-                            val ritualState by ritualViewModel.state.collectAsState()
+                            val ritualState by ritualViewModel.state.collectAsStateWithLifecycle()
 
                             // The request goes out on the completion card rather than on the way
                             // home: the user is done, nothing is interrupted, and the good mood
@@ -273,9 +264,9 @@ fun PadlaApp(
                         }
                         is Screen.History -> {
                             val historyViewModel: HistoryViewModel = viewModel {
-                                HistoryViewModel(repository)
+                                HistoryViewModel(container.ritualLogs, container.settings, container.progress)
                             }
-                            val historyState by historyViewModel.state.collectAsState()
+                            val historyState by historyViewModel.state.collectAsStateWithLifecycle()
 
                             HistoryScreen(
                                 state = historyState,
@@ -287,25 +278,32 @@ fun PadlaApp(
                         }
                         is Screen.Settings -> {
                             val settingsViewModel: SettingsViewModel = viewModel {
-                                SettingsViewModel(repository)
+                                SettingsViewModel(
+                                    settings = container.settings,
+                                    sounds = container.sounds,
+                                    logs = container.ritualLogs,
+                                    audioPlayer = container.newSoundPlayer(),
+                                    reminderScheduler = container.reminderScheduler,
+                                    soundFiles = container.soundFileStore
+                                )
                             }
-                            val settingsState by settingsViewModel.state.collectAsState()
+                            val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
 
                             SettingsScreen(
                                 state = settingsState,
                                 onBack = { currentScreen = Screen.Home },
                                 onLanguageOptionSelected = { settingsViewModel.setLanguageOption(it) },
-                                onNotificationToggled = { enabled -> settingsViewModel.setNotificationEnabled(enabled, context) },
-                                onTimeSelected = { h, m -> settingsViewModel.setNotificationTime(h, m, context) },
-                                onCustomTimeSelected = { h, m -> settingsViewModel.setCustomNotificationTime(h, m, context) },
+                                onNotificationToggled = { enabled -> settingsViewModel.setNotificationEnabled(enabled) },
+                                onTimeSelected = { h, m -> settingsViewModel.setNotificationTime(h, m) },
+                                onCustomTimeSelected = { h, m -> settingsViewModel.setCustomNotificationTime(h, m) },
                                 onTestModeToggled = { settingsViewModel.setTestMode(it) },
                                 onIncludeWeekendsToggled = { settingsViewModel.setIncludeWeekends(it) },
                                 onSoundToggled = { settingsViewModel.setSoundEnabled(it) },
                                 onSoundChoiceSelected = { settingsViewModel.setSoundChoice(it) },
-                                onTogglePreviewSound = { settingsViewModel.togglePreviewSound(it, context) },
-                                onUploadCustomSound = { uri -> settingsViewModel.importCustomSound(context, uri) },
-                                onReplaceCustomSound = { uri, sound -> settingsViewModel.replaceCustomSound(context, uri, sound) },
-                                onDeleteCustomSound = { item -> settingsViewModel.deleteCustomSound(context, item) },
+                                onTogglePreviewSound = { settingsViewModel.togglePreviewSound(it) },
+                                onUploadCustomSound = { uri -> settingsViewModel.importCustomSound(uri?.toString()) },
+                                onReplaceCustomSound = { uri, sound -> settingsViewModel.replaceCustomSound(uri?.toString(), sound) },
+                                onDeleteCustomSound = { item -> settingsViewModel.deleteCustomSound(item) },
                                 onDismissSoundImportError = { settingsViewModel.dismissSoundImportError() },
                                 onOpenBreathingStyle = {
                                     context.startActivity(Intent(context, BreathingStyleActivity::class.java))
@@ -325,10 +323,10 @@ fun PadlaApp(
             if (consent == TelemetryConsent.UNKNOWN) {
                 TelemetryConsentDialog(
                     onGrant = {
-                        scope.launch { repository.setTelemetryConsent(TelemetryConsent.GRANTED) }
+                        scope.launch { container.settings.setTelemetryConsent(TelemetryConsent.GRANTED) }
                     },
                     onDeny = {
-                        scope.launch { repository.setTelemetryConsent(TelemetryConsent.DENIED) }
+                        scope.launch { container.settings.setTelemetryConsent(TelemetryConsent.DENIED) }
                     },
                     onOpenPrivacyPolicy = { context.openUrl(PRIVACY_POLICY_URL) }
                 )

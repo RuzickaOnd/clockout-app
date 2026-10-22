@@ -1,17 +1,14 @@
 package org.clockout
 
 import android.content.Context
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
-import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepository
-import org.clockout.data.repository.RitualRepositoryImpl
+import org.clockout.domain.repository.RitualLogRepository
+import org.clockout.domain.repository.SettingsRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.TelemetryConsent
+import org.clockout.testing.TestAppContainer
+import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -21,6 +18,8 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
 
 /**
  * Consent is the one preference that must never default to "yes", and the one that must survive a
@@ -33,23 +32,17 @@ class TelemetryConsentPersistenceTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
 
+    private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
-    private lateinit var repository: RitualRepository
+    private lateinit var settings: SettingsRepository
+    private lateinit var logs: RitualLogRepository
 
     @Before
     fun setUp() {
-        val context: Context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
-        val preferences = RitualPreferences(
-            PreferenceDataStoreFactory.create {
-                preferencesFolder.newFile("padla_test.preferences_pb").apply { delete() }
-            }
-        )
-        repository = RitualRepositoryImpl(
-            preferences = preferences,
-            ritualLogDao = database.ritualLogDao(),
-            practiceDayDao = database.practiceDayDao()
-        )
+        container = testAppContainer(preferencesFolder)
+        database = container.database
+        settings = container.settings
+        logs = container.ritualLogs
     }
 
     @After
@@ -59,16 +52,16 @@ class TelemetryConsentPersistenceTest {
 
     @Test
     fun `a fresh install has not been asked yet`() = runTest {
-        assertEquals(TelemetryConsent.UNKNOWN, repository.getTelemetryConsent().first())
+        assertEquals(TelemetryConsent.UNKNOWN, settings.getTelemetryConsent().first())
     }
 
     @Test
     fun `granting and withdrawing both round-trip`() = runTest {
-        repository.setTelemetryConsent(TelemetryConsent.GRANTED)
-        assertEquals(TelemetryConsent.GRANTED, repository.getTelemetryConsent().first())
+        settings.setTelemetryConsent(TelemetryConsent.GRANTED)
+        assertEquals(TelemetryConsent.GRANTED, settings.getTelemetryConsent().first())
 
-        repository.setTelemetryConsent(TelemetryConsent.DENIED)
-        assertEquals(TelemetryConsent.DENIED, repository.getTelemetryConsent().first())
+        settings.setTelemetryConsent(TelemetryConsent.DENIED)
+        assertEquals(TelemetryConsent.DENIED, settings.getTelemetryConsent().first())
     }
 
     @Test
@@ -79,11 +72,11 @@ class TelemetryConsentPersistenceTest {
 
     @Test
     fun `clearing data and history leaves consent alone`() = runTest {
-        repository.setTelemetryConsent(TelemetryConsent.GRANTED)
-        repository.logRitual(selectedAnswer = "done", mood = MoodTag.CALM, questionText = "q")
+        settings.setTelemetryConsent(TelemetryConsent.GRANTED)
+        logs.logRitual(selectedAnswer = "done", mood = MoodTag.CALM, questionText = "q")
 
-        repository.clearLogs()
+        logs.clearLogs()
 
-        assertEquals(TelemetryConsent.GRANTED, repository.getTelemetryConsent().first())
+        assertEquals(TelemetryConsent.GRANTED, settings.getTelemetryConsent().first())
     }
 }

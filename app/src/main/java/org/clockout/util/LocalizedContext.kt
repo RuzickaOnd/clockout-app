@@ -7,7 +7,7 @@ import java.util.Locale
 
 /**
  * Resources for the language chosen inside the app, which may differ from the system locale.
- * The single place the locale override is built - used by the question catalog (QuestionsData)
+ * The single place the locale override is built - used by the question catalog (QuestionResources)
  * and by the Compose tree (AppLocalization, through the resulting .resources).
  *
  * Returns createConfigurationContext() directly: no caller needs anything but the resulting

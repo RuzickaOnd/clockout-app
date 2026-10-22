@@ -7,6 +7,7 @@ import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathStage
 import org.clockout.domain.model.RitualQuestion
 import org.clockout.domain.model.RitualStep
+import org.clockout.domain.model.SkyTeaser
 
 data class RitualState(
     val language: AppLanguage = AppLanguage.ENGLISH,
@@ -31,6 +32,3 @@ data class RitualState(
     /** Points to the night sky until its first constellation lights up; null from then on. */
     val skyTeaser: SkyTeaser? = null
 )
-
-/** How far the first constellation still is: the stars so far and the closed days still needed. */
-data class SkyTeaser(val stars: Int, val daysToFirstConstellation: Int)

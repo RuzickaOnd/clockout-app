@@ -1,16 +1,14 @@
 package org.clockout
 
 import android.content.Context
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.test.runTest
-import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepository
-import org.clockout.data.repository.RitualRepositoryImpl
+import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.usecase.ShouldRequestReviewUseCase
+import org.clockout.testing.TestAppContainer
+import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -21,6 +19,7 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.test.runTest
 
 /**
  * The review request end to end, over a real DataStore counter and a real Room log: the counter
@@ -35,24 +34,16 @@ class ReviewPromptFlowTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
 
+    private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
-    private lateinit var repository: RitualRepository
+    private lateinit var repository: RitualLogRepository
     private lateinit var shouldRequestReview: ShouldRequestReviewUseCase
 
     @Before
     fun setUp() {
-        val context: Context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
-        val preferences = RitualPreferences(
-            PreferenceDataStoreFactory.create {
-                preferencesFolder.newFile("padla_test.preferences_pb").apply { delete() }
-            }
-        )
-        repository = RitualRepositoryImpl(
-            preferences = preferences,
-            ritualLogDao = database.ritualLogDao(),
-            practiceDayDao = database.practiceDayDao()
-        )
+        container = testAppContainer(preferencesFolder)
+        database = container.database
+        repository = container.ritualLogs
         shouldRequestReview = ShouldRequestReviewUseCase(repository)
     }
 

@@ -1,24 +1,25 @@
 package org.clockout
 
 import android.content.Context
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import org.clockout.data.local.RitualPreferences
-import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepositoryImpl
-import org.clockout.domain.usecase.GetTodayRitualUseCase
-import org.clockout.domain.usecase.LogMoodUseCase
-import org.clockout.domain.usecase.ShouldRequestReviewUseCase
 import org.clockout.presentation.ritual.RitualIntent
 import org.clockout.presentation.ritual.RitualViewModel
+import org.clockout.testing.ViewModelScopes
+import org.clockout.testing.FakeSoundPlayer
+import org.clockout.testing.TestAppContainer
+import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.flow.flowOf
+import java.time.LocalDate
 
 /**
  * Rotating a tablet or unfolding a foldable rebuilds the composition, and the ritual screen then
@@ -29,33 +30,39 @@ import org.robolectric.annotation.Config
 @Config(sdk = [36])
 class RitualSessionSurvivalTest {
 
+    @get:Rule val preferencesFolder = TemporaryFolder()
+    private val viewModels = ViewModelScopes()
+
     private lateinit var context: Context
-    private lateinit var database: ClockoutDatabase
+    private lateinit var container: TestAppContainer
+    private val database get() = container.database
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
+        container = testAppContainer(preferencesFolder, context = context)
     }
 
     @After
     fun tearDown() {
-        database.close()
+        viewModels.cancelAll()
+        container.database.close()
     }
 
     private fun viewModel(): RitualViewModel {
-        val repository = RitualRepositoryImpl(
-            preferences = RitualPreferences(context),
-            ritualLogDao = database.ritualLogDao(),
-            practiceDayDao = database.practiceDayDao()
+        // A new graph over the same storage: the view model is rebuilt the way a new process would.
+        val graph = TestAppContainer(
+            context = context,
+            preferences = container.preferences,
+            database = container.database,
+            todayFlow = flowOf(LocalDate.now())
         )
-        return RitualViewModel(
-            appContext = context,
-            getTodayRitualUseCase = GetTodayRitualUseCase(repository),
-            logMoodUseCase = LogMoodUseCase(repository),
-            shouldRequestReviewUseCase = ShouldRequestReviewUseCase(repository),
-            ritualRepository = repository
-        )
+        return viewModels.track(RitualViewModel(
+            audioPlayer = FakeSoundPlayer(),
+            settings = graph.settings,
+            sounds = graph.sounds,
+            completeRitual = graph.completeRitual
+        ))
     }
 
     @Test

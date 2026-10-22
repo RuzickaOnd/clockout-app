@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.SkyData
-import org.clockout.presentation.rememberRitualRepository
+import org.clockout.presentation.appContainer
 import org.clockout.presentation.sky.SkyScreen
 import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.FrostedCanvas
@@ -31,12 +31,12 @@ class SkyActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = FrostedCanvas) {
-                    val repository = rememberRitualRepository()
-                    val language by repository.getLanguage()
+                    val container = appContainer()
+                    val language by container.settings.getLanguage()
                         .collectAsStateWithLifecycle(initialValue = AppLanguage.ENGLISH)
                     // Null until Room answers: drawing an empty sky first would flash the newcomer state.
                     // Remembered, so a change of language does not restart the collection.
-                    val skyFlow = remember(repository) { repository.getSky() }
+                    val skyFlow = remember(container) { container.progress.getSky() }
                     val sky by skyFlow.collectAsStateWithLifecycle(initialValue = null as SkyData?)
 
                     AppLocalization(language) {

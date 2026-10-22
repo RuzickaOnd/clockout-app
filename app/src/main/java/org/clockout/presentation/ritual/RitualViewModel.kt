@@ -1,52 +1,43 @@
 package org.clockout.presentation.ritual
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import org.clockout.data.repository.RitualRepository
+import org.clockout.domain.repository.SettingsRepository
+import org.clockout.domain.repository.SoundRepository
 import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.MeditationSoundStyle
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.AppLanguage
-import org.clockout.domain.model.PathProgress
-import org.clockout.domain.model.SkyData
 import org.clockout.domain.model.SoundChoice
 import org.clockout.domain.model.RitualStep
-import org.clockout.domain.model.SkyPolicy
-import org.clockout.domain.model.mondayOfWeek
-import org.clockout.domain.usecase.GetTodayRitualUseCase
-import org.clockout.domain.usecase.LogMoodUseCase
-import org.clockout.domain.usecase.ShouldRequestReviewUseCase
+import org.clockout.domain.platform.SoundPlayer
+import org.clockout.domain.usecase.CompleteRitualUseCase
+import org.clockout.domain.usecase.GetTodayQuestionUseCase
 import org.clockout.domain.telemetry.AnalyticsEvent
 import org.clockout.domain.telemetry.AnalyticsTracker
 import org.clockout.domain.telemetry.NoOpAnalyticsTracker
 import org.clockout.domain.telemetry.analyticsId
-import org.clockout.sound.AmbientAudioPlayer
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 class RitualViewModel(
-    private val appContext: Context,
-    private val getTodayRitualUseCase: GetTodayRitualUseCase,
-    private val logMoodUseCase: LogMoodUseCase,
-    private val shouldRequestReviewUseCase: ShouldRequestReviewUseCase,
-    private val ritualRepository: RitualRepository,
-    private val audioPlayer: AmbientAudioPlayer = AmbientAudioPlayer(),
-    private val analyticsTracker: AnalyticsTracker = NoOpAnalyticsTracker
+    private val settings: SettingsRepository,
+    private val sounds: SoundRepository,
+    private val completeRitual: CompleteRitualUseCase,
+    private val audioPlayer: SoundPlayer,
+    private val analyticsTracker: AnalyticsTracker = NoOpAnalyticsTracker,
+    private val getTodayQuestion: GetTodayQuestionUseCase = GetTodayQuestionUseCase()
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
-        RitualState(question = getTodayRitualUseCase())
+        RitualState(question = getTodayQuestion())
     )
     val state: StateFlow<RitualState> = _state.asStateFlow()
 
@@ -73,7 +64,7 @@ class RitualViewModel(
         audioPlayer.stopAmbient()
         _state.update { current ->
             RitualState(
-                question = getTodayRitualUseCase(),
+                question = getTodayQuestion(),
                 // Everything a preference feeds has to be carried over by hand: the flows only
                 // re-emit when the stored value changes, so a fresh RitualState would otherwise
                 // start the ritual on the defaults until the user next edits Settings.
@@ -105,10 +96,10 @@ class RitualViewModel(
     private fun observePreferences() {
         viewModelScope.launch {
             combine(
-                ritualRepository.getLanguage(),
-                ritualRepository.getSoundEnabled(),
-                ritualRepository.getSoundChoice(),
-                ritualRepository.getBreathingStyle()
+                settings.getLanguage(),
+                sounds.getSoundEnabled(),
+                sounds.getSoundChoice(),
+                settings.getBreathingStyle()
             ) { language, soundEnabled, soundChoice, breathingStyle ->
                 RitualPreferencesSnapshot(language, soundEnabled, soundChoice, breathingStyle)
             }.collect { snapshot ->
@@ -155,7 +146,7 @@ class RitualViewModel(
                 )
                 startBreathingTimer()
                 if (!_state.value.isSoundMuted) {
-                    audioPlayer.startAmbient(appContext, _state.value.soundChoice, true)
+                    audioPlayer.startAmbient(_state.value.soundChoice)
                 }
             }
             is RitualIntent.ToggleSound -> {
@@ -165,7 +156,7 @@ class RitualViewModel(
                     audioPlayer.stopAmbient()
                 } else {
                     if (_state.value.currentStep is RitualStep.Breathing) {
-                        audioPlayer.startAmbient(appContext, _state.value.soundChoice, true)
+                        audioPlayer.startAmbient(_state.value.soundChoice)
                     }
                 }
             }
@@ -228,75 +219,33 @@ class RitualViewModel(
         }
     }
 
-    /**
-     * [moodWasChosen] is false when the user skipped the step. Skipping still logs [MoodTag.CALM],
-     * because the history needs something to show, but it is not the user saying the day went well
-     * - so it must never be read as the good mood that earns a review request.
-     */
+    /** [moodWasChosen] is false when the user skipped the step; see [CompleteRitualUseCase]. */
     private fun handleMoodSelected(mood: MoodTag, moodWasChosen: Boolean = true) {
         _state.update { it.copy(selectedMood = mood) }
         viewModelScope.launch {
-            val currentState = _state.value
-            val finalAnswer = currentState.customAnswerText.trim().ifEmpty {
-                currentState.selectedAnswer
-            }
-            val before = progressSnapshot()
-            logMoodUseCase(
-                selectedAnswer = finalAnswer,
+            val current = _state.value
+            val completion = completeRitual(
+                answer = current.customAnswerText.trim().ifEmpty { current.selectedAnswer },
                 mood = mood,
-                questionText = currentState.question.text(currentState.language)
+                questionText = current.question.text(current.language),
+                moodWasChosen = moodWasChosen
             )
-            val after = progressSnapshot()
-            val thisMonday = LocalDate.now().mondayOfWeek()
             _state.update {
                 it.copy(
                     isCompletedAndSaved = true,
-                    shouldRequestReview = moodWasChosen && shouldRequestReviewUseCase(mood),
-                    reachedStage = if (before != null && after != null) {
-                        after.path.stage.takeIf { stage -> stage != before.path.stage }
-                    } else {
-                        null
-                    },
-                    // Announced when this week's figure first gets a line, not merely when the week
-                    // reaches its rhythm: a first, partial week can be in rhythm on a lone star.
-                    rhythmConstellationNumber = if (before != null && after != null) {
-                        SkyPolicy.constellationNumber(thisMonday).takeIf {
-                            SkyPolicy.isLit(thisMonday, after.sky.days, after.sky.rhythmWeeks) &&
-                                !SkyPolicy.isLit(thisMonday, before.sky.days, before.sky.rhythmWeeks)
-                        }
-                    } else {
-                        null
-                    },
-                    skyTeaser = after?.sky?.daysToFirstConstellation?.let { SkyTeaser(after.sky.summary.stars, it) }
+                    shouldRequestReview = completion.shouldRequestReview,
+                    reachedStage = completion.reachedStage,
+                    rhythmConstellationNumber = completion.litConstellationNumber,
+                    skyTeaser = completion.skyTeaser
                 )
             }
-            // Read after the log is written, so the count includes today.
-            val daysClosedThisWeek = ritualRepository.getStreakInfo().first().completedThisWeekCount
-            analyticsTracker.track(
-                AnalyticsEvent.RitualStepCompleted(RitualStep.Log.analyticsId())
-            )
-            analyticsTracker.track(
-                AnalyticsEvent.RitualCompleted(
-                    mood = mood.id,
-                    daysClosedThisWeek = daysClosedThisWeek
+            analyticsTracker.track(AnalyticsEvent.RitualStepCompleted(RitualStep.Log.analyticsId()))
+            completion.daysClosedThisWeek?.let { daysClosedThisWeek ->
+                analyticsTracker.track(
+                    AnalyticsEvent.RitualCompleted(mood = mood.id, daysClosedThisWeek = daysClosedThisWeek)
                 )
-            )
+            }
         }
-    }
-
-    private class ProgressSnapshot(val path: PathProgress, val sky: SkyData)
-
-    /**
-     * The path and the sky, read on either side of the log write to tell what this ritual changed.
-     * They only decorate the completion card: whatever goes wrong while reading them, the ritual
-     * itself must still be written, so a failure here yields no celebration rather than no entry.
-     */
-    private suspend fun progressSnapshot(): ProgressSnapshot? = try {
-        ProgressSnapshot(ritualRepository.getPathProgress().first(), ritualRepository.getSky().first())
-    } catch (cancelled: CancellationException) {
-        throw cancelled
-    } catch (failure: Exception) {
-        null
     }
 
     /** Clears the one-shot flag once the host has handed the request over to Play. */

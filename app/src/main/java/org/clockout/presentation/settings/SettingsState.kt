@@ -1,6 +1,6 @@
 package org.clockout.presentation.settings
 
-import org.clockout.data.local.SoundImportError
+import org.clockout.domain.model.SoundImportError
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.CustomSound

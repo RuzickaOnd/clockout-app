@@ -6,33 +6,26 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.OpenableColumns
 import org.clockout.domain.model.CustomSound
+import org.clockout.domain.model.SoundImportError
+import org.clockout.domain.model.SoundImportResult
+import org.clockout.domain.platform.SoundFileStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
-/** Reason an imported file could not be used. */
-enum class SoundImportError {
-    UNSUPPORTED_FILE,
-    FILE_TOO_LARGE,
-    LIMIT_REACHED,
-    READ_FAILED
-}
-
-sealed interface SoundImportResult {
-    data class Success(val sound: CustomSound) : SoundImportResult
-    data class Failure(val error: SoundImportError) : SoundImportResult
-}
-
 /**
  * Copies user picked audio files into the app's private storage so playback no
  * longer depends on the picker's temporary content:// permission grant.
  */
-class CustomSoundStorage(context: Context) {
+class CustomSoundStorage(context: Context) : SoundFileStore {
 
     private val appContext = context.applicationContext
 
-    suspend fun import(uri: Uri, existingCount: Int): SoundImportResult = withContext(Dispatchers.IO) {
+    override suspend fun import(source: String, existingCount: Int): SoundImportResult =
+        import(Uri.parse(source), existingCount)
+
+    private suspend fun import(uri: Uri, existingCount: Int): SoundImportResult = withContext(Dispatchers.IO) {
         if (existingCount >= MAX_CUSTOM_SOUNDS) {
             return@withContext SoundImportResult.Failure(SoundImportError.LIMIT_REACHED)
         }
@@ -90,9 +83,11 @@ class CustomSoundStorage(context: Context) {
         )
     }
 
-    suspend fun delete(sound: CustomSound): Boolean = withContext(Dispatchers.IO) {
-        val file = resolveFile(appContext, sound.fileName)
-        !file.exists() || file.delete()
+    override suspend fun delete(sound: CustomSound) {
+        withContext(Dispatchers.IO) {
+            val file = resolveFile(appContext, sound.fileName)
+            if (file.exists()) file.delete()
+        }
     }
 
     /** Returns the picker reported display name and size (size is null when unknown). */

@@ -1,6 +1,6 @@
 package org.clockout
 
-import org.clockout.data.local.QuestionsData
+import org.clockout.domain.model.QuestionCatalog
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.LanguageOption
 import org.junit.Assert.assertEquals
@@ -36,7 +36,7 @@ class ExampleUnitTest {
 
     @Test
     fun testQuestionsDataBilingual() {
-        val questions = QuestionsData.questions
+        val questions = QuestionCatalog.questions
         assertTrue(questions.isNotEmpty())
         for (q in questions) {
             assertTrue(q.textEn.isNotBlank())

@@ -1,21 +1,19 @@
 package org.clockout.telemetry
 
 import android.content.Context
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
-import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepository
-import org.clockout.data.repository.RitualRepositoryImpl
+import org.clockout.domain.repository.SettingsRepository
 import org.clockout.domain.model.TelemetryConsent
 import org.clockout.presentation.settings.SettingsViewModel
+import org.clockout.testing.ViewModelScopes
+import org.clockout.testing.TestAppContainer
+import org.clockout.testing.testAppContainer
+import org.clockout.domain.model.SoundImportError
+import org.clockout.domain.model.SoundImportResult
+import org.clockout.testing.FakeReminderScheduler
+import org.clockout.testing.FakeSoundFileStore
+import org.clockout.testing.FakeSoundPlayer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -25,6 +23,12 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 
 /** The Settings switch is the only way back from a "no", so it has to write both directions. */
 @RunWith(RobolectricTestRunner::class)
@@ -32,37 +36,46 @@ import org.robolectric.annotation.Config
 class SettingsTelemetryTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
+    private val viewModels = ViewModelScopes()
 
+    private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
-    private lateinit var repository: RitualRepository
+    private lateinit var repository: SettingsRepository
 
     @Before
     fun setUp() {
         // viewModelScope posts to Dispatchers.Main; without this the write has not happened by the
         // time the assertion runs. Same arrangement CustomSoundReplacementTest uses.
         Dispatchers.setMain(UnconfinedTestDispatcher())
-        val context: Context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
-        repository = RitualRepositoryImpl(
-            preferences = RitualPreferences(
-                PreferenceDataStoreFactory.create {
-                    preferencesFolder.newFile("padla_test.preferences_pb").apply { delete() }
-                }
-            ),
-            ritualLogDao = database.ritualLogDao(),
-            practiceDayDao = database.practiceDayDao()
-        )
+        container = testAppContainer(preferencesFolder)
+        database = container.database
+        repository = container.settings
     }
 
     @After
     fun tearDown() {
+        viewModels.cancelAll()
         database.close()
         Dispatchers.resetMain()
     }
 
     @Test
     fun `the switch grants and withdraws`() = runTest {
-        val model = SettingsViewModel(repository)
+        // A known answer the view model has to show first: once it does, its collector is past
+        // DataStore's initial read. A write landing during that read can be lost to it for good in
+        // DataStore 1.2.1 (see CustomSoundReplacementTest.awaitReplacement), so the switch is only
+        // flipped after that.
+        repository.setTelemetryConsent(TelemetryConsent.DENIED)
+        val model = viewModels.track(SettingsViewModel(
+            settings = repository,
+            sounds = container.sounds,
+            logs = container.ritualLogs,
+            audioPlayer = FakeSoundPlayer(),
+            reminderScheduler = FakeReminderScheduler(),
+            soundFiles = FakeSoundFileStore { SoundImportResult.Failure(SoundImportError.READ_FAILED) }
+        ))
+
+        model.state.first { it.telemetryConsent == TelemetryConsent.DENIED }
 
         // Awaited rather than read straight back: the setter writes from viewModelScope and
         // DataStore completes the edit on its own dispatcher, so an immediate read races it. A

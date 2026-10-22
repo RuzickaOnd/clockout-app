@@ -12,7 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.BreathingStyle
-import org.clockout.presentation.rememberRitualRepository
+import org.clockout.presentation.appContainer
 import org.clockout.presentation.settings.BreathingStyleScreen
 import org.clockout.presentation.util.AppLocalization
 import org.clockout.ui.theme.FrostedCanvas
@@ -32,9 +32,7 @@ import org.clockout.util.applyFrostedWindowChrome
  *
  * What it does have to bring itself is the window chrome and the language: the app switches
  * language independently of the system locale, so the screen has to be wrapped in
- * [AppLocalization] exactly as [org.clockout.presentation.PadlaApp] wraps its own content, and the
- * repository has to be built above that wrapper so DataStore and Room never see a
- * locale-overridden context.
+ * [AppLocalization] exactly as [org.clockout.presentation.PadlaApp] wraps its own content.
  */
 class BreathingStyleActivity : ComponentActivity() {
 
@@ -45,17 +43,17 @@ class BreathingStyleActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = FrostedCanvas) {
-                    val repository = rememberRitualRepository()
-                    val language by repository.getLanguage()
+                    val settings = appContainer().settings
+                    val language by settings.getLanguage()
                         .collectAsStateWithLifecycle(initialValue = AppLanguage.ENGLISH)
-                    val style by repository.getBreathingStyle()
+                    val style by settings.getBreathingStyle()
                         .collectAsStateWithLifecycle(initialValue = BreathingStyle.CLASSIC_CIRCLE)
 
                     AppLocalization(language) {
                         BreathingStyleScreen(
                             selectedStyle = style,
                             onStyleSelected = { chosen ->
-                                lifecycleScope.launch { repository.setBreathingStyle(chosen) }
+                                lifecycleScope.launch { settings.setBreathingStyle(chosen) }
                             },
                             onBack = { finish() }
                         )

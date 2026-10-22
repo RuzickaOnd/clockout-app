@@ -9,7 +9,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import org.clockout.MainActivity
 import org.clockout.R
-import org.clockout.data.local.RitualPreferences
+import org.clockout.appContainer
 import org.clockout.domain.model.AppLanguage
 import org.clockout.domain.model.RitualDayPolicy
 import org.clockout.notification.NotificationScheduler
@@ -34,12 +34,14 @@ class NotificationReceiver : BroadcastReceiver() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val preferences = RitualPreferences(context)
-                val isEnabled = preferences.notificationEnabledFlow.first()
-                val hour = preferences.notificationHourFlow.first()
-                val minute = preferences.notificationMinuteFlow.first()
-                val language = preferences.languageFlow.first()
-                val includeWeekends = preferences.includeWeekendsFlow.first()
+                val container = context.appContainer
+                val settings = container.settings
+                val isEnabled = settings.getNotificationEnabled().first()
+                // Hour and minute from one snapshot: read apart, a change landing in between could
+                // schedule a time the user never picked.
+                val (hour, minute) = settings.getNotificationTime().first()
+                val language = settings.getLanguage().first()
+                val includeWeekends = settings.getIncludeWeekends().first()
 
                 val outcome = ReminderPolicy.outcomeFor(
                     isEnabled = isEnabled,
@@ -47,7 +49,7 @@ class NotificationReceiver : BroadcastReceiver() {
                 )
 
                 if (outcome == ReminderOutcome.CANCEL) {
-                    NotificationScheduler.cancelNotification(context)
+                    container.reminderScheduler.cancel()
                     return@launch
                 }
 
@@ -56,9 +58,9 @@ class NotificationReceiver : BroadcastReceiver() {
                         showNotification(context, language)
                     }
                     // Reschedule for next day even on a skipped day, so the alarm survives the weekend
-                    NotificationScheduler.scheduleDailyNotification(context, hour, minute)
+                    container.reminderScheduler.schedule(hour, minute)
                 } else if (action == Intent.ACTION_BOOT_COMPLETED) {
-                    NotificationScheduler.scheduleDailyNotification(context, hour, minute)
+                    container.reminderScheduler.schedule(hour, minute)
                 }
             } catch (_: Exception) {
                 // Ignore background notification failure

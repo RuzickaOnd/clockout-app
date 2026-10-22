@@ -1,24 +1,26 @@
 package org.clockout
 
 import android.content.Context
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
-import org.clockout.data.local.RitualPreferences
-import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepositoryImpl
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.SoundChoice
+import org.clockout.testing.TestAppContainer
+import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runTest
+import java.time.LocalDate
 
 /**
  * A cloud backup restores the custom sound metadata out of DataStore but not the audio files,
@@ -29,9 +31,11 @@ import org.robolectric.annotation.Config
 @Config(sdk = [36])
 class CustomSoundAvailabilityTest {
 
+    @get:Rule val preferencesFolder = TemporaryFolder()
+
     private lateinit var context: Context
-    private lateinit var database: ClockoutDatabase
-    private lateinit var preferences: RitualPreferences
+    private lateinit var container: TestAppContainer
+    private val preferences get() = container.preferences
 
     private val restored = CustomSound(
         id = CustomSound.ID_PREFIX + "restored",
@@ -49,26 +53,24 @@ class CustomSoundAvailabilityTest {
         addedAt = 0L
     )
 
-    private fun repository(soundFileExists: (String) -> Boolean) = RitualRepositoryImpl(
-        preferences = preferences,
-        ritualLogDao = database.ritualLogDao(),
-        practiceDayDao = database.practiceDayDao(),
+    /** A new graph over the same storage, so each call can have its own idea of what is on disk. */
+    private fun repository(soundFileExists: (String) -> Boolean) = TestAppContainer(
+        context = context,
+        preferences = container.preferences,
+        database = container.database,
+        todayFlow = flowOf(LocalDate.now()),
         soundFileExists = soundFileExists
-    )
+    ).sounds
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
-        preferences = RitualPreferences(context)
+        container = testAppContainer(preferencesFolder, context = context)
     }
 
     @After
-    fun tearDown() = runTest {
-        preferences.removeCustomSound(restored.id)
-        preferences.removeCustomSound(present.id)
-        preferences.setSelectedSoundId(SoundChoice.Default.id)
-        database.close()
+    fun tearDown() {
+        container.database.close()
     }
 
     @Test

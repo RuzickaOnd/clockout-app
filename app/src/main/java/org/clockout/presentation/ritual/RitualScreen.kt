@@ -83,6 +83,7 @@ import org.clockout.domain.model.BreathingStyle
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.PathStage
 import org.clockout.domain.model.RitualStep
+import org.clockout.domain.model.SkyTeaser
 import org.clockout.presentation.components.CLOSURE_BULB_ANIM_MILLIS
 import org.clockout.presentation.components.CLOSURE_BUTTON_IN_DELAY_MILLIS
 import org.clockout.presentation.components.CLOSURE_TEXT_IN_DELAY_MILLIS

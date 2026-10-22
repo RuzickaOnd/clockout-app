@@ -1,23 +1,15 @@
 package org.clockout
 
 import android.content.Context
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.clockout.data.local.RitualPreferences
 import org.clockout.data.local.db.ClockoutDatabase
-import org.clockout.data.repository.RitualRepository
-import org.clockout.data.repository.RitualRepositoryImpl
+import org.clockout.domain.repository.RitualLogRepository
 import org.clockout.domain.model.MoodTag
 import org.clockout.domain.model.RitualLogEntry
 import org.clockout.presentation.history.HistoryViewModel
+import org.clockout.testing.ViewModelScopes
+import org.clockout.testing.TestAppContainer
+import org.clockout.testing.testAppContainer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -27,6 +19,13 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 
 /** History shows the entries and the sky from one read of ritual_logs, not two. */
 @RunWith(RobolectricTestRunner::class)
@@ -34,29 +33,24 @@ import org.robolectric.annotation.Config
 class HistoryViewModelSkyTest {
 
     @get:Rule val preferencesFolder = TemporaryFolder()
+    private val viewModels = ViewModelScopes()
 
     private val dispatcher = UnconfinedTestDispatcher()
+    private lateinit var container: TestAppContainer
     private lateinit var database: ClockoutDatabase
-    private lateinit var repository: RitualRepositoryImpl
+    private lateinit var repository: RitualLogRepository
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
-        val context: Context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, ClockoutDatabase::class.java).build()
-        repository = RitualRepositoryImpl(
-            preferences = RitualPreferences(
-                PreferenceDataStoreFactory.create {
-                    preferencesFolder.newFile("padla_history.preferences_pb").apply { delete() }
-                }
-            ),
-            ritualLogDao = database.ritualLogDao(),
-            practiceDayDao = database.practiceDayDao()
-        )
+        container = testAppContainer(preferencesFolder)
+        database = container.database
+        repository = container.ritualLogs
     }
 
     @After
     fun tearDown() {
+        viewModels.cancelAll()
         database.close()
         Dispatchers.resetMain()
     }
@@ -65,14 +59,14 @@ class HistoryViewModelSkyTest {
     fun `history reads its entries through the sky and nothing else`() = runTest(dispatcher) {
         repository.logRitual("An answer", MoodTag.SATISFIED, "Q")
         var logReads = 0
-        val counting = object : RitualRepository by repository {
+        val counting = object : RitualLogRepository by repository {
             override fun getLogs(): Flow<List<RitualLogEntry>> {
                 logReads++
                 return repository.getLogs()
             }
         }
 
-        val viewModel = HistoryViewModel(counting)
+        val viewModel = viewModels.track(HistoryViewModel(counting, container.settings, container.progress))
         val state = viewModel.state.first { it.sky != null && it.logs.isNotEmpty() }
 
         assertEquals(0, logReads)

@@ -9,6 +9,7 @@ import org.clockout.data.local.CustomSoundStorage
 import org.clockout.domain.model.CustomSound
 import org.clockout.domain.model.MeditationSoundStyle
 import org.clockout.domain.model.SoundChoice
+import org.clockout.domain.platform.SoundPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,7 +22,9 @@ import kotlin.math.PI
 import kotlin.math.exp
 import kotlin.math.sin
 
-class AmbientAudioPlayer {
+class AmbientAudioPlayer(context: Context) : SoundPlayer {
+
+    private val appContext = context.applicationContext
 
     private var audioTrack: AudioTrack? = null
     private var mediaPlayer: MediaPlayer? = null
@@ -43,17 +46,13 @@ class AmbientAudioPlayer {
     private val scope = CoroutineScope(Dispatchers.Default)
     private val random = Random()
 
-    fun startAmbient(context: Context, choice: SoundChoice, enabled: Boolean = true) {
-        if (!enabled) {
-            stopAmbient()
-            return
-        }
+    override fun startAmbient(choice: SoundChoice) {
         when (choice) {
             is SoundChoice.Custom -> {
                 stopAmbient()
                 playbackJob = scope.launch {
                     playCustomSound(
-                        context = context,
+                        context = appContext,
                         sound = choice.sound,
                         loop = true,
                         previewDurationSeconds = null,
@@ -81,7 +80,7 @@ class AmbientAudioPlayer {
         }
     }
 
-    fun triggerBowlStrike(highPitch: Boolean = false) {
+    override fun triggerBowlStrike(highPitch: Boolean) {
         synchronized(strikeLock) {
             strikeFundamental = if (highPitch) 350.0 else 280.0
             strikeGain = 0.65f
@@ -89,13 +88,13 @@ class AmbientAudioPlayer {
         }
     }
 
-    fun playPreview(context: Context, choice: SoundChoice, onFinished: (() -> Unit)? = null) {
+    override fun playPreview(choice: SoundChoice, onFinished: () -> Unit) {
         stopAmbient()
         when (choice) {
             is SoundChoice.Custom -> {
                 previewJob = scope.launch {
                     playCustomSound(
-                        context = context,
+                        context = appContext,
                         sound = choice.sound,
                         loop = false,
                         previewDurationSeconds = CUSTOM_PREVIEW_SECONDS,
@@ -107,7 +106,7 @@ class AmbientAudioPlayer {
             is SoundChoice.BuiltIn -> {
                 val style = choice.style
                 if (style == MeditationSoundStyle.SILENT_HAPTIC) {
-                    onFinished?.invoke()
+                    onFinished()
                     return
                 }
 
@@ -117,13 +116,13 @@ class AmbientAudioPlayer {
 
                 previewJob = scope.launch {
                     runAudioLoop(style, previewDurationSeconds = 4)
-                    onFinished?.invoke()
+                    onFinished()
                 }
             }
         }
     }
 
-    fun stopAmbient() {
+    override fun stopAmbient() {
         isPlaying = false
         previewJob?.cancel()
         previewJob = null
